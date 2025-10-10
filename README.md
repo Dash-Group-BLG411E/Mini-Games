@@ -47,7 +47,6 @@ Deployment: Vercel + Render
 👤	Name	GitHub
 🧠	Kutay Murat Kasman	@kutay-kasman
 🎨 Nejra Gutic
-
 ⚙️	Your Team	...
 📌 Roadmap
 
