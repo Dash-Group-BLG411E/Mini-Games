@@ -1,61 +1,70 @@
-# Mini-Games
-We'll make mini games website for fun
-🕹️ MiniGamesHub
+# 🕹️ MiniGamesHub
+_Play. Compete. Chat. Repeat._
 
-A collection of mini-games built for fun and competition! Play, compete on leaderboards, and chat with friends — all in your browser.
+A web-based platform where players can enjoy quick, competitive, and social **mini-games** — built by **Team Dash** for the BLG411E Software Engineering course at Istanbul Technical University (ITU).
 
-🚀 Live Demo for Tic Tac Toe Game
+---
 
-🔗 https://onlinetictactoe-0v35.onrender.com/
+## 🎯 Project Overview
 
-📸 Preview
+**MiniGamesHub** brings together a collection of lightweight multiplayer games where users can:
+- Play in real time with friends  
+- Compete on dynamic leaderboards  
+- Chat during matches  
+- Join tournaments for bragging rights  
 
+---
 
-Jump into the action with our fast-paced mini-games!
+## 🧩 Core Features
 
-🎮 Games Included
-Game	Description
-🧠 Memory Match	Match pairs to train your brain!
-⛳ Mini Golf	Hit the ball into the hole in fewer shots.
-⚔️ Duel Arena	Fight 1v1 in a pixel-style arena.
+| Category | Features |
+|-----------|-----------|
+| **Accounts & Auth** | JWT-based user registration and login |
+| **Games** | Tic Tac Toe · Rock Paper Scissors · Memory Match |
+| **Multiplayer** | Real-time gameplay with Socket.io |
+| **Leaderboard** | Score-based rankings and tournaments |
+| **Chat** | In-room messaging between players |
+| **UI/UX** | Responsive design · Smooth animations |
 
-More games coming soon...
+---
 
-💡 Features
+## 🛠️ Tech Stack
 
-🧩 Modular game architecture
+**Frontend:** React + Vite  
+**Backend:** Node.js + Express.js + MongoDB (Atlas)  
+**Real-time:** Socket.io (WebSockets)  
+**Auth:** JWT Tokens  
+**DevOps & Hosting:**  
+- Frontend → Vercel / Netlify  
+- Backend → Render / Railway  
+- CI/CD → GitHub Actions  
 
-🏆 Real-time leaderboard
+---
 
-💬 In-game chatroom
+## 🗂️ Project Management Tools
 
-💾 Backend with database integration
+- GitHub Projects & Issues  
+- GitHub Actions (CI/CD)  
+- Notion & Discord for documentation and meetings  
 
-🎨 Mobile-friendly responsive design
+---
 
-🏗️ Example Tech Stack 
+## 👥 Team Dash
 
-Frontend: React / Vite / TailwindCSS
+| Member | GitHub | Role | Duty |
+|--------|---------|------|------|
+| Kutay Murat Kasman | [@kutay-kasman](https://github.com/kutay-kasman) | Backend APIs, DB, Sockets | Issue Tracker |
+| Nejra Gutić | [@itu-itis22-gutic21](https://github.com/itu-itis22-gutic21) | Frontend, Integration | Documentation |
+| Luka Čuturilo | [@masna-cufta](https://github.com/masna-cufta) | Testing, Authentication | Documentation |
+| Mehmet Sait Sever | [@mss1091](https://github.com/mss1091) | Leaderboard, Tournament Logic | Project Management |
+| Furkan Bilal Yeşil | [@itu-itis22-yesilf21](https://github.com/itu-itis22-yesilf21) | Game Design and Logic | Meetings & Reports |
+| Umut Şan | [@itu-itis22-sanu21](https://github.com/itu-itis22-sanu21) | Deployment, Cloud Hosting | DevOps |
+| Zeynep Nur Yılmaz | [@zeynep4713](https://github.com/zeynep4713) | UI/UX, Animations | GitHub Boards |
 
-Backend: Node.js / Express / MongoDB
+---
 
-Real-time: Socket.io
+## 📄 License
 
-Deployment: Vercel + Render
+This project is developed for educational purposes under the **ITU BLG411E Software Engineering** course (Fall 2025).
 
-🌍 Contributors
-👤	Name	GitHub
-🧠	Kutay Murat Kasman	@kutay-kasman
-🎨 Nejra Gutic
-⚙️	Your Team	...
-📌 Roadmap
-
- Add Tic Tac Toe
-
- Add chat system
-
- Add user login & avatars
-
- Add 5 new mini-games
-
- Support multiplayer via WebRTC
+---
