@@ -53,7 +53,7 @@ A web-based platform where players can enjoy quick, competitive, and social **mi
 
 | Member | GitHub | Role | Duty |
 |--------|---------|------|------|
-| Kutay Murat Kasman | [@kutay-kasman](https://github.com/kutay-kasman) | Backend APIs, DB, Sockets | Issue Tracker |
+| Kutay Murat Kasman | [@kutay-kasman](https://github.com/kutay-kasman) | Backend, API Handling, DB, Sockets | Issue Tracker |
 | Nejra Gutić | [@itu-itis22-gutic21](https://github.com/itu-itis22-gutic21) | Frontend, Integration | Documentation |
 | Luka Čuturilo | [@masna-cufta](https://github.com/masna-cufta) | Testing, Authentication | Documentation |
 | Mehmet Sait Sever | [@mss1091](https://github.com/mss1091) | Leaderboard, Tournament Logic | Project Management |
