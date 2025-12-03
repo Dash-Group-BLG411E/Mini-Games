@@ -1,48 +1,93 @@
-const fs = require('fs')
-const path = require('path')
+const User = require('../models/User')
 
 class UserStore {
-  constructor() {
-    this.filePath = path.join(__dirname, 'users.json')
-    this.users = this.loadUsers()
+  generateDefaultAvatar(username) {
+    // Generate a simple emoji-based avatar from first letter
+    const emojis = ['😀', '😃', '😄', '😁', '😆', '😊', '😎', '🤓', '🧐', '😇']
+    const index = username.charCodeAt(0) % emojis.length
+    return emojis[index]
   }
 
-  loadUsers() {
+  async hasUser(username) {
     try {
-      if (fs.existsSync(this.filePath)) {
-        const raw = fs.readFileSync(this.filePath, 'utf8')
-        return JSON.parse(raw)
+      const user = await User.findOne({ username: username.toLowerCase() })
+      return Boolean(user)
+    } catch (error) {
+      console.error('Failed to check user:', error)
+      return false
+    }
+  }
+
+  async getUser(username) {
+    try {
+      const user = await User.findOne({ username: username.toLowerCase() })
+      if (!user) return null
+      
+      // Convert to plain object similar to old format
+      return {
+        username: user.username,
+        passwordHash: user.passwordHash,
+        displayName: user.displayName,
+        avatar: user.avatar,
+        createdAt: user.createdAt.toISOString()
       }
     } catch (error) {
-      console.error('Failed to load users:', error)
+      console.error('Failed to get user:', error)
+      return null
     }
-    return {}
   }
 
-  saveUsers() {
+  async addUser(username, passwordHash) {
     try {
-      fs.writeFileSync(this.filePath, JSON.stringify(this.users, null, 2))
+      const avatar = this.generateDefaultAvatar(username)
+      const user = new User({
+        username: username.toLowerCase(),
+        passwordHash,
+        displayName: username,
+        avatar
+      })
+      await user.save()
+      return user
     } catch (error) {
-      console.error('Failed to save users:', error)
+      if (error.code === 11000) {
+        // Duplicate key error
+        throw new Error('Username already exists')
+      }
+      console.error('Failed to add user:', error)
+      throw error
     }
   }
 
-  addUser(username, passwordHash) {
-    const key = username.toLowerCase()
-    this.users[key] = {
-      username,
-      passwordHash,
-      createdAt: new Date().toISOString()
+  async updateUser(username, updates) {
+    try {
+      // Don't allow changing username
+      const { username: _, ...safeUpdates } = updates
+      
+      const user = await User.findOneAndUpdate(
+        { username: username.toLowerCase() },
+        { $set: safeUpdates },
+        { new: true }
+      )
+      
+      if (!user) {
+        return false
+      }
+      
+      return true
+    } catch (error) {
+      console.error('Failed to update user:', error)
+      return false
     }
-    this.saveUsers()
   }
 
-  hasUser(username) {
-    return Boolean(this.users[username.toLowerCase()])
-  }
-
-  getUser(username) {
-    return this.users[username.toLowerCase()] || null
+  async deleteUser(username) {
+    try {
+      const result = await User.deleteOne({ username: username.toLowerCase() })
+      return result.deletedCount > 0
+    } catch (error) {
+      console.error('Failed to delete user:', error)
+      return false
+    }
   }
 }
 

@@ -6,6 +6,7 @@ const SocketHandlers = require("./socketHandlers")
 const authRoutes = require("./auth/authRoutes")
 const { requireAuth } = require("./auth/authMiddleware")
 const { verifyToken } = require("./auth/authUtils")
+const connectDB = require("./db/connection")
 
 const app = express()
 const server = http.createServer(app)
@@ -41,9 +42,14 @@ io.on("connection", (socket) => {
 })
 
 // API endpoint for scoreboard (protected)
-app.get('/api/scoreboard', requireAuth, (req, res) => {
-    const scoreboardData = socketHandlers.getScoreboardData()
-    res.json(scoreboardData)
+app.get('/api/scoreboard', requireAuth, async (req, res) => {
+    try {
+        const scoreboardData = await socketHandlers.getScoreboardData()
+        res.json(scoreboardData)
+    } catch (error) {
+        console.error('Error getting scoreboard:', error)
+        res.status(500).json({ error: 'Failed to load scoreboard' })
+    }
 })
 
 // Profile route for front-end
@@ -51,6 +57,12 @@ app.get('/api/profile', requireAuth, (req, res) => {
     res.json({ username: req.user.username })
 })
 
-server.listen(port, () => {
-    console.log("Server is up on " + port)
+// Initialize MongoDB connection and start server
+connectDB().then(() => {
+    server.listen(port, () => {
+        console.log("Server is up on " + port)
+    })
+}).catch((error) => {
+    console.error("Failed to start server:", error)
+    process.exit(1)
 })
