@@ -6,6 +6,33 @@ const { requireAuth } = require('./authMiddleware')
 
 const authRouter = express.Router()
 
+/**
+ * Validates password according to project requirements.
+ * @param {string} password - The password to validate
+ * @returns {string|null} - Error message if validation fails, null if valid
+ */
+function validatePassword(password) {
+  if (password.length < 8) {
+    return 'Password must be at least 8 characters long'
+  }
+  
+  if (!/[a-zA-Z]/.test(password)) {
+    return 'Password must contain at least one letter'
+  }
+  
+  if (!/[0-9]/.test(password)) {
+    return 'Password must contain at least one number'
+  }
+  
+  // Check for forbidden special characters
+  const forbiddenChars = /[!@#$%^&*(),.'"?/]/
+  if (forbiddenChars.test(password)) {
+    return 'Password cannot contain special characters (! @ # $ % ^ & * ( ) , . \' " ? /)'
+  }
+  
+  return null
+}
+
 authRouter.post('/register', async (req, res) => {
   const { username, password } = req.body || {}
 
@@ -18,22 +45,9 @@ authRouter.post('/register', async (req, res) => {
   }
 
   // Validate password requirements
-  if (password.length < 8) {
-    return res.status(400).json({ error: 'Password must be at least 8 characters long' })
-  }
-  
-  if (!/[a-zA-Z]/.test(password)) {
-    return res.status(400).json({ error: 'Password must contain at least one letter' })
-  }
-  
-  if (!/[0-9]/.test(password)) {
-    return res.status(400).json({ error: 'Password must contain at least one number' })
-  }
-  
-  // Check for forbidden special characters
-  const forbiddenChars = /[!@#$%^&*(),.'"?/]/
-  if (forbiddenChars.test(password)) {
-    return res.status(400).json({ error: 'Password cannot contain special characters (! @ # $ % ^ & * ( ) , . \' " ? /)' })
+  const passwordError = validatePassword(password)
+  if (passwordError) {
+    return res.status(400).json({ error: passwordError })
   }
 
   const passwordHash = await bcrypt.hash(password, 10)
@@ -126,22 +140,9 @@ authRouter.put('/password', requireAuth, async (req, res) => {
   }
   
   // Validate password requirements
-  if (newPassword.length < 8) {
-    return res.status(400).json({ error: 'Password must be at least 8 characters long' })
-  }
-  
-  if (!/[a-zA-Z]/.test(newPassword)) {
-    return res.status(400).json({ error: 'Password must contain at least one letter' })
-  }
-  
-  if (!/[0-9]/.test(newPassword)) {
-    return res.status(400).json({ error: 'Password must contain at least one number' })
-  }
-  
-  // Check for forbidden special characters
-  const forbiddenChars = /[!@#$%^&*(),.'"?/]/
-  if (forbiddenChars.test(newPassword)) {
-    return res.status(400).json({ error: 'Password cannot contain special characters (! @ # $ % ^ & * ( ) , . \' " ? /)' })
+  const passwordError = validatePassword(newPassword)
+  if (passwordError) {
+    return res.status(400).json({ error: passwordError })
   }
   
   const user = await UserStore.getUser(username)

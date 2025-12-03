@@ -58,7 +58,7 @@ A modern, feature-rich multiplayer gaming platform built with Node.js, Socket.IO
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd multiPlayer-TicTacToe
+   cd Mini-Games
    ```
 
 2. **Install dependencies**

@@ -15,8 +15,8 @@ class SocketHandlers {
     handleConnection(socket) {
         console.log('New web socket connection!');
 
-        // Clean up any stale references for this socket ID
-        this.cleanupSocket(socket.id);
+        // Note: cleanupSocket is intentionally not called here as the socket is brand new.
+        // It's only used for cleaning up stale references in edge cases.
         this.registerOnlineUser(socket);
 
         socket.on('getRooms', () => {
@@ -309,55 +309,10 @@ class SocketHandlers {
             const hadTwoPlayers = room.players.length === 2;
             const leavingPlayer = room.players.find(p => p.socketId === socket.id);
 
-            // If game is in progress and there are 2 players, record winner/loser
+            // If game is in progress and there are 2 players, handle disconnection
             if (wasInProgress && hadTwoPlayers && leavingPlayer) {
-                const remainingPlayer = room.players.find(p => p.socketId !== socket.id);
-                if (remainingPlayer) {
-                    // Remaining player wins, leaving player loses
-                    this.scoreboard.recordGameResult(remainingPlayer.role, room.players).catch(err => {
-                        console.error('Error recording game result on leave:', err);
-                    });
-                    
-                    // Remove remaining player from room and force them to leave
-                    room.removePlayer(remainingPlayer.socketId);
-                    this.socketToRoom.delete(remainingPlayer.socketId);
-                    
-                    // Notify remaining player they won and force them to leave
-                    const remainingSocket = this.io.sockets.sockets.get(remainingPlayer.socketId);
-                    if (remainingSocket) {
-                        remainingSocket.leave(roomId);
-                        remainingSocket.emit('playerDisconnected', { 
-                            username,
-                            winner: remainingPlayer.username,
-                            reason: 'opponent_left',
-                            forceLeave: true
-                        });
-                    }
-                    
-                    // Notify all spectators and force them to leave
-                    room.spectators.forEach(spectator => {
-                        const spectatorSocket = this.io.sockets.sockets.get(spectator.socketId);
-                        if (spectatorSocket) {
-                            this.socketToRoom.delete(spectator.socketId);
-                            spectatorSocket.leave(roomId);
-                            spectatorSocket.emit('playerDisconnected', { 
-                                username,
-                                winner: remainingPlayer.username,
-                                reason: 'opponent_left',
-                                forceLeave: true
-                            });
-                        }
-                    });
-                    
-                    // Delete the room since both players are gone
-                    this.rooms.delete(roomId);
-                    this.broadcastRoomsList();
-                    
-                    // Remove leaving player from room mapping
-                    this.socketToRoom.delete(socket.id);
-                    socket.leave(roomId);
-                    return;
-                }
+                this.handlePlayerDisconnection(socket, roomId, room, username, 'opponent_left');
+                return;
             }
 
             const result = room.removePlayer(socket.id);
@@ -393,73 +348,26 @@ class SocketHandlers {
                 const hadTwoPlayers = room.players.length === 2;
                 const disconnectingPlayer = room.players.find(p => p.socketId === socket.id);
 
-                // If game is in progress and there are 2 players, record winner/loser
+                // If game is in progress and there are 2 players, handle disconnection
                 if (wasInProgress && hadTwoPlayers && disconnectingPlayer) {
-                    const remainingPlayer = room.players.find(p => p.socketId !== socket.id);
-                    if (remainingPlayer) {
-                        // Remaining player wins (their role), disconnected player loses
-                        // We need to record this BEFORE removing the player
-                        this.scoreboard.recordGameResult(remainingPlayer.role, room.players).catch(err => {
-                            console.error('Error recording game result on disconnect:', err);
-                        });
-                        
-                        // Remove remaining player from room and force them to leave
-                        room.removePlayer(remainingPlayer.socketId);
-                        this.socketToRoom.delete(remainingPlayer.socketId);
-                        
-                        // Notify remaining player they won and force them to leave
-                        const remainingSocket = this.io.sockets.sockets.get(remainingPlayer.socketId);
-                        if (remainingSocket) {
-                            remainingSocket.leave(roomId);
-                            remainingSocket.emit('playerDisconnected', { 
-                                username,
-                                winner: remainingPlayer.username,
-                                reason: 'opponent_disconnected',
-                                forceLeave: true
-                            });
-                        }
-                        
-                        // Notify all spectators and force them to leave
-                        room.spectators.forEach(spectator => {
-                            const spectatorSocket = this.io.sockets.sockets.get(spectator.socketId);
-                            if (spectatorSocket) {
-                                this.socketToRoom.delete(spectator.socketId);
-                                spectatorSocket.leave(roomId);
-                                spectatorSocket.emit('playerDisconnected', { 
-                                    username,
-                                    winner: remainingPlayer.username,
-                                    reason: 'opponent_disconnected',
-                                    forceLeave: true
-                                });
+                    this.handlePlayerDisconnection(socket, roomId, room, username, 'opponent_disconnected');
+                } else {
+                    const result = room.removePlayer(socket.id);
+
+                    if (result.removed) {
+                        // If room is now empty (no players, no spectators), delete it immediately
+                        if (room.isEmpty()) {
+                            this.rooms.delete(roomId);
+                            this.broadcastRoomsList();
+                        } else {
+                            // If only one player left and game was in progress, reset game state
+                            if (room.players.length === 1 && wasInProgress) {
+                                room.gameState.gameStatus = 'waiting';
+                                room.resetGameState();
                             }
-                        });
-                        
-                        // Delete the room since both players are gone
-                        this.rooms.delete(roomId);
-                        this.broadcastRoomsList();
-                        
-                        // Remove leaving player from room mapping
-                        this.socketToRoom.delete(socket.id);
-                        socket.leave(roomId);
-                        return;
-                    }
-                }
-
-                const result = room.removePlayer(socket.id);
-
-                if (result.removed) {
-                    // If room is now empty (no players, no spectators), delete it immediately
-                    if (room.isEmpty()) {
-                        this.rooms.delete(roomId);
-                        this.broadcastRoomsList();
-                    } else {
-                        // If only one player left and game was in progress, reset game state
-                        if (room.players.length === 1 && wasInProgress) {
-                            room.gameState.gameStatus = 'waiting';
-                            room.resetGameState();
+                            this.broadcastGameState(roomId);
+                            this.broadcastRoomsList();
                         }
-                        this.broadcastGameState(roomId);
-                        this.broadcastRoomsList();
                     }
                 }
             }
@@ -509,6 +417,70 @@ class SocketHandlers {
             console.error('Error getting scoreboard data:', error);
             return [];
         }
+    }
+
+    /**
+     * Handles player disconnection during an active game with 2 players.
+     * Records the game result, notifies remaining player and spectators, and cleans up the room.
+     * @param {Socket} socket - The socket of the disconnecting player
+     * @param {string} roomId - The ID of the room
+     * @param {GameRoom} room - The game room object
+     * @param {string} username - The username of the disconnecting player
+     * @param {string} reason - The reason for disconnection ('opponent_left' or 'opponent_disconnected')
+     */
+    handlePlayerDisconnection(socket, roomId, room, username, reason) {
+        const remainingPlayer = room.players.find(p => p.socketId !== socket.id);
+        if (!remainingPlayer) {
+            // No remaining player found, just clean up
+            room.removePlayer(socket.id);
+            this.socketToRoom.delete(socket.id);
+            socket.leave(roomId);
+            return;
+        }
+
+        // Remaining player wins, disconnecting player loses
+        this.scoreboard.recordGameResult(remainingPlayer.role, room.players).catch(err => {
+            console.error(`Error recording game result on ${reason}:`, err);
+        });
+        
+        // Remove remaining player from room and force them to leave
+        room.removePlayer(remainingPlayer.socketId);
+        this.socketToRoom.delete(remainingPlayer.socketId);
+        
+        // Notify remaining player they won and force them to leave
+        const remainingSocket = this.io.sockets.sockets.get(remainingPlayer.socketId);
+        if (remainingSocket) {
+            remainingSocket.leave(roomId);
+            remainingSocket.emit('playerDisconnected', { 
+                username,
+                winner: remainingPlayer.username,
+                reason,
+                forceLeave: true
+            });
+        }
+        
+        // Notify all spectators and force them to leave
+        room.spectators.forEach(spectator => {
+            const spectatorSocket = this.io.sockets.sockets.get(spectator.socketId);
+            if (spectatorSocket) {
+                this.socketToRoom.delete(spectator.socketId);
+                spectatorSocket.leave(roomId);
+                spectatorSocket.emit('playerDisconnected', { 
+                    username,
+                    winner: remainingPlayer.username,
+                    reason,
+                    forceLeave: true
+                });
+            }
+        });
+        
+        // Delete the room since both players are gone
+        this.rooms.delete(roomId);
+        this.broadcastRoomsList();
+        
+        // Remove leaving player from room mapping
+        this.socketToRoom.delete(socket.id);
+        socket.leave(roomId);
     }
 
     handleGameFinished(roomId, room) {
@@ -566,6 +538,15 @@ class SocketHandlers {
         }, 3000);
     }
 
+    /**
+     * Cleans up stale socket references (for edge cases like socket ID collisions).
+     * Note: This method is kept for potential edge cases but is not currently used
+     * in normal flow since handlePlayerDisconnection handles active game disconnections
+     * and the disconnect handler handles all other cases.
+     * 
+     * @param {string} socketId - The socket ID to clean up
+     * @deprecated Not currently used - kept for edge cases only
+     */
     cleanupSocket(socketId) {
         // Remove from any rooms
         const roomId = this.socketToRoom.get(socketId);
