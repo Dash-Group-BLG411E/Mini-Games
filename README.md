@@ -1,36 +1,44 @@
-# 🎮 Multiplayer Tic Tac Toe
+# 🎮 Multiplayer Mini-Games Platform
 
-A modern, feature-rich multiplayer Tic Tac Toe game built with Node.js, Socket.IO, and vanilla JavaScript.
+A modern, feature-rich multiplayer gaming platform built with Node.js, Socket.IO, MongoDB, and vanilla JavaScript. Play Tic Tac Toe, Rock Paper Scissors, and Memory Match with friends in real-time!
 
 ## ✨ Features
 
 ### 🎯 Core Game Features
-- **Username Support**: Players must enter a unique username before playing
+- **User Authentication**: Secure registration and login system with JWT tokens
 - **Spectator Mode**: Watch ongoing games when rooms are full
 - **Real-time Multiplayer**: Play with friends using Socket.IO
 - **Game State Persistence**: All game states are synchronized across players and spectators
+- **Online Users Tracking**: See who's online in the lobby
 
-### 🔐 Authentication
-- **Register & Login**: Use the new forms to create an account (`POST /api/auth/register`) or authenticate (`POST /api/auth/login`)
+### 🔐 Authentication & User Management
+- **Register & Login**: Secure account creation and authentication with password hashing
 - **JWT Tokens**: Tokens are stored in `localStorage` and automatically sent with Socket.IO handshakes and protected API requests
-- **Protected Views**: Lobby, game, and scoreboard views require a valid token and the logout button clears the session
+- **Protected Views**: Lobby, game, and scoreboard views require a valid token
+- **Profile Management**: Update display name and avatar
+- **Password Management**: Change password with validation requirements
+- **Account Deletion**: Delete your account and all associated data
+- **Password Requirements**: Minimum 8 characters, must contain letters and numbers, no special characters
 
 ### 🕹️ Mini-Games
-- **Tic Tac Toe**: The flagship two-player game now runs inside authenticated rooms.
-- **Rock Paper Scissors**: Pick this mode when creating rooms to play quick rounds.
-- **Memory Match**: Coming soon—server-controlled card flips and turn tracking.
+- **Tic Tac Toe**: Best-of-3 rounds format - first player to win 3 rounds wins the game. Classic 3x3 grid gameplay with alternating turns.
+- **Rock Paper Scissors**: First-to-5 wins format - compete in multiple rounds until one player reaches 5 wins. Quick and exciting gameplay.
+- **Memory Match**: Flip cards to find matching pairs! Turn-based multiplayer with score tracking. First player to find all matches wins.
 
 ### 🏠 Live Room Lobby
-- **Room Browser**: View all active rooms with player counts and game status
+- **Room Browser**: View all active rooms with player counts, game status, and game type
 - **Smart Joining**: Join as a player (if space available) or as a spectator
-- **Room Creation**: Create custom-named rooms or use auto-generated room IDs
+- **Room Creation**: Create custom-named rooms with your choice of game type (Tic Tac Toe, Rock Paper Scissors, or Memory Match)
 - **Live Updates**: Real-time updates when players join/leave rooms
+- **Lobby Chat**: Chat with all online players in the lobby
+- **Room Chat**: Private chat within game rooms for players and spectators
 
 ### 🏆 Scoreboard System
-- **Win/Loss/Draw Tracking**: Automatic tracking of all game results
+- **Win/Loss/Draw Tracking**: Automatic tracking of all game results across all game types
 - **Player Statistics**: View wins, losses, draws, total games, and win rate
-- **Top Players Ranking**: See the best players ranked by wins and win rate
-- **Persistent Storage**: Scores are saved to JSON file (easily upgradeable to database)
+- **Top Players Ranking**: See the best players ranked by wins, win rate, and total games
+- **MongoDB Storage**: All scores and user data are persistently stored in MongoDB
+- **Real-time Updates**: Scoreboard updates automatically as games finish
 
 ### 🎨 Modern UI/UX
 - **Beautiful Design**: Modern gradient background with glassmorphism effects
@@ -43,6 +51,7 @@ A modern, feature-rich multiplayer Tic Tac Toe game built with Node.js, Socket.I
 ### Prerequisites
 - Node.js (v14 or higher)
 - npm or yarn
+- MongoDB (local installation or MongoDB Atlas account)
 
 ### Installation
 
@@ -57,12 +66,29 @@ A modern, feature-rich multiplayer Tic Tac Toe game built with Node.js, Socket.I
    npm install
    ```
 
-3. **Start the server**
+3. **Set up MongoDB**
+   - **Option A: Local MongoDB**
+     - Install MongoDB from https://www.mongodb.com/try/download/community
+     - Start MongoDB service
+   - **Option B: MongoDB Atlas (Cloud)**
+     - Sign up at https://www.mongodb.com/cloud/atlas
+     - Create a cluster and get your connection string
+
+4. **Configure environment variables**
+   Create a `.env` file in the `Mini-Games` directory:
+   ```env
+   MONGODB_URI=mongodb://localhost:27017/minigames
+   # Or for MongoDB Atlas:
+   # MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/minigames
+   PORT=3000
+   ```
+
+5. **Start the server**
    ```bash
    npm start
    ```
 
-4. **Open your browser**
+6. **Open your browser**
    Navigate to `http://localhost:3000`
 
 ### Development Mode
@@ -76,31 +102,47 @@ npm run dev
 ## 🎮 How to Play
 
 ### First Time Setup
-1. **Register or Login**: Use the authentication view to create an account or log in
-2. **Token is Saved**: Your JWT token is stored locally for future sessions
+1. **Register**: Create a new account with a unique username and password (minimum 8 characters, must contain letters and numbers)
+2. **Login**: Use your credentials to log in (token is saved automatically for future sessions)
+3. **Profile**: Optionally update your display name and avatar in your profile settings
 
 ### Playing a Game
-1. **View Lobby**: See all available rooms and their status
-2. **Create Room**: Click "Create Room" to start a new game room
+1. **View Lobby**: See all available rooms, online users, and chat with others
+2. **Create Room**: Click "Create Room" to start a new game room (choose game type: Tic Tac Toe, Rock Paper Scissors, or Memory Match)
 3. **Join Room**: Click "Join as Player" on any room with available space
 4. **Watch Games**: Click "Watch as Spectator" to observe ongoing games
-5. **Make Moves**: Click on empty cells to place your X or O
-6. **Play Again**: After a game ends, click "Play Again" to restart
+5. **Gameplay**:
+   - **Tic Tac Toe**: Click on empty cells to place your X or O. First to win 3 rounds wins the game.
+   - **Rock Paper Scissors**: Select your choice each round. First to 5 wins wins the game.
+   - **Memory Match**: Click cards to flip them and find matching pairs. Take turns with your opponent.
+6. **Chat**: Use lobby chat or room chat to communicate with other players
+7. **Play Again**: After a game ends, both players can vote to restart
 
 ### Viewing Scores
 1. **In-Game**: Click "View Scoreboard" from the lobby
 2. **Dedicated Page**: Visit `/scoreboard` for a full-page scoreboard view (requires login)
 3. **Statistics**: See wins, losses, draws, total games, and win rate for each player
+4. **Rankings**: Players are ranked by wins, then win rate, then total games
 
 ## 🏗️ Architecture
 
 ### Backend Structure
 ```
 src/
-├── index.js           # Main server file with Express and Socket.IO setup
-├── GameRoom.js        # GameRoom class managing individual game instances
-├── SocketHandlers.js  # Modular socket event handling
-└── Scoreboard.js      # Score tracking and statistics management
+├── index.js              # Main server file with Express and Socket.IO setup
+├── GameRoom.js           # GameRoom class managing individual game instances
+├── socketHandlers.js     # Modular socket event handling
+├── Scoreboard.js         # Score tracking and statistics management
+├── auth/
+│   ├── authRoutes.js     # Authentication API routes (register, login, profile)
+│   ├── authMiddleware.js # JWT authentication middleware
+│   ├── authUtils.js      # JWT token generation and verification
+│   └── UserStore.js      # User data management with MongoDB
+├── db/
+│   └── connection.js     # MongoDB connection setup
+└── models/
+    ├── User.js           # User MongoDB model
+    └── GameStats.js      # Game statistics MongoDB model
 ```
 
 ### Frontend Structure
@@ -127,19 +169,25 @@ public/
 - Score tracking integration
 
 #### Scoreboard Class
-- Persistent score storage (JSON file)
+- Persistent score storage with MongoDB
 - Statistics calculation and ranking
 - API endpoint for scoreboard data
+- Automatic win/loss/draw tracking across all game types
 
 ## 🔧 Configuration
 
 ### Environment Variables
+Create a `.env` file in the `Mini-Games` directory:
+- `MONGODB_URI`: MongoDB connection string (required)
+  - Local: `mongodb://localhost:27017/minigames`
+  - Atlas: `mongodb+srv://username:password@cluster.mongodb.net/minigames`
 - `PORT`: Server port (default: 3000)
 
 ### Customization
-- **Room ID Generation**: Modify `generateRoomId()` in SocketHandlers.js
-- **Score Storage**: Replace JSON file storage with database in Scoreboard.js
+- **Room ID Generation**: Modify `generateRoomId()` in socketHandlers.js
+- **Game Rules**: Adjust win conditions in GameRoom.js (e.g., TTT rounds, RPS wins needed)
 - **UI Themes**: Customize colors and styling in style.css
+- **Chat Limits**: Adjust `maxLobbyMessages` in socketHandlers.js
 
 ## 🌟 Features in Detail
 
@@ -156,36 +204,49 @@ public/
 - Game status tracking (waiting, in-progress, finished)
 
 ### Score System
-- Automatic game result recording
+- Automatic game result recording for all game types
 - Win rate calculations
-- Player ranking algorithms
-- Persistent storage with JSON backup
+- Player ranking algorithms (by wins, win rate, total games)
+- Persistent storage with MongoDB
+- Handles disconnections and early game exits
 
 ## 🔮 Future Enhancements
 
-- **Database Integration**: Replace JSON storage with MongoDB/PostgreSQL
-- **User Authentication**: Add login/logout functionality
 - **Tournament Mode**: Organize tournaments with brackets
 - **Custom Game Rules**: Allow custom board sizes or win conditions
-- **Chat System**: Add in-game chat for players and spectators
 - **Replay System**: Save and replay completed games
 - **Mobile App**: React Native or Flutter mobile application
+- **Friend System**: Add friends and invite them to games
+- **Achievements**: Unlock achievements and badges
+- **Game History**: View detailed history of past games
+- **Private Rooms**: Password-protected private game rooms
 
 ## 🐛 Troubleshooting
 
 ### Common Issues
 
-1. **Username Already Taken**
-   - Choose a different username
-   - Refresh the page to clear cached usernames
+1. **MongoDB Connection Error**
+   - Make sure MongoDB is running (local) or your Atlas connection string is correct
+   - Check your `.env` file has the correct `MONGODB_URI`
+   - See `MONGODB_SETUP.md` for detailed setup instructions
 
-2. **Room Not Found**
-   - Room may have been deleted due to inactivity
+2. **Username Already Taken**
+   - Choose a different username during registration
+   - Usernames are case-insensitive and must be unique
+
+3. **Password Validation Error**
+   - Password must be at least 8 characters
+   - Must contain at least one letter and one number
+   - Cannot contain special characters (! @ # $ % ^ & * ( ) , . ' " ? /)
+
+4. **Room Not Found**
+   - Room may have been deleted due to inactivity or game completion
    - Create a new room or join an existing one
 
-3. **Connection Issues**
+5. **Connection Issues**
    - Check your internet connection
    - Ensure the server is running
+   - Verify your JWT token is valid (try logging out and back in)
    - Try refreshing the page
 
 ### Server Issues
@@ -206,6 +267,15 @@ public/
    npm install
    ```
 
+3. **MongoDB Connection Issues**
+   - **Local MongoDB**: Ensure MongoDB service is running
+     - Windows: Check Services or run `mongod`
+     - Linux/Mac: `sudo systemctl start mongod` or `mongod`
+   - **MongoDB Atlas**: Verify your connection string in `.env`
+     - Check your IP whitelist in Atlas dashboard
+     - Verify username and password are correct
+   - See `MONGODB_SETUP.md` for detailed troubleshooting
+
 ## 📝 License
 
 This project is open source and available under the [MIT License](LICENSE).
@@ -214,8 +284,20 @@ This project is open source and available under the [MIT License](LICENSE).
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+## 📚 Additional Documentation
+
+- **MongoDB Setup**: See `MONGODB_SETUP.md` for detailed database configuration instructions
+
+## 🛠️ Technology Stack
+
+- **Backend**: Node.js, Express.js
+- **Real-time Communication**: Socket.IO
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT (JSON Web Tokens) with bcryptjs
+- **Frontend**: Vanilla JavaScript, HTML5, CSS3
+
 ---
 
-**Enjoy playing Multiplayer Tic Tac Toe! 🎉**
+**Enjoy playing Multiplayer Mini-Games! 🎉**
 
 
