@@ -8,6 +8,8 @@ class GameRoom {
         this.restartVotes = new Set();
         this.rpsChoices = {};
         this.rpsRound = 1;
+        this.rpsScores = { X: 0, O: 0 };
+        this.tttScores = { X: 0, O: 0 };
         this.memoryState = null;
         this.gameState = {};
         this.resetGameState();
@@ -28,7 +30,11 @@ class GameRoom {
             lastStarter: 'X'
         };
         this.resetRpsChoices();
+        if (this.gameType === 'tic-tac-toe') {
+            this.tttScores = { X: 0, O: 0 };
+        }
         if (this.gameType === 'memory-match') {
+            // Always initialize memory state for memory match games
             this.initMemoryState();
         } else {
             this.memoryState = null;
@@ -37,6 +43,16 @@ class GameRoom {
 
     resetRpsChoices() {
         this.rpsChoices = {};
+    }
+
+    resetRpsGame() {
+        this.rpsChoices = {};
+        this.rpsRound = 1;
+        this.rpsScores = { X: 0, O: 0 };
+    }
+
+    resetTttGame() {
+        this.tttScores = { X: 0, O: 0 };
     }
 
     addPlayer(socketId, username) {
@@ -57,10 +73,13 @@ class GameRoom {
             if (this.gameType === 'tic-tac-toe') {
                 this.gameState.currentPlayer = 'X';
             } else if (this.gameType === 'rock-paper-scissors') {
-                this.resetRpsChoices();
+                this.resetRpsGame();
             } else if (this.gameType === 'memory-match') {
                 this.initMemoryState();
             }
+        } else if (this.players.length === 1 && this.gameType === 'memory-match') {
+            // Initialize memory state even with one player so they can see the board
+            this.initMemoryState();
         }
 
         return { success: true, player };
@@ -116,23 +135,49 @@ class GameRoom {
 
         this.gameState.board[cellId] = move;
         const result = this.checkWin();
+        let roundOver = false;
+        let roundWinner = null;
+        let gameOver = false;
+        let gameWinner = null;
+        
         if (result.winner) {
-            this.gameState.gameStatus = 'finished';
-            this.gameState.winner = result.winner;
-            return { success: true, move, gameOver: true, winner: result.winner };
+            roundOver = true;
+            roundWinner = result.winner;
+            this.tttScores[result.winner] += 1;
+            
+            // Check for game over (first to 3 wins)
+            if (this.tttScores[result.winner] >= 3) {
+                gameOver = true;
+                gameWinner = result.winner;
+                this.gameState.gameStatus = 'finished';
+                this.gameState.winner = result.winner;
+            } else {
+                // Round is over, but game continues - reset board for next round
+                this.gameState.board = Array(9).fill('');
+                this.gameState.currentPlayer = this.gameState.lastStarter === 'X' ? 'O' : 'X';
+                this.gameState.lastStarter = this.gameState.currentPlayer;
+            }
+            return { success: true, move, roundOver, roundWinner, gameOver, gameWinner, scores: { ...this.tttScores } };
         } else if (result.draw) {
-            this.gameState.gameStatus = 'finished';
-            this.gameState.winner = 'draw';
-            return { success: true, move, gameOver: true, winner: 'draw' };
+            roundOver = true;
+            roundWinner = 'draw';
+            // Draw - reset board for next round, same starter
+            this.gameState.board = Array(9).fill('');
+            return { success: true, move, roundOver, roundWinner, gameOver: false, scores: { ...this.tttScores } };
         }
 
         this.gameState.currentPlayer = this.gameState.currentPlayer === 'X' ? 'O' : 'X';
-        return { success: true, move, gameOver: false };
+        return { success: true, move, gameOver: false, scores: { ...this.tttScores } };
     }
 
     submitRpsChoice(socketId, choice) {
         if (this.gameType !== 'rock-paper-scissors') {
             return { error: 'Room is not running Rock Paper Scissors' };
+        }
+
+        // Check if game is already finished
+        if (this.gameState.gameStatus === 'finished') {
+            return { error: 'Game is already finished' };
         }
 
         const player = this.players.find(p => p.socketId === socketId);
@@ -151,22 +196,47 @@ class GameRoom {
         const winnerPlayer = this.players.find(p => p.role === winnerRole);
         const winnerUsername = winnerRole === 'draw' ? null : winnerPlayer?.username || null;
 
-        this.resetRpsChoices();
+        // Update scores
+        if (winnerRole !== 'draw') {
+            this.rpsScores[winnerRole] += 1;
+        }
+
         const round = this.rpsRound;
         this.rpsRound += 1;
 
-        this.gameState.winner = winnerRole;
+        // Check for game over (first to 5 wins)
+        let gameOver = false;
+        let gameWinner = null;
+        if (this.rpsScores.X >= 5) {
+            gameOver = true;
+            gameWinner = 'X';
+            this.gameState.gameStatus = 'finished';
+            this.gameState.winner = 'X';
+        } else if (this.rpsScores.O >= 5) {
+            gameOver = true;
+            gameWinner = 'O';
+            this.gameState.gameStatus = 'finished';
+            this.gameState.winner = 'O';
+        }
+
+        // Reset choices for next round (if game not over)
+        if (!gameOver) {
+            this.resetRpsChoices();
+        }
 
         return {
             choices: { X: choiceX, O: choiceO },
             winnerRole,
             winnerUsername,
-            round
+            round,
+            scores: { ...this.rpsScores },
+            gameOver,
+            gameWinner: gameWinner ? (this.players.find(p => p.role === gameWinner)?.username || null) : null
         };
     }
 
     initMemoryState() {
-        const pairs = ['🍎','🍌','🍒','🥝','🍇','🍋'];
+        const pairs = ['🍎','🍌','🍒','🥝','🍇','🍋','🍊','🍑','🥭'];
         const deck = [...pairs, ...pairs];
         for (let i = deck.length -1; i>0; i--) {
             const j = Math.floor(Math.random()* (i+1));
@@ -195,8 +265,23 @@ class GameRoom {
         if (!player) {
             return { error: 'Player not in room' };
         }
-        if (this.memoryState.gameStatus === 'finished') {
+        // Prevent flipping if waiting for second player
+        if (this.players.length < 2) {
+            return { error: 'Waiting for second player to start the game' };
+        }
+        if (this.gameState.gameStatus === 'waiting') {
+            return { error: 'Game has not started yet' };
+        }
+        if (this.gameState.gameStatus === 'finished') {
             return { error: 'Game finished' };
+        }
+        // Check if it's the player's turn (for multiplayer)
+        if (this.players.length === 2 && this.memoryState.turnRole !== player.role) {
+            return { error: 'Not your turn' };
+        }
+        // Prevent flipping more than 2 cards at a time
+        if (this.memoryState.flipped.length >= 2) {
+            return { error: 'Already flipped 2 cards, wait for result' };
         }
         const card = this.memoryState.cards[cardId];
         if (!card || card.revealed || card.matched) {
@@ -298,7 +383,13 @@ class GameRoom {
         this.gameState.currentPlayer = 'X';
         this.gameState.winner = null;
         this.restartVotes.clear();
-        this.resetRpsChoices();
+        if (this.gameType === 'rock-paper-scissors') {
+            this.resetRpsGame();
+        } else if (this.gameType === 'tic-tac-toe') {
+            this.resetTttGame();
+        } else {
+            this.resetRpsChoices();
+        }
     }
 
     getRoomInfo() {
@@ -318,8 +409,9 @@ class GameRoom {
         return {
             ...this.gameState,
             gameType: this.gameType,
-            players: this.players.map(p => ({ username: p.username, role: p.role }))
-            ,
+            players: this.players.map(p => ({ username: p.username, role: p.role })),
+            rpsScores: this.gameType === 'rock-paper-scissors' ? { ...this.rpsScores } : null,
+            tttScores: this.gameType === 'tic-tac-toe' ? { ...this.tttScores } : null,
             memoryState: this.memoryState ? {
                 cards: this.memoryState.cards.map(card => ({
                     id: card.id,

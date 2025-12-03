@@ -20,7 +20,9 @@ class SocketHandlers {
         this.registerOnlineUser(socket);
 
         socket.on('getRooms', () => {
-            const roomsList = Array.from(this.rooms.values()).map(room => room.getRoomInfo());
+            const roomsList = Array.from(this.rooms.values())
+                .map(room => room.getRoomInfo())
+                .filter(room => room.gameStatus !== 'finished');
             socket.emit('roomsList', roomsList);
         });
 
@@ -61,7 +63,14 @@ class SocketHandlers {
                 result
             });
             if (result && result.winnerRole) {
-                this.scoreboard.recordGameResult(result.winnerRole, room.players);
+                this.scoreboard.recordGameResult(result.winnerRole, room.players).catch(err => {
+                    console.error('Error recording game result:', err);
+                });
+                // Check if game is finished (memory match game ends when winnerRole is set)
+                if (room.gameState.gameStatus === 'finished') {
+                    // Notify spectators to leave after 3 seconds
+                    this.handleGameFinished(roomId, room);
+                }
             }
             if (result && result.pendingCards) {
                 setTimeout(() => {
@@ -94,7 +103,9 @@ class SocketHandlers {
                 this.rooms.set(roomId, room);
                 this.socketToRoom.set(socket.id, roomId);
                 socket.join(roomId);
-                socket.emit('roomCreated', { roomId, player: result.player, gameType: room.gameType });
+                // Broadcast game state so memory board appears even with one player
+                this.broadcastGameState(roomId);
+                socket.emit('roomCreated', { roomId, roomName: room.roomName, player: result.player, gameType: room.gameType });
                 this.broadcastRoomsList();
             } else {
                 socket.emit('error', result.error);
@@ -120,6 +131,12 @@ class SocketHandlers {
             console.log(`User ${username} trying to join room ${roomId} as ${asSpectator ? 'spectator' : 'player'}`);
             console.log(`Room has ${room.players.length} players and ${room.spectators.length} spectators`);
             console.log(`Game status: ${room.gameState.gameStatus}`);
+            
+            // Prevent joining finished games (both players and spectators)
+            if (room.gameState.gameStatus === 'finished') {
+                if (callback) callback('Game has finished');
+                return;
+            }
             
             // Check if user is already in this room
             const existingPlayer = room.players.find(p => p.socketId === socket.id);
@@ -164,6 +181,7 @@ class SocketHandlers {
                 if (result.success) {
                     socket.emit('playersRole', { 
                         role: result.player.role,
+                        roomName: room.roomName,
                         players: room.players.map(p => ({ username: p.username, role: p.role })),
                         gameType: room.gameType
                     });
@@ -200,9 +218,21 @@ class SocketHandlers {
             
             if (result.success) {
                 this.broadcastGameState(roomId);
-                if (result.gameOver) {
-                    this.scoreboard.recordGameResult(result.winner, room.players);
+                // Send round result if round ended but game continues
+                if (result.roundOver && !result.gameOver) {
+                    this.io.to(roomId).emit('tttRoundResult', {
+                        roundWinner: result.roundWinner,
+                        scores: result.scores
+                    });
+                }
+                // Only record final game result (first to 3 wins), not individual rounds
+                if (result.gameOver && result.gameWinner) {
+                    this.scoreboard.recordGameResult(result.gameWinner, room.players).catch(err => {
+                        console.error('Error recording game result:', err);
+                    });
                     this.broadcastRoomsList();
+                    // Notify spectators to leave after 3 seconds
+                    this.handleGameFinished(roomId, room);
                 }
             } else {
                 socket.emit('moveError', result.error);
@@ -222,7 +252,21 @@ class SocketHandlers {
                 return;
             }
             this.io.to(roomId).emit('rpsResult', result);
-            this.scoreboard.recordGameResult(result.winnerRole, room.players);
+            // Only record final game result, not individual rounds
+            if (result.gameOver && result.gameWinner) {
+                // Find winner role by matching username
+                const winnerPlayer = room.players.find(p => p.username === result.gameWinner);
+                if (winnerPlayer) {
+                    this.scoreboard.recordGameResult(winnerPlayer.role, room.players).catch(err => {
+                        console.error('Error recording game result:', err);
+                    });
+                }
+                this.broadcastRoomsList();
+                // Notify spectators to leave after 3 seconds
+                this.handleGameFinished(roomId, room);
+            }
+            // Broadcast updated game state with scores
+            this.broadcastGameState(roomId);
         });
 
         socket.on('restartRequest', (roomId) => {
@@ -242,9 +286,101 @@ class SocketHandlers {
             }
         });
 
-        socket.on('getScoreboard', () => {
-            const topPlayers = this.scoreboard.getTopPlayers(20);
-            socket.emit('scoreboardData', topPlayers);
+        socket.on('getScoreboard', async () => {
+            try {
+                const topPlayers = await this.scoreboard.getTopPlayers(20);
+                socket.emit('scoreboardData', topPlayers);
+            } catch (error) {
+                console.error('Error getting scoreboard:', error);
+                socket.emit('scoreboardData', []);
+            }
+        });
+
+        socket.on('leaveRoom', (data) => {
+            const { roomId } = data;
+            const username = socket.user?.username;
+
+            if (!roomId || !this.rooms.has(roomId)) {
+                return;
+            }
+
+            const room = this.rooms.get(roomId);
+            const wasInProgress = room.gameState.gameStatus === 'in-progress';
+            const hadTwoPlayers = room.players.length === 2;
+            const leavingPlayer = room.players.find(p => p.socketId === socket.id);
+
+            // If game is in progress and there are 2 players, record winner/loser
+            if (wasInProgress && hadTwoPlayers && leavingPlayer) {
+                const remainingPlayer = room.players.find(p => p.socketId !== socket.id);
+                if (remainingPlayer) {
+                    // Remaining player wins, leaving player loses
+                    this.scoreboard.recordGameResult(remainingPlayer.role, room.players).catch(err => {
+                        console.error('Error recording game result on leave:', err);
+                    });
+                    
+                    // Remove remaining player from room and force them to leave
+                    room.removePlayer(remainingPlayer.socketId);
+                    this.socketToRoom.delete(remainingPlayer.socketId);
+                    
+                    // Notify remaining player they won and force them to leave
+                    const remainingSocket = this.io.sockets.sockets.get(remainingPlayer.socketId);
+                    if (remainingSocket) {
+                        remainingSocket.leave(roomId);
+                        remainingSocket.emit('playerDisconnected', { 
+                            username,
+                            winner: remainingPlayer.username,
+                            reason: 'opponent_left',
+                            forceLeave: true
+                        });
+                    }
+                    
+                    // Notify all spectators and force them to leave
+                    room.spectators.forEach(spectator => {
+                        const spectatorSocket = this.io.sockets.sockets.get(spectator.socketId);
+                        if (spectatorSocket) {
+                            this.socketToRoom.delete(spectator.socketId);
+                            spectatorSocket.leave(roomId);
+                            spectatorSocket.emit('playerDisconnected', { 
+                                username,
+                                winner: remainingPlayer.username,
+                                reason: 'opponent_left',
+                                forceLeave: true
+                            });
+                        }
+                    });
+                    
+                    // Delete the room since both players are gone
+                    this.rooms.delete(roomId);
+                    this.broadcastRoomsList();
+                    
+                    // Remove leaving player from room mapping
+                    this.socketToRoom.delete(socket.id);
+                    socket.leave(roomId);
+                    return;
+                }
+            }
+
+            const result = room.removePlayer(socket.id);
+
+            if (result.removed) {
+                // If room is now empty, delete it immediately
+                if (room.isEmpty()) {
+                    this.rooms.delete(roomId);
+                    this.broadcastRoomsList();
+                } else {
+                    // If only one player left and game was in progress, reset game state
+                    if (room.players.length === 1 && wasInProgress) {
+                        room.gameState.gameStatus = 'waiting';
+                        room.resetGameState();
+                    }
+                    this.broadcastGameState(roomId);
+                    this.broadcastRoomsList();
+                }
+            }
+
+            // Remove socket from room mapping
+            this.socketToRoom.delete(socket.id);
+            socket.leave(roomId);
         });
 
         socket.on('disconnect', () => {
@@ -253,25 +389,78 @@ class SocketHandlers {
 
             if (roomId && this.rooms.has(roomId)) {
                 const room = this.rooms.get(roomId);
+                const wasInProgress = room.gameState.gameStatus === 'in-progress';
+                const hadTwoPlayers = room.players.length === 2;
+                const disconnectingPlayer = room.players.find(p => p.socketId === socket.id);
+
+                // If game is in progress and there are 2 players, record winner/loser
+                if (wasInProgress && hadTwoPlayers && disconnectingPlayer) {
+                    const remainingPlayer = room.players.find(p => p.socketId !== socket.id);
+                    if (remainingPlayer) {
+                        // Remaining player wins (their role), disconnected player loses
+                        // We need to record this BEFORE removing the player
+                        this.scoreboard.recordGameResult(remainingPlayer.role, room.players).catch(err => {
+                            console.error('Error recording game result on disconnect:', err);
+                        });
+                        
+                        // Remove remaining player from room and force them to leave
+                        room.removePlayer(remainingPlayer.socketId);
+                        this.socketToRoom.delete(remainingPlayer.socketId);
+                        
+                        // Notify remaining player they won and force them to leave
+                        const remainingSocket = this.io.sockets.sockets.get(remainingPlayer.socketId);
+                        if (remainingSocket) {
+                            remainingSocket.leave(roomId);
+                            remainingSocket.emit('playerDisconnected', { 
+                                username,
+                                winner: remainingPlayer.username,
+                                reason: 'opponent_disconnected',
+                                forceLeave: true
+                            });
+                        }
+                        
+                        // Notify all spectators and force them to leave
+                        room.spectators.forEach(spectator => {
+                            const spectatorSocket = this.io.sockets.sockets.get(spectator.socketId);
+                            if (spectatorSocket) {
+                                this.socketToRoom.delete(spectator.socketId);
+                                spectatorSocket.leave(roomId);
+                                spectatorSocket.emit('playerDisconnected', { 
+                                    username,
+                                    winner: remainingPlayer.username,
+                                    reason: 'opponent_disconnected',
+                                    forceLeave: true
+                                });
+                            }
+                        });
+                        
+                        // Delete the room since both players are gone
+                        this.rooms.delete(roomId);
+                        this.broadcastRoomsList();
+                        
+                        // Remove leaving player from room mapping
+                        this.socketToRoom.delete(socket.id);
+                        socket.leave(roomId);
+                        return;
+                    }
+                }
+
                 const result = room.removePlayer(socket.id);
 
                 if (result.removed) {
-                    if (result.type === 'player' && room.players.length === 1) {
-                        // Notify remaining player about disconnection
-                        this.io.to(roomId).emit('playerDisconnected', { 
-                            username,
-                            remainingPlayers: room.players.length 
-                        });
-                    }
-
-                    // If room is empty, remove it
+                    // If room is now empty (no players, no spectators), delete it immediately
                     if (room.isEmpty()) {
                         this.rooms.delete(roomId);
+                        this.broadcastRoomsList();
                     } else {
+                        // If only one player left and game was in progress, reset game state
+                        if (room.players.length === 1 && wasInProgress) {
+                            room.gameState.gameStatus = 'waiting';
+                            room.resetGameState();
+                        }
                         this.broadcastGameState(roomId);
+                        this.broadcastRoomsList();
                     }
-
-                    this.broadcastRoomsList();
                 }
             }
 
@@ -290,7 +479,9 @@ class SocketHandlers {
     }
 
     broadcastRoomsList() {
-        const roomsList = Array.from(this.rooms.values()).map(room => room.getRoomInfo());
+        const roomsList = Array.from(this.rooms.values())
+            .map(room => room.getRoomInfo())
+            .filter(room => room.gameStatus !== 'finished');
         this.io.emit('roomsList', roomsList);
         this.broadcastLobbyUpdate();
     }
@@ -300,7 +491,9 @@ class SocketHandlers {
     }
 
     getLobbyState() {
-        const rooms = Array.from(this.rooms.values()).map(room => room.getRoomInfo());
+        const rooms = Array.from(this.rooms.values())
+            .map(room => room.getRoomInfo())
+            .filter(room => room.gameStatus !== 'finished');
         const users = Array.from(this.onlineUsers.values());
         return { rooms, users };
     }
@@ -309,8 +502,68 @@ class SocketHandlers {
         return Math.floor(100000 + Math.random() * 900000);
     }
 
-    getScoreboardData() {
-        return this.scoreboard.getTopPlayers(20);
+    async getScoreboardData() {
+        try {
+            return await this.scoreboard.getTopPlayers(20);
+        } catch (error) {
+            console.error('Error getting scoreboard data:', error);
+            return [];
+        }
+    }
+
+    handleGameFinished(roomId, room) {
+        // After 3 seconds, redirect all spectators to lobby
+        setTimeout(() => {
+            // Check if room still exists (might have been deleted)
+            if (!this.rooms.has(roomId)) return;
+            
+            const currentRoom = this.rooms.get(roomId);
+            if (!currentRoom) return;
+            
+            // Get winner info for the message
+            const winnerRole = currentRoom.gameState.winner;
+            let winnerUsername = null;
+            let winnerDisplay = null;
+            if (winnerRole && winnerRole !== 'draw') {
+                const winnerPlayer = currentRoom.players.find(p => p.role === winnerRole);
+                winnerUsername = winnerPlayer?.username || null;
+                winnerDisplay = winnerUsername || winnerRole;
+            } else if (winnerRole === 'draw') {
+                winnerDisplay = 'Draw';
+            }
+            
+            // Create a copy of spectators array since we'll be modifying the original
+            const spectatorsToRemove = [...currentRoom.spectators];
+            
+            // Notify all spectators and force them to leave
+            spectatorsToRemove.forEach(spectator => {
+                const spectatorSocket = this.io.sockets.sockets.get(spectator.socketId);
+                if (spectatorSocket) {
+                    // Remove from room mapping
+                    this.socketToRoom.delete(spectator.socketId);
+                    // Remove from socket room
+                    spectatorSocket.leave(roomId);
+                    // Remove from room's spectator list
+                    currentRoom.removePlayer(spectator.socketId);
+                    // Emit gameFinished event
+                    spectatorSocket.emit('gameFinished', { 
+                        roomId,
+                        winner: winnerDisplay || 'Unknown',
+                        reason: 'game_ended',
+                        forceLeave: true
+                    });
+                }
+            });
+            
+            // If room is now empty (no players, no spectators), delete it
+            if (currentRoom.isEmpty()) {
+                this.rooms.delete(roomId);
+                this.broadcastRoomsList();
+            } else {
+                // Update room list to reflect spectator removal
+                this.broadcastRoomsList();
+            }
+        }, 3000);
     }
 
     cleanupSocket(socketId) {
@@ -318,11 +571,32 @@ class SocketHandlers {
         const roomId = this.socketToRoom.get(socketId);
         if (roomId && this.rooms.has(roomId)) {
             const room = this.rooms.get(roomId);
+            const wasInProgress = room.gameState.gameStatus === 'in-progress';
+            const hadTwoPlayers = room.players.length === 2;
+            const disconnectingPlayer = room.players.find(p => p.socketId === socketId);
+
+            // If game is in progress and there are 2 players, record winner/loser
+            if (wasInProgress && hadTwoPlayers && disconnectingPlayer) {
+                const remainingPlayer = room.players.find(p => p.socketId !== socketId);
+                if (remainingPlayer) {
+                    // Remaining player wins, disconnected player loses
+                    this.scoreboard.recordGameResult(remainingPlayer.role, room.players).catch(err => {
+                        console.error('Error recording game result on cleanup:', err);
+                    });
+                }
+            }
+
             room.removePlayer(socketId);
             
+            // If room is now empty, delete it immediately
             if (room.isEmpty()) {
                 this.rooms.delete(roomId);
             } else {
+                // If only one player left and game was in progress, reset game state
+                if (room.players.length === 1 && wasInProgress) {
+                    room.gameState.gameStatus = 'waiting';
+                    room.resetGameState();
+                }
                 this.broadcastGameState(roomId);
             }
         }
