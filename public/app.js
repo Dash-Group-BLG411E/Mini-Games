@@ -2,6 +2,7 @@ class TicTacToeApp {
     constructor() {
         this.token = localStorage.getItem('tictactoe_token');
         this.currentUser = localStorage.getItem('tictactoe_username');
+        this.userRole = localStorage.getItem('tictactoe_role') || 'player';
         this.userProfile = null;
         this.currentRoom = null;
         this.currentRoomName = null;
@@ -43,6 +44,7 @@ class TicTacToeApp {
         this.userAvatarBtn = document.getElementById('user-avatar-btn');
         this.userAvatarDisplay = document.getElementById('user-avatar-display');
         this.userUsernameDisplay = document.getElementById('user-username-display');
+        this.userRoleBadge = document.getElementById('user-role-badge');
         this.userMenuDropdown = document.getElementById('user-menu-dropdown');
         this.profileNavBtn = document.getElementById('profile-nav-btn');
         this.logoutBtn = document.getElementById('logout-btn');
@@ -50,6 +52,7 @@ class TicTacToeApp {
         this.authContainer = document.getElementById('auth-container');
         this.loginForm = document.getElementById('login-form');
         this.registerForm = document.getElementById('register-form');
+        this.guestLoginBtn = document.getElementById('guest-login-btn');
         this.authMessage = document.getElementById('auth-message');
         this.authTabs = document.querySelectorAll('.auth-tab');
 
@@ -187,6 +190,7 @@ class TicTacToeApp {
     setupEventListeners() {
         this.loginForm.addEventListener('submit', (event) => this.submitAuth('login', event));
         this.registerForm.addEventListener('submit', (event) => this.submitAuth('register', event));
+        this.guestLoginBtn?.addEventListener('click', () => this.loginAsGuest());
 
         this.authTabs.forEach(tab => {
             tab.addEventListener('click', () => this.switchAuthTab(tab.dataset.authTarget));
@@ -588,6 +592,34 @@ class TicTacToeApp {
         }
     }
 
+    async loginAsGuest() {
+        const randomSuffix = Math.floor(100000 + Math.random() * 900000);
+        const username = `guest-${randomSuffix}`;
+        const password = `guest-${randomSuffix}-${Date.now()}`;
+
+        try {
+            // Use existing register endpoint with role=guest; no separate guest API
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password, role: 'guest' })
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                const message = data.error || 'Unable to start guest session.';
+                this.showAuthMessage(message);
+                return;
+            }
+
+            this.showAuthMessage('Guest session created.');
+            this.afterAuthentication(data);
+        } catch (error) {
+            console.error('Guest login error:', error);
+            this.showAuthMessage('Unable to reach the server.');
+        }
+    }
+
     async submitAuth(action, event) {
         event.preventDefault();
         const form = event.target;
@@ -639,12 +671,20 @@ class TicTacToeApp {
     async afterAuthentication(data) {
         this.token = data.token;
         this.currentUser = data.username;
+        this.userRole = data.role || 'player';
         localStorage.setItem('tictactoe_token', this.token);
         localStorage.setItem('tictactoe_username', this.currentUser);
+        localStorage.setItem('tictactoe_role', this.userRole);
         this.showAuthMessage('');
-        await this.loadUserProfile();
-        this.initializeSocket();
+
+        // Show lobby immediately; profile load is best-effort so UI doesn’t stay hidden
         this.showLobby();
+        this.initializeSocket();
+        try {
+            await this.loadUserProfile();
+        } catch (e) {
+            console.error('Profile load failed (non-blocking):', e);
+        }
     }
 
     logout() {
@@ -654,6 +694,7 @@ class TicTacToeApp {
         }
         this.token = null;
         this.currentUser = null;
+        this.userRole = 'player';
         this.currentRoom = null;
         this.gameState = null;
         this.myRole = null;
@@ -661,6 +702,7 @@ class TicTacToeApp {
         this.disableBeforeUnloadWarning();
         localStorage.removeItem('tictactoe_token');
         localStorage.removeItem('tictactoe_username');
+        localStorage.removeItem('tictactoe_role');
         this.updateLeaveButtonVisibility();
         if (this.roomInfoBox) {
             this.roomInfoBox.classList.add('hidden');
@@ -981,6 +1023,10 @@ class TicTacToeApp {
     }
 
     showRoomNameModal(gameType) {
+        if (this.userRole === 'guest') {
+            this.showNotification('Guests can spectate and chat. Please register or log in to create rooms.');
+            return;
+        }
         this.pendingGameType = gameType;
         this.modalRoomNameInput.value = '';
         this.roomNameModal.classList.remove('hidden');
@@ -993,6 +1039,10 @@ class TicTacToeApp {
     }
 
     createRoom(gameType) {
+        if (this.userRole === 'guest') {
+            this.showNotification('Guests can spectate and chat. Please register or log in to create rooms.');
+            return;
+        }
         const roomName = this.modalRoomNameInput.value.trim() || `Room ${Math.floor(Math.random() * 1000)}`;
         const normalizedType = (gameType || this.selectedLobbyGameType || 'tic-tac-toe')
             .toLowerCase()
@@ -1016,6 +1066,10 @@ class TicTacToeApp {
     }
 
     joinRoom(roomId, asSpectator = false) {
+        if (this.userRole === 'guest' && !asSpectator) {
+            this.showNotification('Guests can only join as spectators. Please register or log in to play.');
+            return;
+        }
         if (!this.socket || !roomId) return;
         this.currentRoom = roomId;
         this.socket.emit('joinRoom', { roomId, asSpectator }, (error) => {
@@ -1205,6 +1259,8 @@ class TicTacToeApp {
             });
             if (response.ok) {
                 this.userProfile = await response.json();
+                this.userRole = this.userProfile.role || this.userRole || 'player';
+                localStorage.setItem('tictactoe_role', this.userRole);
                 this.updateUserAvatarDisplay();
             }
         } catch (error) {
@@ -1221,6 +1277,15 @@ class TicTacToeApp {
         }
         if (this.userProfile && this.userUsernameDisplay) {
             this.userUsernameDisplay.textContent = this.userProfile.username || '';
+        }
+        if (this.userRoleBadge) {
+            if (this.userRole) {
+                this.userRoleBadge.textContent = this.userRole;
+                this.userRoleBadge.classList.remove('hidden');
+            } else {
+                this.userRoleBadge.classList.add('hidden');
+                this.userRoleBadge.textContent = '';
+            }
         }
     }
 
@@ -1530,6 +1595,7 @@ class TicTacToeApp {
             const roomElement = document.createElement('div');
             roomElement.className = 'room-item';
             const canJoinAsPlayer = room.playerCount < 2 && room.gameStatus === 'waiting';
+            const isGuest = this.userRole === 'guest';
 
             roomElement.innerHTML = `
                 <div class="room-info">
@@ -1537,7 +1603,13 @@ class TicTacToeApp {
                     <p>Game: ${this.formatGameType(room.gameType)} | Players: ${room.playerCount}/2 | Spectators: ${room.spectatorCount} | Status: ${room.gameStatus}</p>
                 </div>
                 <div class="room-actions">
-                    ${canJoinAsPlayer ? `<button onclick="app.joinRoom(${room.roomId}, false)" class="join-btn">Join as Player</button>` : `<button disabled class="join-btn disabled">Room Full</button>`}
+                    ${
+                        isGuest
+                            ? `<button disabled class="join-btn disabled">Players only</button>`
+                            : canJoinAsPlayer
+                                ? `<button onclick="app.joinRoom(${room.roomId}, false)" class="join-btn">Join as Player</button>`
+                                : `<button disabled class="join-btn disabled">Room Full</button>`
+                    }
                     <button onclick="app.joinRoom(${room.roomId}, true)" class="spectate-btn">Join as Spectator</button>
                 </div>
             `;

@@ -4,7 +4,7 @@ const express = require("express")
 const socketio = require("socket.io")
 const SocketHandlers = require("./socketHandlers")
 const authRoutes = require("./auth/authRoutes")
-const { requireAuth } = require("./auth/authMiddleware")
+const { requireAuth, requireRole } = require("./auth/authMiddleware")
 const { verifyToken } = require("./auth/authUtils")
 const connectDB = require("./db/connection")
 
@@ -29,7 +29,10 @@ io.use((socket, next) => {
 
     try {
         const payload = verifyToken(token)
-        socket.user = payload
+        socket.user = {
+            username: payload.username,
+            role: payload.role || 'player'
+        }
         next()
     } catch (err) {
         next(new Error("Authentication error"))
@@ -42,7 +45,7 @@ io.on("connection", (socket) => {
 })
 
 // API endpoint for scoreboard (protected)
-app.get('/api/scoreboard', requireAuth, async (req, res) => {
+app.get('/api/scoreboard', requireAuth, requireRole('admin', 'player', 'guest'), async (req, res) => {
     try {
         const scoreboardData = await socketHandlers.getScoreboardData()
         res.json(scoreboardData)
@@ -53,8 +56,8 @@ app.get('/api/scoreboard', requireAuth, async (req, res) => {
 })
 
 // Profile route for front-end
-app.get('/api/profile', requireAuth, (req, res) => {
-    res.json({ username: req.user.username })
+app.get('/api/profile', requireAuth, requireRole('admin', 'player', 'guest'), (req, res) => {
+    res.json({ username: req.user.username, role: req.user.role || 'player' })
 })
 
 // Initialize MongoDB connection and start server

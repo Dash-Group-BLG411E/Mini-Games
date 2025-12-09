@@ -5,6 +5,7 @@ const { generateToken } = require('./authUtils')
 const { requireAuth } = require('./authMiddleware')
 
 const authRouter = express.Router()
+const allowedRegistrationRoles = ['player', 'guest']
 
 /**
  * Validates password according to project requirements.
@@ -34,7 +35,7 @@ function validatePassword(password) {
 }
 
 authRouter.post('/register', async (req, res) => {
-  const { username, password } = req.body || {}
+  const { username, password, role: requestedRole } = req.body || {}
 
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required' })
@@ -52,9 +53,13 @@ authRouter.post('/register', async (req, res) => {
 
   const passwordHash = await bcrypt.hash(password, 10)
   try {
-    await UserStore.addUser(username, passwordHash)
-    const token = generateToken({ username })
-    res.json({ username, token })
+    const role = allowedRegistrationRoles.includes((requestedRole || '').toLowerCase())
+      ? requestedRole.toLowerCase()
+      : 'player'
+
+    await UserStore.addUser(username, passwordHash, role)
+    const token = generateToken({ username, role })
+    res.json({ username, role, token })
   } catch (error) {
     if (error.message === 'Username already exists') {
       return res.status(400).json({ error: 'Username is already registered' })
@@ -81,8 +86,8 @@ authRouter.post('/login', async (req, res) => {
     return res.status(401).json({ error: 'Invalid username or password' })
   }
 
-  const token = generateToken({ username: user.username })
-  res.json({ username: user.username, token })
+  const token = generateToken({ username: user.username, role: user.role })
+  res.json({ username: user.username, role: user.role, token })
 })
 
 authRouter.get('/me', requireAuth, async (req, res) => {

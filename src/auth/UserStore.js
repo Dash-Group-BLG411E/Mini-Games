@@ -29,6 +29,7 @@ class UserStore {
         passwordHash: user.passwordHash,
         displayName: user.displayName,
         avatar: user.avatar,
+        role: user.role || 'player',
         createdAt: user.createdAt.toISOString()
       }
     } catch (error) {
@@ -37,14 +38,17 @@ class UserStore {
     }
   }
 
-  async addUser(username, passwordHash) {
+  async addUser(username, passwordHash, role = 'player') {
     try {
       const avatar = this.generateDefaultAvatar(username)
+      const allowedRoles = ['admin', 'player', 'guest']
+      const safeRole = allowedRoles.includes(role) ? role : 'player'
       const user = new User({
         username: username.toLowerCase(),
         passwordHash,
         displayName: username,
-        avatar
+        avatar,
+        role: safeRole
       })
       await user.save()
       return user

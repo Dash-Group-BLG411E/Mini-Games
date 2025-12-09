@@ -1,14 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎮 MiniGamesHub</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>🎮 MiniGamesHub</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="style.css">
+    
+        <!-- Simple CSS fix -->
+        <style>
+            .lobby-main-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 24px;
+                margin-top: 24px;
+            }
+    
+            .lobby-section {
+                background: rgba(255, 255, 255, 0.05);
+                padding: 16px;
+                border-radius: 12px;
+                backdrop-filter: blur(6px);
+            }
+    
+            .lobby-section h2 {
+                margin-top: 0;
+                font-size: 1.3rem;
+                color: #fff;
+                font-weight: 600;
+            }
+    
+            .rooms-list, .users-list, .chat-list {
+                max-height: 350px;
+                overflow-y: auto;
+                border-radius: 8px;
+                padding: 8px;
+            }
+        </style>
+    </head>
+    
 <body>
     <div id="nav-container" class="nav-container">
         <div class="nav-left">
@@ -22,6 +54,7 @@
                 <button id="user-avatar-btn" class="user-avatar-btn" aria-label="User menu">
                     <span id="user-avatar-display" class="user-avatar-display">👤</span>
                     <span id="user-username-display" class="user-username-display"></span>
+                    <span id="user-role-badge" class="user-role-badge hidden"></span>
                 </button>
                 <div id="user-menu-dropdown" class="user-menu-dropdown hidden">
                     <button id="profile-nav-btn" class="user-menu-item">
@@ -115,16 +148,25 @@
                     <div id="register-confirm-password-error" class="password-error"></div>
                     <button type="submit">Register</button>
                 </form>
+                <div class="guest-login-block">
+                    <div class="guest-divider">
+                        <span>or</span>
+                    </div>
+                    <button type="button" id="guest-login-btn" class="guest-btn">Play as Guest</button>
+                    <p class="guest-hint">Guests can spectate and chat. Register to unlock playing.</p>
+                </div>
                 <div id="auth-message" class="auth-message"></div>
             </div>
         </div>
     </div>
 
+  
     <!-- Lobby View -->
     <div id="lobby-container" class="view">
         <div class="container">
             <h1>Game Lobby</h1>
-            
+
+            <!-- GAME SELECTION CARDS -->
             <div class="lobby-actions">
                 <div class="lobby-card-grid" id="lobby-game-grid">
                     <div class="game-card game-card--tic is-active" data-game="tic-tac-toe" aria-pressed="true" role="button" tabindex="0">
@@ -135,6 +177,7 @@
                             <button type="button" class="game-card__action" data-game="tic-tac-toe">Create Room</button>
                         </div>
                     </div>
+
                     <div class="game-card game-card--rps" data-game="rock-paper-scissors" aria-pressed="false" role="button" tabindex="0">
                         <span class="game-card__icon" aria-hidden="true">✂️</span>
                         <div class="game-card__content">
@@ -143,6 +186,7 @@
                             <button type="button" class="game-card__action" data-game="rock-paper-scissors">Create Room</button>
                         </div>
                     </div>
+
                     <div class="game-card game-card--memory" data-game="memory-match" aria-pressed="false" role="button" tabindex="0">
                         <span class="game-card__icon" aria-hidden="true">🧩</span>
                         <div class="game-card__content">
@@ -154,8 +198,33 @@
                 </div>
             </div>
 
-            <div class="lobby-grid">
+            <!-- 🔥 FIXED MAIN LOBBY GRID -->
+            <div class="lobby-main-grid">
+
+                <!-- Rooms List -->
+                <div class="lobby-section">
+                    <h2>Active Rooms</h2>
+                    <div id="rooms-list" class="rooms-list"></div>
+                </div>
+
+                <!-- Online Users -->
+                <div class="lobby-section">
+                    <h2>Online Players</h2>
+                    <div id="lobby-users" class="users-list"></div>
+                </div>
+
+                <!-- Lobby Chat -->
+                <div class="lobby-section">
+                    <h2>Lobby Chat</h2>
+                    <div id="lobby-chat-list" class="chat-list"></div>
+                    <form id="lobby-chat-form" class="chat-form">
+                        <input type="text" id="lobby-chat-input" placeholder="Say something..." autocomplete="off" required>
+                        <button type="submit">Send</button>
+                    </form>
+                </div>
+
             </div>
+
         </div>
     </div>
 
