@@ -8,6 +8,16 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     trim: true
   },
+  email: {
+    type: String,
+    required: function() {
+      // Email not required for guest accounts
+      return this.role !== 'guest';
+    },
+    lowercase: true,
+    trim: true
+    // Email format validation is handled in the route (authRoutes.js)
+  },
   passwordHash: {
     type: String,
     required: true
@@ -25,13 +35,34 @@ const userSchema = new mongoose.Schema({
     enum: ['admin', 'player', 'guest'],
     default: 'player'
   },
+  emailVerified: {
+    type: Boolean,
+    default: false
+  },
+  verificationToken: {
+    type: String,
+    default: null
+  },
+  verificationTokenExpiry: {
+    type: Date,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
 
-// unique: true already creates an index, so no need for explicit index
+// Create partial unique index on email - only indexes documents where email exists
+// This allows multiple null/undefined emails (for guests) while ensuring uniqueness for non-null emails
+userSchema.index(
+  { email: 1 },
+  { 
+    unique: true, 
+    partialFilterExpression: { email: { $exists: true, $ne: null } },
+    sparse: true // Also add sparse for compatibility
+  }
+);
 
 module.exports = mongoose.model('User', userSchema);
 

@@ -13,9 +13,12 @@
         <style>
             .lobby-main-grid {
                 display: grid;
-                grid-template-columns: 1fr 1fr 1fr;
+                grid-template-columns: 1fr;
                 gap: 24px;
                 margin-top: 24px;
+                max-width: 600px;
+                margin-left: auto;
+                margin-right: auto;
             }
     
             .lobby-section {
@@ -42,6 +45,10 @@
     </head>
     
 <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+    </div>
+
     <div id="nav-container" class="nav-container">
         <div class="nav-left">
             <button id="lobby-nav-btn" class="nav-btn">Lobby</button>
@@ -50,6 +57,22 @@
             <button id="tournaments-nav-btn" class="nav-btn" disabled>Tournaments</button>
         </div>
         <div class="nav-right">
+            <!-- Badges Panel -->
+            <div id="badges-panel" class="badges-panel hidden">
+                <button id="badges-toggle-btn" class="badges-toggle-btn" aria-label="Toggle badges">
+                    <span>🏅</span> Badges
+                </button>
+                <div id="badges-dropdown" class="badges-dropdown hidden">
+                    <div class="badges-section">
+                        <h3 class="badges-section-title">Your Badges</h3>
+                        <div id="earned-badges" class="badges-grid"></div>
+                    </div>
+                    <div class="badges-section">
+                        <h3 class="badges-section-title">Available Badges</h3>
+                        <div id="available-badges" class="badges-grid"></div>
+                    </div>
+                </div>
+            </div>
             <div class="user-menu-container">
                 <button id="user-avatar-btn" class="user-avatar-btn" aria-label="User menu">
                     <span id="user-avatar-display" class="user-avatar-display">👤</span>
@@ -83,7 +106,7 @@
     </div>
 
     <!-- Authentication View -->
-    <div id="auth-container" class="view">
+    <div id="auth-container" class="view" style="display: none;">
         <div class="auth-card">
                 <h1>Welcome</h1>
                 <div class="auth-tabs">
@@ -108,6 +131,8 @@
                 <form id="register-form" class="auth-form hidden">
                     <label for="register-username">Username</label>
                     <input type="text" id="register-username" name="username" placeholder="Choose a username" required autocomplete="off">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" name="email" placeholder="your.email@example.com" required autocomplete="email">
                     <label for="register-password" class="label-with-info">
                         Password
                         <span class="info-icon" id="password-info-icon" tabindex="0" aria-label="Password requirements">
@@ -200,29 +225,7 @@
 
             <!-- 🔥 FIXED MAIN LOBBY GRID -->
             <div class="lobby-main-grid">
-
-                <!-- Rooms List -->
-                <div class="lobby-section">
-                    <h2>Active Rooms</h2>
-                    <div id="rooms-list" class="rooms-list"></div>
-                </div>
-
-                <!-- Online Users -->
-                <div class="lobby-section">
-                    <h2>Online Players</h2>
-                    <div id="lobby-users" class="users-list"></div>
-                </div>
-
-                <!-- Lobby Chat -->
-                <div class="lobby-section">
-                    <h2>Lobby Chat</h2>
-                    <div id="lobby-chat-list" class="chat-list"></div>
-                    <form id="lobby-chat-form" class="chat-form">
-                        <input type="text" id="lobby-chat-input" placeholder="Say something..." autocomplete="off" required>
-                        <button type="submit">Send</button>
-                    </form>
-                </div>
-
+                <!-- Lobby grid is now empty - chat is in the widget drawer -->
             </div>
 
         </div>
@@ -331,7 +334,7 @@
     <!-- Leaderboard View -->
     <div id="leaderboard-container" class="view">
         <div class="container">
-            <h1>Leaderboard</h1>
+            <h1>🏆 Leaderboard</h1>
             <div id="scoreboard-list" class="scoreboard-list"></div>
         </div>
     </div>
@@ -357,12 +360,12 @@
             <span class="online-indicator"></span>
             Online Players
         </button>
-        <div id="online-players-popup" class="widget-popup hidden">
-            <div class="widget-popup-header">
-                <h3>Online Players</h3>
+            <div id="online-players-popup" class="widget-popup hidden">
+                <div class="widget-popup-header">
+                    <h3>Online Players</h3>
+                </div>
+                <div id="online-players-list" class="users-list widget-content"></div>
             </div>
-            <div id="lobby-users" class="users-list widget-content"></div>
-        </div>
     </div>
 
     <!-- Lobby Chat Drawer -->
@@ -542,6 +545,46 @@
             </div>
             <div class="notification-actions">
                 <button id="notification-ok-btn" class="notification-btn">Okay</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invitation Modal -->
+    <div id="invitation-modal" class="notification-modal hidden">
+        <div class="notification-overlay"></div>
+        <div class="notification-card">
+            <div class="notification-content">
+                <div id="invitation-message"></div>
+            </div>
+            <div class="notification-actions">
+                <button id="invitation-accept-btn" class="notification-btn" style="background: linear-gradient(135deg, #10b981, #059669);">Accept</button>
+                <button id="invitation-decline-btn" class="notification-btn" style="background: linear-gradient(135deg, #ef4444, #dc2626);">Decline</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invite Game Type Modal -->
+    <div id="invite-game-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>Invite Player</h2>
+            <p>Select a game type to invite <span id="invite-player-name"></span> to play:</p>
+            <div class="game-type-selector">
+                <label class="game-type-option">
+                    <input type="radio" name="invite-game-type" value="tic-tac-toe" checked>
+                    <span>🎮 Tic Tac Toe</span>
+                </label>
+                <label class="game-type-option">
+                    <input type="radio" name="invite-game-type" value="rock-paper-scissors">
+                    <span>✂️ Rock Paper Scissors</span>
+                </label>
+                <label class="game-type-option">
+                    <input type="radio" name="invite-game-type" value="memory-match">
+                    <span>🧩 Memory Match</span>
+                </label>
+            </div>
+            <div class="modal-actions">
+                <button id="invite-confirm-btn" class="modal-btn">Send Invitation</button>
+                <button id="invite-cancel-btn" class="modal-btn cancel-btn">Cancel</button>
             </div>
         </div>
     </div>

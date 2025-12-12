@@ -7,9 +7,11 @@ class SocketHandlers {
         this.rooms = new Map();
         this.scoreboard = new Scoreboard();
         this.socketToRoom = new Map(); // Track which room a socket is in
-        this.onlineUsers = new Map();
+        this.onlineUsers = new Map(); // socketId -> username
+        this.userRoles = new Map(); // username -> role (for checking guest status)
         this.lobbyMessages = [];
         this.maxLobbyMessages = 120;
+        this.pendingInvitations = new Map(); // Store pending invitations: username -> { from, gameType }
     }
 
     handleConnection(socket) {
@@ -63,7 +65,7 @@ class SocketHandlers {
                 result
             });
             if (result && result.winnerRole) {
-                this.scoreboard.recordGameResult(result.winnerRole, room.players).catch(err => {
+                this.scoreboard.recordGameResult(result.winnerRole, room.players, room.gameType).catch(err => {
                     console.error('Error recording game result:', err);
                 });
                 // Check if game is finished (memory match game ends when winnerRole is set)
@@ -227,7 +229,7 @@ class SocketHandlers {
                 }
                 // Only record final game result (first to 3 wins), not individual rounds
                 if (result.gameOver && result.gameWinner) {
-                    this.scoreboard.recordGameResult(result.gameWinner, room.players).catch(err => {
+                    this.scoreboard.recordGameResult(result.gameWinner, room.players, room.gameType).catch(err => {
                         console.error('Error recording game result:', err);
                     });
                     this.broadcastRoomsList();
@@ -257,7 +259,7 @@ class SocketHandlers {
                 // Find winner role by matching username
                 const winnerPlayer = room.players.find(p => p.username === result.gameWinner);
                 if (winnerPlayer) {
-                    this.scoreboard.recordGameResult(winnerPlayer.role, room.players).catch(err => {
+                    this.scoreboard.recordGameResult(winnerPlayer.role, room.players, room.gameType).catch(err => {
                         console.error('Error recording game result:', err);
                     });
                 }
@@ -273,26 +275,258 @@ class SocketHandlers {
             const room = this.rooms.get(roomId);
             if (!room) return;
 
+            const username = socket.user?.username;
+            const requestingPlayer = room.players.find(p => p.socketId === socket.id);
+            
+            if (!requestingPlayer) return;
+
             const result = room.requestRestart(socket.id);
             
-            if (result.success && result.restart) {
-                this.io.to(roomId).emit('restartGame', { 
-                    firstTurn: result.firstTurn,
-                    players: room.players.map(p => ({ username: p.username, role: p.role })),
-                    gameType: room.gameType
-                });
-                this.broadcastGameState(roomId);
-                this.broadcastRoomsList();
+            if (result.success) {
+                if (result.restart) {
+                    // Both players agreed, restart the game
+                    this.io.to(roomId).emit('restartGame', { 
+                        firstTurn: result.firstTurn,
+                        players: room.players.map(p => ({ username: p.username, role: p.role })),
+                        gameType: room.gameType
+                    });
+                    this.broadcastGameState(roomId);
+                    this.broadcastRoomsList();
+                } else {
+                    // One player requested, notify the other player
+                    const otherPlayer = room.players.find(p => p.socketId !== socket.id);
+                    if (otherPlayer) {
+                        const otherSocket = this.io.sockets.sockets.get(otherPlayer.socketId);
+                        if (otherSocket) {
+                            otherSocket.emit('rematchRequested', { 
+                                from: username,
+                                waitingForYou: true
+                            });
+                        }
+                    }
+                    // Also notify the requester that their request was received
+                    socket.emit('rematchRequested', { 
+                        from: username,
+                        waitingForYou: false,
+                        waitingForOpponent: true
+                    });
+                }
             }
         });
 
-        socket.on('getScoreboard', async () => {
+        socket.on('getScoreboard', async (data) => {
             try {
-                const topPlayers = await this.scoreboard.getTopPlayers(20);
+                const gameType = data?.gameType || null;
+                const normalizedGameType = gameType ? (gameType === 'tic-tac-toe' ? 'ticTacToe' : 
+                                                      gameType === 'rock-paper-scissors' ? 'rockPaperScissors' : 
+                                                      gameType === 'memory-match' ? 'memoryMatch' : null) : null;
+                const topPlayers = await this.scoreboard.getTopPlayers(20, normalizedGameType);
                 socket.emit('scoreboardData', topPlayers);
             } catch (error) {
                 console.error('Error getting scoreboard:', error);
                 socket.emit('scoreboardData', []);
+            }
+        });
+
+        socket.on('getUserBadges', async () => {
+            try {
+                const username = socket.user?.username;
+                if (!username) {
+                    socket.emit('userBadges', { badges: [] });
+                    return;
+                }
+                const stats = await this.scoreboard.getPlayerStats(username);
+                const badges = stats.badges || [];
+                socket.emit('userBadges', { badges });
+            } catch (error) {
+                console.error('Error getting user badges:', error);
+                socket.emit('userBadges', { badges: [] });
+            }
+        });
+
+        // Game invitation handlers
+        socket.on('sendInvitation', ({ to, gameType }) => {
+            const from = socket.user?.username;
+            const fromRole = socket.user?.role;
+            if (!from) {
+                socket.emit('invitationError', 'Authentication failed');
+                return;
+            }
+
+            // Prevent guests from sending invitations
+            if (fromRole === 'guest') {
+                socket.emit('invitationError', 'Guests cannot send invitations. Please register or log in.');
+                return;
+            }
+
+            // Find the target user's socket
+            let targetSocket = null;
+            for (const [socketId, username] of this.onlineUsers.entries()) {
+                if (username === to) {
+                    targetSocket = this.io.sockets.sockets.get(socketId);
+                    break;
+                }
+            }
+
+            if (!targetSocket) {
+                socket.emit('invitationError', `${to} is not online`);
+                return;
+            }
+
+            // Prevent inviting guest users
+            const targetRole = this.userRoles.get(to);
+            if (targetRole === 'guest') {
+                socket.emit('invitationError', 'Cannot invite guest users. They can only spectate games.');
+                return;
+            }
+
+            // Check if target user is already in a room
+            const targetRoomId = this.socketToRoom.get(targetSocket.id);
+            if (targetRoomId) {
+                socket.emit('invitationError', `${to} is already in a game`);
+                return;
+            }
+
+            // Check if sender is already in a room
+            const senderRoomId = this.socketToRoom.get(socket.id);
+            if (senderRoomId) {
+                socket.emit('invitationError', 'You are already in a game');
+                return;
+            }
+
+            // Store the invitation
+            this.pendingInvitations.set(to, { from, gameType: gameType || 'tic-tac-toe' });
+
+            // Send invitation to target user
+            targetSocket.emit('gameInvitation', { from, gameType: gameType || 'tic-tac-toe' });
+        });
+
+        socket.on('acceptInvitation', ({ from }) => {
+            const to = socket.user?.username;
+            const toRole = socket.user?.role;
+            if (!to) {
+                socket.emit('invitationError', 'Authentication failed');
+                return;
+            }
+
+            // Prevent guests from accepting invitations
+            if (toRole === 'guest') {
+                socket.emit('invitationError', 'Guests cannot accept invitations. Please register or log in.');
+                return;
+            }
+
+            // Get the invitation details
+            const invitation = this.pendingInvitations.get(to);
+            if (!invitation || invitation.from !== from) {
+                socket.emit('invitationError', 'Invitation not found or expired');
+                return;
+            }
+
+            // Remove the invitation
+            this.pendingInvitations.delete(to);
+
+            // Find the sender's socket
+            let senderSocket = null;
+            for (const [socketId, username] of this.onlineUsers.entries()) {
+                if (username === from) {
+                    senderSocket = this.io.sockets.sockets.get(socketId);
+                    break;
+                }
+            }
+
+            if (!senderSocket) {
+                socket.emit('invitationError', `${from} is no longer online`);
+                return;
+            }
+
+            // Get the game type from the invitation
+            const gameType = invitation.gameType;
+
+            // Create a room with the sender as the first player
+            const roomId = this.generateRoomId();
+            const roomName = `${from} vs ${to}`;
+            const room = new GameRoom(roomId, roomName, gameType);
+            
+            // Add sender as first player
+            const senderResult = room.addPlayer(senderSocket.id, from);
+            if (!senderResult.success) {
+                socket.emit('invitationError', 'Failed to create room');
+                return;
+            }
+
+            this.rooms.set(roomId, room);
+            this.socketToRoom.set(senderSocket.id, roomId);
+            senderSocket.join(roomId);
+
+            // Add acceptor as second player
+            const acceptorResult = room.addPlayer(socket.id, to);
+            if (!acceptorResult.success) {
+                socket.emit('invitationError', 'Failed to join room');
+                return;
+            }
+
+            this.socketToRoom.set(socket.id, roomId);
+            socket.join(roomId);
+
+            // Notify both players
+            senderSocket.emit('roomCreated', { 
+                roomId, 
+                roomName: room.roomName, 
+                player: senderResult.player, 
+                gameType: room.gameType 
+            });
+            socket.emit('invitationAccepted', { 
+                roomId, 
+                roomName: room.roomName, 
+                gameType: room.gameType 
+            });
+            // Send player role to acceptor
+            socket.emit('playersRole', { 
+                role: acceptorResult.player.role,
+                roomName: room.roomName,
+                players: room.players.map(p => ({ username: p.username, role: p.role })),
+                gameType: room.gameType
+            });
+
+            // Start the game if both players are present
+            if (room.players.length === 2) {
+                room.gameState.gameStatus = 'in-progress';
+                if (room.gameType === 'tic-tac-toe') {
+                    room.gameState.currentPlayer = 'X';
+                } else if (room.gameType === 'rock-paper-scissors') {
+                    room.resetRpsGame();
+                } else if (room.gameType === 'memory-match') {
+                    room.initMemoryState();
+                }
+                this.io.to(roomId).emit('startGame', { 
+                    firstTurn: 'X',
+                    players: room.players.map(p => ({ username: p.username, role: p.role })),
+                    gameType: room.gameType
+                });
+            }
+
+            this.broadcastGameState(roomId);
+            this.broadcastRoomsList();
+        });
+
+        socket.on('declineInvitation', ({ from }) => {
+            const to = socket.user?.username;
+            if (!to) return;
+
+            // Remove the invitation
+            this.pendingInvitations.delete(to);
+
+            // Find the sender's socket
+            let senderSocket = null;
+            for (const [socketId, username] of this.onlineUsers.entries()) {
+                if (username === from) {
+                    senderSocket = this.io.sockets.sockets.get(socketId);
+                    break;
+                }
+            }
+
+            if (senderSocket) {
+                senderSocket.emit('invitationDeclined', { to });
             }
         });
 
@@ -374,6 +608,9 @@ class SocketHandlers {
 
             this.socketToRoom.delete(socket.id);
             this.onlineUsers.delete(socket.id);
+            if (username) {
+                this.userRoles.delete(username);
+            }
             this.broadcastLobbyUpdate();
         });
     }
@@ -402,7 +639,11 @@ class SocketHandlers {
         const rooms = Array.from(this.rooms.values())
             .map(room => room.getRoomInfo())
             .filter(room => room.gameStatus !== 'finished');
-        const users = Array.from(this.onlineUsers.values());
+        // Include user roles in the lobby state
+        const users = Array.from(this.onlineUsers.values()).map(username => ({
+            username,
+            role: this.userRoles.get(username) || 'player'
+        }));
         return { rooms, users };
     }
 
@@ -410,9 +651,9 @@ class SocketHandlers {
         return Math.floor(100000 + Math.random() * 900000);
     }
 
-    async getScoreboardData() {
+    async getScoreboardData(gameType = null) {
         try {
-            return await this.scoreboard.getTopPlayers(20);
+            return await this.scoreboard.getTopPlayers(20, gameType);
         } catch (error) {
             console.error('Error getting scoreboard data:', error);
             return [];
@@ -439,7 +680,7 @@ class SocketHandlers {
         }
 
         // Remaining player wins, disconnecting player loses
-        this.scoreboard.recordGameResult(remainingPlayer.role, room.players).catch(err => {
+        this.scoreboard.recordGameResult(remainingPlayer.role, room.players, room.gameType).catch(err => {
             console.error(`Error recording game result on ${reason}:`, err);
         });
         
@@ -561,7 +802,8 @@ class SocketHandlers {
                 const remainingPlayer = room.players.find(p => p.socketId !== socketId);
                 if (remainingPlayer) {
                     // Remaining player wins, disconnected player loses
-                    this.scoreboard.recordGameResult(remainingPlayer.role, room.players).catch(err => {
+                    const gameType = room.gameType || 'tic-tac-toe';
+                    this.scoreboard.recordGameResult(remainingPlayer.role, room.players, gameType).catch(err => {
                         console.error('Error recording game result on cleanup:', err);
                     });
                 }
@@ -583,8 +825,12 @@ class SocketHandlers {
         }
 
         // Clean up mappings
+        const username = this.onlineUsers.get(socketId);
         this.socketToRoom.delete(socketId);
         this.onlineUsers.delete(socketId);
+        if (username) {
+            this.userRoles.delete(username);
+        }
         
         // Broadcast updated room list
         this.broadcastRoomsList();
@@ -592,8 +838,12 @@ class SocketHandlers {
 
     registerOnlineUser(socket) {
         const username = socket.user?.username;
+        const role = socket.user?.role;
         if (!username) return;
         this.onlineUsers.set(socket.id, username);
+        if (role) {
+            this.userRoles.set(username, role);
+        }
         socket.emit('lobbyMessages', this.lobbyMessages);
         this.broadcastLobbyUpdate();
     }
