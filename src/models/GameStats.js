@@ -8,6 +8,7 @@ const gameStatsSchema = new mongoose.Schema({
     lowercase: true,
     trim: true
   },
+  // Overall stats (for backward compatibility)
   wins: {
     type: Number,
     default: 0,
@@ -23,6 +24,26 @@ const gameStatsSchema = new mongoose.Schema({
     default: 0,
     min: 0
   },
+  // Game-specific stats
+  ticTacToe: {
+    wins: { type: Number, default: 0, min: 0 },
+    losses: { type: Number, default: 0, min: 0 },
+    draws: { type: Number, default: 0, min: 0 }
+  },
+  rockPaperScissors: {
+    wins: { type: Number, default: 0, min: 0 },
+    losses: { type: Number, default: 0, min: 0 },
+    draws: { type: Number, default: 0, min: 0 }
+  },
+  memoryMatch: {
+    wins: { type: Number, default: 0, min: 0 },
+    losses: { type: Number, default: 0, min: 0 },
+    draws: { type: Number, default: 0, min: 0 }
+  },
+  // Badges earned
+  badges: [{
+    type: String
+  }],
   updatedAt: {
     type: Date,
     default: Date.now

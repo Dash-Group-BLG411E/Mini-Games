@@ -371,9 +371,13 @@ class GameRoom {
             this.resetGame();
             this.restartVotes.clear();
             this.gameState.gameStatus = 'in-progress';
-            this.gameState.lastStarter = this.gameState.lastStarter === 'X' ? 'O' : 'X';
-            this.gameState.currentPlayer = this.gameState.lastStarter;
-            return { success: true, restart: true, firstTurn: this.gameState.lastStarter };
+            if (this.gameType === 'tic-tac-toe') {
+                this.gameState.lastStarter = this.gameState.lastStarter === 'X' ? 'O' : 'X';
+                this.gameState.currentPlayer = this.gameState.lastStarter;
+            } else if (this.gameType === 'memory-match') {
+                this.memoryState.turnRole = 'X';
+            }
+            return { success: true, restart: true, firstTurn: this.gameType === 'tic-tac-toe' ? this.gameState.lastStarter : 'X' };
         }
         return { success: true, restart: false };
     }
@@ -387,6 +391,8 @@ class GameRoom {
             this.resetRpsGame();
         } else if (this.gameType === 'tic-tac-toe') {
             this.resetTttGame();
+        } else if (this.gameType === 'memory-match') {
+            this.initMemoryState();
         } else {
             this.resetRpsChoices();
         }

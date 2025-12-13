@@ -47,13 +47,17 @@ io.on("connection", (socket) => {
 // API endpoint for scoreboard (protected)
 app.get('/api/scoreboard', requireAuth, requireRole('admin', 'player', 'guest'), async (req, res) => {
     try {
-        const scoreboardData = await socketHandlers.getScoreboardData()
-        res.json(scoreboardData)
+        const gameType = req.query.gameType || null;
+        const normalizedGameType = gameType ? (gameType === 'tic-tac-toe' ? 'ticTacToe' : 
+                                                gameType === 'rock-paper-scissors' ? 'rockPaperScissors' : 
+                                                gameType === 'memory-match' ? 'memoryMatch' : null) : null;
+        const scoreboardData = await socketHandlers.getScoreboardData(normalizedGameType);
+        res.json(scoreboardData);
     } catch (error) {
-        console.error('Error getting scoreboard:', error)
-        res.status(500).json({ error: 'Failed to load scoreboard' })
+        console.error('Error getting scoreboard:', error);
+        res.status(500).json({ error: 'Failed to load scoreboard' });
     }
-})
+});
 
 // Profile route for front-end
 app.get('/api/profile', requireAuth, requireRole('admin', 'player', 'guest'), (req, res) => {

@@ -6,9 +6,10 @@ class TicTacToeApp {
         this.userProfile = null;
         this.currentRoom = null;
         this.currentRoomName = null;
-        this.currentView = 'auth';
+        this.currentView = null; // Don't set view yet - wait for token check
         this.rooms = [];
         this.lobbyUsers = [];
+        this.userRolesMap = new Map(); // username -> role
         this.lobbyMessages = [];
         this.roomMessages = [];
         this.gameState = null;
@@ -64,10 +65,17 @@ class TicTacToeApp {
         this.pendingGameType = null;
         this.roomsContainer = document.getElementById('rooms-container');
         this.roomsList = document.getElementById('rooms-list');
-        this.lobbyUsersList = document.getElementById('lobby-users');
-        this.lobbyChatList = document.getElementById('lobby-chat-list');
-        this.lobbyChatForm = document.getElementById('lobby-chat-form');
-        this.lobbyChatInput = document.getElementById('lobby-chat-input');
+        this.lobbyUsersList = document.getElementById('lobby-users-list');
+        this.onlinePlayersList = document.getElementById('online-players-list');
+        // Lobby chat elements (only in drawer now)
+        this.lobbyChatList = document.querySelector('#lobby-chat-drawer #lobby-chat-list');
+        this.lobbyChatForm = document.querySelector('#lobby-chat-drawer #lobby-chat-form');
+        this.lobbyChatInput = document.querySelector('#lobby-chat-drawer #lobby-chat-input');
+        
+        // Ensure elements exist
+        if (!this.lobbyChatForm || !this.lobbyChatInput || !this.lobbyChatList) {
+            console.warn('Lobby chat drawer elements not found');
+        }
         
         // Widget state
         this.onlinePlayersOpen = false;
@@ -141,6 +149,13 @@ class TicTacToeApp {
 
         this.leaderboardContainer = document.getElementById('leaderboard-container');
         this.scoreboardList = document.getElementById('scoreboard-list');
+        
+        // Badges panel elements
+        this.badgesPanel = document.getElementById('badges-panel');
+        this.badgesToggleBtn = document.getElementById('badges-toggle-btn');
+        this.badgesDropdown = document.getElementById('badges-dropdown');
+        this.earnedBadgesContainer = document.getElementById('earned-badges');
+        this.availableBadgesContainer = document.getElementById('available-badges');
         this.backToLobbyBtn = document.getElementById('back-to-lobby-btn');
         this.tournamentsContainer = document.getElementById('tournaments-container');
         this.tournamentsBackBtn = document.getElementById('tournaments-back-btn');
@@ -171,6 +186,20 @@ class TicTacToeApp {
         this.notificationMessage = document.getElementById('notification-message');
         this.notificationOkBtn = document.getElementById('notification-ok-btn');
         this.notificationTimeout = null;
+
+        // Invitation modal elements
+        this.invitationModal = document.getElementById('invitation-modal');
+        this.invitationMessage = document.getElementById('invitation-message');
+        this.invitationAcceptBtn = document.getElementById('invitation-accept-btn');
+        this.invitationDeclineBtn = document.getElementById('invitation-decline-btn');
+        this.pendingInvitation = null; // Store pending invitation data
+
+        // Invite game type modal elements
+        this.inviteGameModal = document.getElementById('invite-game-modal');
+        this.invitePlayerName = document.getElementById('invite-player-name');
+        this.inviteConfirmBtn = document.getElementById('invite-confirm-btn');
+        this.inviteCancelBtn = document.getElementById('invite-cancel-btn');
+        this.pendingInviteUsername = null;
 
         // Password error elements
         this.registerPasswordInput = document.getElementById('register-password');
@@ -301,6 +330,42 @@ class TicTacToeApp {
                 this.hideNotification();
             }
         });
+
+        // Invitation modal event listeners
+        this.invitationAcceptBtn?.addEventListener('click', () => this.acceptInvitation());
+        this.invitationDeclineBtn?.addEventListener('click', () => this.declineInvitation());
+        this.invitationModal?.addEventListener('click', (e) => {
+            if (e.target === this.invitationModal || e.target.classList.contains('notification-overlay')) {
+                this.hideInvitationModal();
+            }
+        });
+
+        // Invite game type modal event listeners
+        this.inviteConfirmBtn?.addEventListener('click', () => this.confirmInviteGameType());
+        this.inviteCancelBtn?.addEventListener('click', () => this.hideInviteGameModal());
+        this.inviteGameModal?.addEventListener('click', (e) => {
+            if (e.target === this.inviteGameModal) {
+                this.hideInviteGameModal();
+            }
+        });
+
+        // Add hover effects to game type options
+        const gameTypeOptions = document.querySelectorAll('.game-type-option');
+        gameTypeOptions.forEach(option => {
+            option.addEventListener('mouseenter', () => {
+                option.style.borderColor = 'rgba(124, 58, 237, 0.6)';
+                option.style.backgroundColor = 'rgba(124, 58, 237, 0.05)';
+            });
+            option.addEventListener('mouseleave', () => {
+                option.style.borderColor = 'rgba(124, 58, 237, 0.3)';
+                option.style.backgroundColor = 'transparent';
+            });
+            option.addEventListener('click', () => {
+                const radio = option.querySelector('input[type="radio"]');
+                if (radio) radio.checked = true;
+            });
+        });
+
         
         // Close modals when clicking outside
         this.deleteAccountModal?.addEventListener('click', (e) => {
@@ -400,13 +465,15 @@ class TicTacToeApp {
             }
         });
         
-        this.lobbyChatTab.addEventListener('click', () => {
-            if (this.lobbyChatOpen) {
-                this.closeLobbyChatDrawer();
-            } else {
-                this.openLobbyChatDrawer();
-            }
-        });
+        if (this.lobbyChatTab) {
+            this.lobbyChatTab.addEventListener('click', () => {
+                if (this.lobbyChatOpen) {
+                    this.closeLobbyChatDrawer();
+                } else {
+                    this.openLobbyChatDrawer();
+                }
+            });
+        }
 
         if (this.roomChatTab) {
             this.roomChatTab.addEventListener('click', () => {
@@ -418,14 +485,18 @@ class TicTacToeApp {
             });
         }
 
-        this.lobbyChatForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            const message = this.lobbyChatInput.value.trim();
-            if (message) {
-                this.sendLobbyChat(message);
-                this.lobbyChatInput.value = '';
-            }
-        });
+        if (this.lobbyChatForm) {
+            this.lobbyChatForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const message = this.lobbyChatInput?.value.trim();
+                if (message) {
+                    this.sendLobbyChat(message);
+                    if (this.lobbyChatInput) {
+                        this.lobbyChatInput.value = '';
+                    }
+                }
+            });
+        }
 
         this.roomChatForm.addEventListener('submit', (event) => {
             event.preventDefault();
@@ -469,13 +540,146 @@ class TicTacToeApp {
     }
 
     async checkStoredToken() {
+        // Hide all views initially to prevent flash of auth page
+        document.querySelectorAll('.view').forEach(view => {
+            view.style.display = 'none';
+        });
+        
+        // Hide loading screen once check is complete
+        const hideLoadingScreen = () => {
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen) {
+                loadingScreen.style.display = 'none';
+            }
+        };
+        
         if (this.token && this.currentUser) {
-            await this.loadUserProfile();
-            this.initializeSocket();
-            this.showLobby();
+            try {
+                // Validate token by loading user profile
+                const response = await fetch('/api/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${this.token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    // Token is valid, proceed with authentication
+                    const userData = await response.json();
+                    this.userProfile = userData;
+                    this.userRole = userData.role || this.userRole || 'player';
+                    localStorage.setItem('tictactoe_role', this.userRole);
+                    this.updateUserAvatarDisplay();
+                    
+                    // Clear any stale room/game state before initializing socket
+                    this.currentRoom = null;
+                    this.currentRoomName = null;
+                    this.gameState = null;
+                    this.myRole = null;
+                    this.isSpectator = false;
+                    
+                    this.initializeSocket();
+                    
+                    // Wait for socket connection and badges to load before showing lobby
+                    // setupSocketListeners is called in initializeSocket, so badges listener is already set up
+                    await this.waitForBadgesAndShowLobby();
+                    
+                    // Show badges panel
+                    if (this.badgesPanel) {
+                        this.badgesPanel.classList.remove('hidden');
+                    }
+                    hideLoadingScreen();
+                } else {
+                    // Token is invalid or expired, clear it and show auth
+                    this.clearStoredAuth();
+                    this.showView('auth');
+                    // Hide badges panel
+                    if (this.badgesPanel) {
+                        this.badgesPanel.classList.add('hidden');
+                    }
+                    hideLoadingScreen();
+                }
+            } catch (error) {
+                console.error('Failed to validate token:', error);
+                // Network error or invalid token, clear it and show auth
+                this.clearStoredAuth();
+                this.showView('auth');
+                // Hide badges panel
+                if (this.badgesPanel) {
+                    this.badgesPanel.classList.add('hidden');
+                }
+                hideLoadingScreen();
+            }
         } else {
             this.showView('auth');
+            // Hide badges panel
+            if (this.badgesPanel) {
+                this.badgesPanel.classList.add('hidden');
+            }
+            hideLoadingScreen();
         }
+    }
+
+    waitForBadgesAndShowLobby() {
+        return new Promise((resolve) => {
+            // Set a flag to track if badges have been received
+            let badgesReceived = false;
+            let timeoutId = null;
+            
+            // Create a one-time handler for initial badges load
+            const initialBadgesHandler = (data) => {
+                if (!badgesReceived) {
+                    badgesReceived = true;
+                    // Clear timeout
+                    if (timeoutId) {
+                        clearTimeout(timeoutId);
+                        timeoutId = null;
+                    }
+                    // Remove this one-time listener (keep the permanent one in setupSocketListeners)
+                    this.socket.off('userBadges', initialBadgesHandler);
+                    
+                    // Display badges (permanent listener will also handle this, but we do it here to ensure it happens)
+                    this.displayBadges(data.badges || []);
+                    
+                    // Show lobby once badges are loaded
+                    this.showLobby();
+                    resolve();
+                }
+            };
+            
+            // Set up the one-time listener first
+            this.socket.once('userBadges', initialBadgesHandler);
+            
+            // Check if socket is already connected
+            if (this.socket && this.socket.connected) {
+                // Request badges immediately
+                this.loadUserBadges();
+            } else {
+                // Wait for socket connection first, then request badges
+                this.socket.once('connect', () => {
+                    this.loadUserBadges();
+                });
+            }
+            
+            // Timeout after 3 seconds to prevent infinite waiting
+            timeoutId = setTimeout(() => {
+                if (!badgesReceived) {
+                    console.warn('Badges loading timeout, showing lobby anyway');
+                    this.socket.off('userBadges', initialBadgesHandler);
+                    this.showLobby();
+                    resolve();
+                }
+            }, 3000);
+        });
+    }
+
+    clearStoredAuth() {
+        this.token = null;
+        this.currentUser = null;
+        this.userRole = 'player';
+        this.userProfile = null;
+        localStorage.removeItem('tictactoe_token');
+        localStorage.removeItem('tictactoe_username');
+        localStorage.removeItem('tictactoe_role');
     }
 
     switchAuthTab(target) {
@@ -484,6 +688,13 @@ class TicTacToeApp {
         });
         this.loginForm.classList.toggle('hidden', target !== 'login');
         this.registerForm.classList.toggle('hidden', target !== 'register');
+        
+        // Hide guest login button when registering
+        const guestLoginBlock = document.querySelector('.guest-login-block');
+        if (guestLoginBlock) {
+            guestLoginBlock.classList.toggle('hidden', target === 'register');
+        }
+        
         this.showAuthMessage('');
         // Clear password validation when switching tabs
         if (target === 'login') {
@@ -598,7 +809,7 @@ class TicTacToeApp {
         const password = `guest-${randomSuffix}-${Date.now()}`;
 
         try {
-            // Use existing register endpoint with role=guest; no separate guest API
+            // Use existing register endpoint with role=guest; no email required for guests
             const response = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -612,8 +823,13 @@ class TicTacToeApp {
                 return;
             }
 
-            this.showAuthMessage('Guest session created.');
-            this.afterAuthentication(data);
+            // Guest registration returns token immediately (no email verification needed)
+            if (data.token) {
+                this.showAuthMessage('Guest session created.');
+                this.afterAuthentication(data);
+            } else {
+                this.showAuthMessage('Guest session created, but authentication failed.');
+            }
         } catch (error) {
             console.error('Guest login error:', error);
             this.showAuthMessage('Unable to reach the server.');
@@ -624,16 +840,23 @@ class TicTacToeApp {
         event.preventDefault();
         const form = event.target;
         const username = form.querySelector('input[name="username"]').value.trim();
+        const email = form.querySelector('input[name="email"]')?.value.trim();
         const password = form.querySelector('input[name="password"]').value;
         const confirmPassword = form.querySelector('input[name="confirmPassword"]')?.value;
 
-        if (!username || !password) {
-            this.showAuthMessage('Please fill out all fields.');
-            return;
-        }
-
-        // Validate password for registration
         if (action === 'register') {
+            if (!username || !email || !password) {
+                this.showAuthMessage('Please fill out all fields.');
+                return;
+            }
+
+            // Validate email format
+            const emailRegex = /^\S+@\S+\.\S+$/;
+            if (!emailRegex.test(email)) {
+                this.showAuthMessage('Please enter a valid email address.');
+                return;
+            }
+
             const passwordValidation = this.validatePassword(password);
             if (!passwordValidation.isValid) {
                 this.showAuthMessage(passwordValidation.errors[0]);
@@ -646,18 +869,34 @@ class TicTacToeApp {
                 this.validateRegisterConfirmPassword();
                 return;
             }
+        } else {
+            if (!username || !password) {
+                this.showAuthMessage('Please fill out all fields.');
+                return;
+            }
         }
 
         try {
             const response = await fetch(`/api/auth/${action}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
+                body: JSON.stringify({ username, email, password })
             });
             const data = await response.json();
 
             if (!response.ok) {
+                // Handle email verification error
+                if (response.status === 403 && data.emailVerified === false) {
+                    this.showEmailVerificationMessage(data.email, data.message);
+                    return;
+                }
                 this.showAuthMessage(data.error || 'Authentication failed.');
+                return;
+            }
+
+            // Handle registration success (no token, needs verification)
+            if (action === 'register' && !data.token) {
+                this.showRegistrationSuccessMessage(data.email, data.message, data.emailPreviewUrl);
                 return;
             }
 
@@ -692,21 +931,23 @@ class TicTacToeApp {
             this.socket.disconnect();
             this.socket = null;
         }
-        this.token = null;
-        this.currentUser = null;
-        this.userRole = 'player';
+        this.clearStoredAuth();
         this.currentRoom = null;
         this.gameState = null;
         this.myRole = null;
         this.isSpectator = false;
         this.disableBeforeUnloadWarning();
-        localStorage.removeItem('tictactoe_token');
-        localStorage.removeItem('tictactoe_username');
-        localStorage.removeItem('tictactoe_role');
+        this.showView('auth');
         this.updateLeaveButtonVisibility();
         if (this.roomInfoBox) {
             this.roomInfoBox.classList.add('hidden');
         }
+        
+        // Hide badges panel
+        if (this.badgesPanel) {
+            this.badgesPanel.classList.add('hidden');
+        }
+        
         this.showView('auth');
     }
 
@@ -733,7 +974,24 @@ class TicTacToeApp {
 
         this.socket.on('lobbyUpdate', (data) => {
             this.rooms = data.rooms || [];
-            this.lobbyUsers = data.users || [];
+            // Update users list and roles map
+            if (data.users) {
+                if (Array.isArray(data.users) && data.users.length > 0 && typeof data.users[0] === 'object') {
+                    // New format: array of {username, role} objects
+                    this.lobbyUsers = data.users.map(u => u.username);
+                    this.userRolesMap.clear();
+                    data.users.forEach(u => {
+                        if (u.username && u.role) {
+                            this.userRolesMap.set(u.username, u.role);
+                        }
+                    });
+                } else {
+                    // Old format: array of usernames (backward compatibility)
+                    this.lobbyUsers = data.users;
+                }
+            } else {
+                this.lobbyUsers = [];
+            }
             this.updateLobbyUsers();
             this.updateRoomsList();
         });
@@ -828,32 +1086,72 @@ class TicTacToeApp {
         });
 
         this.socket.on('gameStateUpdate', (gameState) => {
+            // Only update game state if we're actually in a room
+            if (!this.currentRoom) {
+                return;
+            }
+            
             this.gameState = gameState;
             this.setCurrentGameType(gameState.gameType);
-            this.updateGameBoard();
-            this.updateGameInfo();
-            this.updateRoomInfoBox();
-            if (gameState.gameType === 'rock-paper-scissors') {
-                this.updateRpsPlayerLabels();
-                if (gameState.rpsScores) {
-                    this.rpsScores = gameState.rpsScores;
-                    this.updateRpsScores();
+            
+            // Only update game UI if we're viewing the game
+            if (this.currentView === 'game') {
+                this.updateGameBoard();
+                this.updateGameInfo();
+                this.updateRoomInfoBox();
+                if (gameState.gameType === 'rock-paper-scissors') {
+                    this.updateRpsPlayerLabels();
+                    if (gameState.rpsScores) {
+                        this.rpsScores = gameState.rpsScores;
+                        this.updateRpsScores();
+                    }
+                    this.rpsGameOver = gameState.gameStatus === 'finished';
+                    this.updateRpsStatus();
+                    this.renderRpsControls();
+                } else if (gameState.gameType === 'memory-match') {
+                    this.renderMemoryBoard(gameState.memoryState);
+                } else if (gameState.gameType === 'tic-tac-toe') {
+                    this.updateTttPlayerInfo();
+                } else if (this.memoryStage) {
+                    this.memoryStage.classList.add('hidden');
                 }
-                this.rpsGameOver = gameState.gameStatus === 'finished';
-                this.updateRpsStatus();
-                this.renderRpsControls();
-            } else if (gameState.gameType === 'memory-match') {
-                this.renderMemoryBoard(gameState.memoryState);
-            } else if (gameState.gameType === 'tic-tac-toe') {
-                this.updateTttPlayerInfo();
-            } else if (this.memoryStage) {
-                this.memoryStage.classList.add('hidden');
             }
         });
 
         this.socket.on('restartGame', (data) => {
+            // Reset game state for rematch
+            this.rpsGameOver = false;
+            this.rpsChoiceSent = false;
+            this.rpsResult = null;
+            if (this.currentGameType === 'rock-paper-scissors') {
+                this.rpsScores = { X: 0, O: 0 };
+            }
             this.infoText.textContent = `New game! First turn: ${data.firstTurn}`;
             this.setCurrentGameType(data.gameType);
+            this.updateGameInfo();
+            this.updateGameBoard();
+            if (this.currentGameType === 'rock-paper-scissors') {
+                this.updateRpsStatus();
+                this.renderRpsControls();
+            } else if (this.currentGameType === 'memory-match') {
+                this.updateMemoryStatus();
+            }
+            // Reset rematch status
+            this.rematchRequestFrom = null;
+            this.hasRequestedRematch = false;
+            this.updateRematchButtonStatus();
+        });
+
+        this.socket.on('rematchRequested', (data) => {
+            if (data.waitingForYou) {
+                // Other player requested rematch - update button only
+                this.rematchRequestFrom = data.from;
+                this.updateRematchButtonStatus();
+            } else if (data.waitingForOpponent) {
+                // Your request was received, waiting for opponent
+                this.hasRequestedRematch = true;
+                this.updateRematchButtonStatus();
+            }
         });
 
         this.socket.on('playerDisconnected', (data) => {
@@ -1004,11 +1302,69 @@ class TicTacToeApp {
             this.updateScoreboard(data);
         });
 
+        this.socket.on('userBadges', (data) => {
+            this.displayBadges(data.badges || []);
+        });
+
+        // Badges panel handlers
+        this.badgesToggleBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleBadgesPanel();
+        });
+
+        // Close badges panel when clicking outside
+        document.addEventListener('click', (e) => {
+            if (this.badgesPanel && this.badgesDropdown) {
+                if (!this.badgesPanel.contains(e.target)) {
+                    this.closeBadgesPanel();
+                }
+            }
+        });
+
         this.socket.on('error', (error) => {
             this.showNotification(error);
         });
 
         this.socket.on('moveError', (error) => {
+            this.showNotification(error);
+        });
+
+        // Game invitation handlers
+        this.socket.on('gameInvitation', (data) => {
+            // Prevent guests from receiving invitations
+            if (this.userRole === 'guest') {
+                this.showNotification('Guests cannot receive invitations. Please register or log in to play games.');
+                return;
+            }
+            
+            const { from, gameType } = data;
+            this.pendingInvitation = { from, gameType };
+            const gameTypeName = this.formatGameType(gameType || 'tic-tac-toe');
+            const message = `${from} invited you to play ${gameTypeName}.`;
+            this.showInvitationModal(message);
+        });
+
+        this.socket.on('invitationAccepted', (data) => {
+            const { roomId, roomName, gameType } = data;
+            this.currentRoom = roomId;
+            this.currentRoomName = roomName;
+            this.setCurrentGameType(gameType);
+            // Backend has already joined us to the room, just update UI
+            this.myRole = null; // Will be set by playersRole event
+            this.isSpectator = false;
+            this.roomMessages = [];
+            this.renderRoomMessages();
+            this.updateLeaveButtonVisibility();
+            this.updateRoomInfoBox();
+            this.enableBeforeUnloadWarning();
+            this.showGame();
+        });
+
+        this.socket.on('invitationDeclined', (data) => {
+            this.showNotification(`${data.to} declined your invitation.`);
+        });
+
+        this.socket.on('invitationError', (error) => {
             this.showNotification(error);
         });
     }
@@ -1083,6 +1439,88 @@ class TicTacToeApp {
         });
     }
 
+    sendGameInvitation(username) {
+        if (!this.socket || !username) return;
+        if (this.userRole === 'guest') {
+            this.showNotification('Guests cannot send invitations. Please register or log in.');
+            return;
+        }
+        // Show game type selector modal
+        this.pendingInviteUsername = username;
+        this.invitePlayerName.textContent = username;
+        this.inviteGameModal.classList.remove('hidden');
+    }
+
+    confirmInviteGameType() {
+        if (!this.pendingInviteUsername) return;
+        const selectedGameType = document.querySelector('input[name="invite-game-type"]:checked')?.value || 'tic-tac-toe';
+        this.socket.emit('sendInvitation', { to: this.pendingInviteUsername, gameType: selectedGameType });
+        this.hideInviteGameModal();
+        this.pendingInviteUsername = null;
+    }
+
+    hideInviteGameModal() {
+        this.inviteGameModal.classList.add('hidden');
+        this.pendingInviteUsername = null;
+    }
+
+    showInvitationModal(message) {
+        if (!this.invitationModal || !this.invitationMessage) return;
+        this.invitationMessage.textContent = message;
+        this.invitationModal.classList.remove('hidden');
+    }
+
+    hideInvitationModal() {
+        if (this.invitationModal) {
+            this.invitationModal.classList.add('hidden');
+        }
+        this.pendingInvitation = null;
+    }
+
+    acceptInvitation() {
+        if (!this.pendingInvitation) return;
+        this.socket.emit('acceptInvitation', { from: this.pendingInvitation.from });
+        this.hideInvitationModal();
+    }
+
+    declineInvitation() {
+        if (!this.pendingInvitation) return;
+        this.socket.emit('declineInvitation', { from: this.pendingInvitation.from });
+        this.hideInvitationModal();
+    }
+
+    requestRematch() {
+        if (!this.socket || !this.currentRoom) return;
+        if (this.isSpectator) return;
+        if (this.gameState?.gameStatus !== 'finished') return;
+        
+        // Use the existing restartRequest mechanism
+        this.socket.emit('restartRequest', this.currentRoom);
+    }
+
+    updateRematchButtonStatus() {
+        if (!this.playAgainBtn) return;
+        const goHomeText = this.playAgainBtn.querySelector('.go-home-text');
+        if (!goHomeText) return;
+
+        if (this.rematchRequestFrom) {
+            // Opponent requested rematch
+            goHomeText.textContent = `Accept Rematch (${this.rematchRequestFrom})`;
+            this.playAgainBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            this.playAgainBtn.style.animation = 'pulse 2s infinite';
+        } else if (this.hasRequestedRematch) {
+            // You requested rematch, waiting for opponent
+            goHomeText.textContent = 'Rematch (Waiting...)';
+            this.playAgainBtn.style.background = 'linear-gradient(135deg, #7c3aed, #4c1d95)';
+            this.playAgainBtn.style.animation = 'none';
+        } else {
+            // No rematch request yet
+            goHomeText.textContent = 'Rematch';
+            this.playAgainBtn.style.background = '';
+            this.playAgainBtn.style.animation = 'none';
+        }
+    }
+
     makeMove(cellIndex) {
         if (
             !this.socket ||
@@ -1112,10 +1550,19 @@ class TicTacToeApp {
 
     showView(viewName) {
         document.querySelectorAll('.view').forEach(view => view.style.display = 'none');
+        // Also hide auth-container if it exists separately
+        if (this.authContainer) {
+            this.authContainer.style.display = 'none';
+        }
+        
         const targetView = document.getElementById(`${viewName}-container`);
         if (targetView) {
             targetView.style.display = 'block';
+        } else if (viewName === 'auth' && this.authContainer) {
+            // Handle auth-container separately since it might not have the standard naming
+            this.authContainer.style.display = 'flex';
         }
+        
         this.currentView = viewName;
         this.updateNavigation();
         this.updateChatWidgets();
@@ -1125,7 +1572,7 @@ class TicTacToeApp {
         } else if (viewName === 'rooms') {
             this.socket && this.socket.emit('getRooms');
         } else if (viewName === 'leaderboard') {
-            this.socket && this.socket.emit('getScoreboard');
+            this.loadLeaderboard();
         }
     }
 
@@ -1584,37 +2031,42 @@ class TicTacToeApp {
     }
 
     updateRoomsList() {
-        this.roomsList.innerHTML = '';
+        // Find all rooms-list elements (there are two: one in lobby, one in rooms view)
+        const roomsLists = document.querySelectorAll('#rooms-list');
+        
+        roomsLists.forEach(roomsList => {
+            roomsList.innerHTML = '';
 
-        if (!this.rooms || this.rooms.length === 0) {
-            this.roomsList.innerHTML = '<div class="no-rooms">No active rooms. Create one to get started!</div>';
-            return;
-        }
+            if (!this.rooms || this.rooms.length === 0) {
+                roomsList.innerHTML = '<div class="no-rooms">No active rooms. Create one to get started!</div>';
+                return;
+            }
 
-        this.rooms.forEach(room => {
-            const roomElement = document.createElement('div');
-            roomElement.className = 'room-item';
-            const canJoinAsPlayer = room.playerCount < 2 && room.gameStatus === 'waiting';
-            const isGuest = this.userRole === 'guest';
+            this.rooms.forEach(room => {
+                const roomElement = document.createElement('div');
+                roomElement.className = 'room-item';
+                const canJoinAsPlayer = room.playerCount < 2 && room.gameStatus === 'waiting';
+                const isGuest = this.userRole === 'guest';
 
-            roomElement.innerHTML = `
-                <div class="room-info">
-                    <h3>${room.roomName}</h3>
-                    <p>Game: ${this.formatGameType(room.gameType)} | Players: ${room.playerCount}/2 | Spectators: ${room.spectatorCount} | Status: ${room.gameStatus}</p>
-                </div>
-                <div class="room-actions">
-                    ${
-                        isGuest
-                            ? `<button disabled class="join-btn disabled">Players only</button>`
-                            : canJoinAsPlayer
-                                ? `<button onclick="app.joinRoom(${room.roomId}, false)" class="join-btn">Join as Player</button>`
-                                : `<button disabled class="join-btn disabled">Room Full</button>`
-                    }
-                    <button onclick="app.joinRoom(${room.roomId}, true)" class="spectate-btn">Join as Spectator</button>
-                </div>
-            `;
+                roomElement.innerHTML = `
+                    <div class="room-info">
+                        <h3>${room.roomName}</h3>
+                        <p>Game: ${this.formatGameType(room.gameType)} | Players: ${room.playerCount}/2 | Spectators: ${room.spectatorCount} | Status: ${room.gameStatus}</p>
+                    </div>
+                    <div class="room-actions">
+                        ${
+                            isGuest
+                                ? `<button disabled class="join-btn disabled">Players only</button>`
+                                : canJoinAsPlayer
+                                    ? `<button onclick="app.joinRoom(${room.roomId}, false)" class="join-btn">Join as Player</button>`
+                                    : `<button disabled class="join-btn disabled">Room Full</button>`
+                        }
+                        <button onclick="app.joinRoom(${room.roomId}, true)" class="spectate-btn">Join as Spectator</button>
+                    </div>
+                `;
 
-            this.roomsList.appendChild(roomElement);
+                roomsList.appendChild(roomElement);
+            });
         });
     }
 
@@ -1654,8 +2106,13 @@ class TicTacToeApp {
             const winnerName = winnerPlayer?.username || this.gameState.winner;
             finishedMessage = `The winner is ${winnerName}`;
         } else {
-            // For players, show "You win!" or "You lose!"
-            finishedMessage = this.gameState.winner === this.myRole ? 'You win!' : 'You lose!';
+            // For players, show winner name
+            const winnerPlayer = this.gameState.players?.find(p => p.role === this.gameState.winner);
+            if (winnerPlayer) {
+                finishedMessage = this.gameState.winner === this.myRole ? `You win! (${winnerPlayer.username})` : `${winnerPlayer.username} wins!`;
+            } else {
+                finishedMessage = this.gameState.winner === this.myRole ? 'You win!' : 'You lose!';
+            }
         }
 
         // Check if waiting for second player
@@ -1663,7 +2120,14 @@ class TicTacToeApp {
         
         const statusMessages = {
             waiting: hasTwoPlayers ? 'Waiting for players...' : 'Waiting for opponent...',
-            'in-progress': this.isSpectator ? 'Watching Game' : (this.gameState.currentPlayer === this.myRole ? 'Your turn!' : "Opponent's turn"),
+            'in-progress': this.isSpectator ? 'Watching Game' : (() => {
+                if (this.gameState.currentPlayer === this.myRole) {
+                    return 'Your turn!';
+                } else {
+                    const currentPlayer = this.gameState.players?.find(p => p.role === this.gameState.currentPlayer);
+                    return currentPlayer ? `${currentPlayer.username}'s turn` : "Opponent's turn";
+                }
+            })(),
             finished: finishedMessage
         };
 
@@ -1679,8 +2143,23 @@ class TicTacToeApp {
             }
         }
         
-        // Hide play again button (functionality to be added later)
-        this.playAgainBtn.style.display = 'none';
+        // Show rematch button when game is finished and both players are present
+        if (this.gameState.gameStatus === 'finished' && 
+            this.gameState.players && 
+            this.gameState.players.length === 2 && 
+            !this.isSpectator) {
+            if (this.playAgainBtn) {
+                this.playAgainBtn.style.display = 'block';
+                this.updateRematchButtonStatus();
+            }
+        } else {
+            if (this.playAgainBtn) {
+                this.playAgainBtn.style.display = 'none';
+            }
+            // Reset rematch status when game is not finished
+            this.rematchRequestFrom = null;
+            this.hasRequestedRematch = false;
+        }
     }
 
     updateMemoryStatus() {
@@ -1717,7 +2196,8 @@ class TicTacToeApp {
                 message = 'Your turn!';
                 isYourTurn = true;
             } else {
-                message = "Opponent's turn";
+                const currentPlayer = this.gameState.players?.find(p => p.role === turnRole);
+                message = currentPlayer ? `${currentPlayer.username}'s turn` : "Opponent's turn";
             }
         } else {
             message = 'Game in progress';
@@ -1734,6 +2214,24 @@ class TicTacToeApp {
             } else {
                 this.infoText.parentElement.classList.remove('your-turn-active');
             }
+        }
+        
+        // Show rematch button when game is finished and both players are present
+        if (this.gameState.gameStatus === 'finished' && 
+            this.gameState.players && 
+            this.gameState.players.length === 2 && 
+            !this.isSpectator) {
+            if (this.playAgainBtn) {
+                this.playAgainBtn.style.display = 'block';
+                this.updateRematchButtonStatus();
+            }
+        } else {
+            if (this.playAgainBtn) {
+                this.playAgainBtn.style.display = 'none';
+            }
+            // Reset rematch status when game is not finished
+            this.rematchRequestFrom = null;
+            this.hasRequestedRematch = false;
         }
     }
 
@@ -1778,6 +2276,24 @@ class TicTacToeApp {
                 this.infoText.parentElement.classList.remove('your-turn-active');
             }
         }
+        
+        // Show rematch button when game is finished and both players are present
+        if ((this.gameState.gameStatus === 'finished' || this.rpsGameOver) && 
+            this.gameState.players && 
+            this.gameState.players.length === 2 && 
+            !this.isSpectator) {
+            if (this.playAgainBtn) {
+                this.playAgainBtn.style.display = 'block';
+                this.updateRematchButtonStatus();
+            }
+        } else {
+            if (this.playAgainBtn) {
+                this.playAgainBtn.style.display = 'none';
+            }
+            // Reset rematch status when game is not finished
+            this.rematchRequestFrom = null;
+            this.hasRequestedRematch = false;
+        }
     }
 
     updateRpsScores() {
@@ -1802,13 +2318,39 @@ class TicTacToeApp {
     }
 
     updateLobbyUsers() {
-        if (!this.lobbyUsersList) return;
-        this.lobbyUsersList.innerHTML = '';
-        this.lobbyUsers.forEach(username => {
-            const userRow = document.createElement('div');
-            userRow.className = 'user-item';
-            userRow.textContent = username;
-            this.lobbyUsersList.appendChild(userRow);
+        // Update both the lobby list and the widget popup list
+        const lists = [this.lobbyUsersList, this.onlinePlayersList].filter(list => list !== null);
+        
+        lists.forEach(list => {
+            list.innerHTML = '';
+            this.lobbyUsers.forEach(username => {
+                // Don't show invite button for yourself
+                if (username === this.currentUser) return;
+                
+                const userRow = document.createElement('div');
+                userRow.className = 'user-item';
+                
+                const userNameSpan = document.createElement('span');
+                userNameSpan.className = 'user-name';
+                userNameSpan.textContent = username;
+                
+                userRow.appendChild(userNameSpan);
+                
+                // Only show invite button if:
+                // 1. Current user is not a guest
+                // 2. Target user is not a guest
+                const targetUserRole = this.userRolesMap.get(username) || 'player';
+                if (this.userRole !== 'guest' && targetUserRole !== 'guest') {
+                    const inviteBtn = document.createElement('button');
+                    inviteBtn.className = 'invite-btn';
+                    inviteBtn.textContent = 'Invite';
+                    inviteBtn.title = `Invite ${username} to play`;
+                    inviteBtn.onclick = () => this.sendGameInvitation(username);
+                    userRow.appendChild(inviteBtn);
+                }
+                
+                list.appendChild(userRow);
+            });
         });
     }
 
@@ -2232,11 +2774,7 @@ class TicTacToeApp {
                 this.memoryPlayerXAvatar.textContent = avatarX;
             }
             if (this.memoryPlayerXName) {
-                if (this.isSpectator) {
-                    this.memoryPlayerXName.textContent = playerX.username;
-                } else {
-                    this.memoryPlayerXName.textContent = this.myRole === 'X' ? 'You' : 'Opponent';
-                }
+                this.memoryPlayerXName.textContent = playerX.username;
             }
             if (this.memoryPlayerXScore) {
                 this.memoryPlayerXScore.textContent = scoreX;
@@ -2250,19 +2788,15 @@ class TicTacToeApp {
                 this.memoryPlayerOAvatar.textContent = avatarO;
             }
             if (this.memoryPlayerOName) {
-                if (this.isSpectator) {
-                    this.memoryPlayerOName.textContent = playerO.username;
-                } else {
-                    this.memoryPlayerOName.textContent = this.myRole === 'O' ? 'You' : 'Opponent';
-                }
+                this.memoryPlayerOName.textContent = playerO.username;
             }
             if (this.memoryPlayerOScore) {
                 this.memoryPlayerOScore.textContent = scoreO;
             }
         } else {
             // When playerO doesn't exist yet (waiting for opponent)
-            if (this.memoryPlayerOName && !this.isSpectator) {
-                this.memoryPlayerOName.textContent = 'Opponent';
+            if (this.memoryPlayerOName) {
+                this.memoryPlayerOName.textContent = 'Waiting...';
             }
         }
     }
@@ -2286,11 +2820,7 @@ class TicTacToeApp {
                 this.tttPlayerXAvatar.textContent = avatarX;
             }
             if (this.tttPlayerXName) {
-                if (this.isSpectator) {
-                    this.tttPlayerXName.textContent = playerX.username;
-                } else {
-                    this.tttPlayerXName.textContent = this.myRole === 'X' ? 'You' : 'Opponent';
-                }
+                this.tttPlayerXName.textContent = playerX.username;
             }
             if (this.tttPlayerXScore) {
                 this.tttPlayerXScore.textContent = scoreX;
@@ -2307,19 +2837,15 @@ class TicTacToeApp {
                 this.tttPlayerOAvatar.textContent = avatarO;
             }
             if (this.tttPlayerOName) {
-                if (this.isSpectator) {
-                    this.tttPlayerOName.textContent = playerO.username;
-                } else {
-                    this.tttPlayerOName.textContent = this.myRole === 'O' ? 'You' : 'Opponent';
-                }
+                this.tttPlayerOName.textContent = playerO.username;
             }
             if (this.tttPlayerOScore) {
                 this.tttPlayerOScore.textContent = scoreO;
             }
         } else {
             // When playerO doesn't exist yet (waiting for opponent)
-            if (this.tttPlayerOName && !this.isSpectator) {
-                this.tttPlayerOName.textContent = 'Opponent';
+            if (this.tttPlayerOName) {
+                this.tttPlayerOName.textContent = 'Waiting...';
             }
         }
     }
@@ -2340,11 +2866,7 @@ class TicTacToeApp {
                 this.rpsPlayerXAvatar.textContent = avatarX;
             }
             if (this.rpsPlayerXName) {
-                if (this.isSpectator) {
-                    this.rpsPlayerXName.textContent = playerX.username;
-                } else {
-                    this.rpsPlayerXName.textContent = this.myRole === 'X' ? 'You' : 'Opponent';
-                }
+                this.rpsPlayerXName.textContent = playerX.username;
             }
             if (this.rpsPlayerXScore) {
                 this.rpsPlayerXScore.textContent = scoreX;
@@ -2358,19 +2880,15 @@ class TicTacToeApp {
                 this.rpsPlayerOAvatar.textContent = avatarO;
             }
             if (this.rpsPlayerOName) {
-                if (this.isSpectator) {
-                    this.rpsPlayerOName.textContent = playerO.username;
-                } else {
-                    this.rpsPlayerOName.textContent = this.myRole === 'O' ? 'You' : 'Opponent';
-                }
+                this.rpsPlayerOName.textContent = playerO.username;
             }
             if (this.rpsPlayerOScore) {
                 this.rpsPlayerOScore.textContent = scoreO;
             }
         } else {
             // When playerO doesn't exist yet (waiting for opponent)
-            if (this.rpsPlayerOName && !this.isSpectator) {
-                this.rpsPlayerOName.textContent = 'Opponent';
+            if (this.rpsPlayerOName) {
+                this.rpsPlayerOName.textContent = 'Waiting...';
             }
         }
     }
@@ -2419,8 +2937,143 @@ class TicTacToeApp {
         this.socket.emit('rpsChoice', { roomId: this.currentRoom, choice });
     }
 
+    loadLeaderboard() {
+        if (!this.socket) return;
+        this.socket.emit('getScoreboard', { gameType: null });
+    }
+
+    toggleBadgesPanel() {
+        if (!this.badgesDropdown) return;
+        this.badgesDropdown.classList.toggle('hidden');
+        if (!this.badgesDropdown.classList.contains('hidden')) {
+            this.loadUserBadges();
+        }
+    }
+
+    closeBadgesPanel() {
+        if (this.badgesDropdown) {
+            this.badgesDropdown.classList.add('hidden');
+        }
+    }
+
+    loadUserBadges() {
+        if (!this.socket) return;
+        this.socket.emit('getUserBadges');
+    }
+
+    getAllBadges() {
+        return {
+            'ttt-first-win': { emoji: '🎯', name: 'First TTT Win', description: 'Win your first game of Tic Tac Toe' },
+            'ttt-10-wins': { emoji: '⭐', name: 'TTT 10 Wins', description: 'Win 10 games of Tic Tac Toe' },
+            'ttt-50-wins': { emoji: '🌟', name: 'TTT 50 Wins', description: 'Win 50 games of Tic Tac Toe' },
+            'ttt-100-wins': { emoji: '💎', name: 'TTT Master', description: 'Win 100 games of Tic Tac Toe' },
+            'ttt-80-percent': { emoji: '🏆', name: 'TTT Expert', description: 'Achieve 80% win rate in Tic Tac Toe (min 10 games)' },
+            'rps-first-win': { emoji: '🎯', name: 'First RPS Win', description: 'Win your first game of Rock Paper Scissors' },
+            'rps-10-wins': { emoji: '⭐', name: 'RPS 10 Wins', description: 'Win 10 games of Rock Paper Scissors' },
+            'rps-50-wins': { emoji: '🌟', name: 'RPS 50 Wins', description: 'Win 50 games of Rock Paper Scissors' },
+            'rps-100-wins': { emoji: '💎', name: 'RPS Master', description: 'Win 100 games of Rock Paper Scissors' },
+            'rps-80-percent': { emoji: '🏆', name: 'RPS Expert', description: 'Achieve 80% win rate in Rock Paper Scissors (min 10 games)' },
+            'memory-first-win': { emoji: '🎯', name: 'First Memory Win', description: 'Win your first game of Memory Match' },
+            'memory-10-wins': { emoji: '⭐', name: 'Memory 10 Wins', description: 'Win 10 games of Memory Match' },
+            'memory-50-wins': { emoji: '🌟', name: 'Memory 50 Wins', description: 'Win 50 games of Memory Match' },
+            'memory-100-wins': { emoji: '💎', name: 'Memory Master', description: 'Win 100 games of Memory Match' },
+            'memory-80-percent': { emoji: '🏆', name: 'Memory Expert', description: 'Achieve 80% win rate in Memory Match (min 10 games)' },
+            'overall-10-wins': { emoji: '🔥', name: 'Rising Star', description: 'Win 10 games across all games' },
+            'overall-50-wins': { emoji: '⚡', name: 'Champion', description: 'Win 50 games across all games' },
+            'overall-100-wins': { emoji: '👑', name: 'Legend', description: 'Win 100 games across all games' },
+            'veteran': { emoji: '🎖️', name: 'Veteran', description: 'Play 50 games across all games' },
+            'legend': { emoji: '🏅', name: 'Hall of Fame', description: 'Play 100 games across all games' }
+        };
+    }
+
+    displayBadges(earnedBadges = []) {
+        if (!this.earnedBadgesContainer || !this.availableBadgesContainer) return;
+        
+        const allBadges = this.getAllBadges();
+        const earnedSet = new Set(earnedBadges);
+        
+        // Clear containers
+        this.earnedBadgesContainer.innerHTML = '';
+        this.availableBadgesContainer.innerHTML = '';
+        
+        // Display earned badges
+        if (earnedBadges.length === 0) {
+            this.earnedBadgesContainer.innerHTML = '<div class="no-badges">No badges earned yet. Play games to earn badges!</div>';
+        } else {
+            earnedBadges.forEach(badgeId => {
+                const badge = allBadges[badgeId];
+                if (badge) {
+                    const badgeElement = this.createBadgeElement(badge, true);
+                    this.earnedBadgesContainer.appendChild(badgeElement);
+                }
+            });
+        }
+        
+        // Display available badges
+        Object.keys(allBadges).forEach(badgeId => {
+            if (!earnedSet.has(badgeId)) {
+                const badge = allBadges[badgeId];
+                const badgeElement = this.createBadgeElement(badge, false);
+                this.availableBadgesContainer.appendChild(badgeElement);
+            }
+        });
+    }
+
+    createBadgeElement(badge, earned) {
+        const badgeDiv = document.createElement('div');
+        badgeDiv.className = `badge-item ${earned ? 'earned' : 'available'}`;
+        badgeDiv.innerHTML = `
+            <div class="badge-icon">${badge.emoji}</div>
+            <div class="badge-info">
+                <div class="badge-name">${badge.name}</div>
+                <div class="badge-description">${badge.description}</div>
+            </div>
+        `;
+        return badgeDiv;
+    }
+
+    getBadgeDisplay(badges) {
+        if (!badges || badges.length === 0) return '';
+        
+        const badgeMap = {
+            'ttt-first-win': { emoji: '🎯', name: 'First TTT Win' },
+            'ttt-10-wins': { emoji: '⭐', name: 'TTT 10 Wins' },
+            'ttt-50-wins': { emoji: '🌟', name: 'TTT 50 Wins' },
+            'ttt-100-wins': { emoji: '💎', name: 'TTT Master' },
+            'ttt-80-percent': { emoji: '🏆', name: 'TTT Expert' },
+            'rps-first-win': { emoji: '🎯', name: 'First RPS Win' },
+            'rps-10-wins': { emoji: '⭐', name: 'RPS 10 Wins' },
+            'rps-50-wins': { emoji: '🌟', name: 'RPS 50 Wins' },
+            'rps-100-wins': { emoji: '💎', name: 'RPS Master' },
+            'rps-80-percent': { emoji: '🏆', name: 'RPS Expert' },
+            'memory-first-win': { emoji: '🎯', name: 'First Memory Win' },
+            'memory-10-wins': { emoji: '⭐', name: 'Memory 10 Wins' },
+            'memory-50-wins': { emoji: '🌟', name: 'Memory 50 Wins' },
+            'memory-100-wins': { emoji: '💎', name: 'Memory Master' },
+            'memory-80-percent': { emoji: '🏆', name: 'Memory Expert' },
+            'overall-10-wins': { emoji: '🔥', name: 'Rising Star' },
+            'overall-50-wins': { emoji: '⚡', name: 'Champion' },
+            'overall-100-wins': { emoji: '👑', name: 'Legend' },
+            'veteran': { emoji: '🎖️', name: 'Veteran' },
+            'legend': { emoji: '🏅', name: 'Hall of Fame' }
+        };
+        
+        const badgeElements = badges.slice(0, 5).map(badgeId => {
+            const badge = badgeMap[badgeId] || { emoji: '🏅', name: badgeId };
+            return `<span class="badge" title="${badge.name}">
+                <span class="badge-emoji">${badge.emoji}</span>
+                <span class="badge-name">${badge.name}</span>
+            </span>`;
+        }).join('');
+        
+        const moreBadges = badges.length > 5 ? `<span class="badge-more" title="${badges.slice(5).map(b => badgeMap[b]?.name || b).join(', ')}">+${badges.length - 5}</span>` : '';
+        
+        return `<div class="badges-container">${badgeElements}${moreBadges}</div>`;
+    }
+
     updateScoreboard(data) {
         if (!this.scoreboardList) return;
+        
         this.scoreboardList.innerHTML = '';
         if (!data || data.length === 0) {
             this.scoreboardList.innerHTML = '<div class="no-scores">No games played yet! Be the first to play.</div>';
@@ -2432,10 +3085,14 @@ class TicTacToeApp {
             const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
             const playerElement = document.createElement('div');
             playerElement.className = 'scoreboard-item';
+            const badgesHtml = this.getBadgeDisplay(player.badges);
             playerElement.innerHTML = `
                 <div class="rank">${medal}</div>
                 <div class="player-info">
-                    <h3>${player.username}</h3>
+                    <div class="player-header">
+                        <h3>${player.username}</h3>
+                        ${badgesHtml}
+                    </div>
                     <p>Games: ${player.totalGames} | Win Rate: ${player.winRate}%</p>
                 </div>
                 <div class="stats">
@@ -2477,6 +3134,64 @@ class TicTacToeApp {
     showAuthMessage(message) {
         if (!this.authMessage) return;
         this.authMessage.textContent = message || '';
+        this.authMessage.className = 'auth-message';
+    }
+
+    showEmailVerificationMessage(email, message) {
+        if (!this.authMessage) return;
+        const resendBtn = document.createElement('button');
+        resendBtn.textContent = 'Resend Verification Email';
+        resendBtn.className = 'resend-verification-btn';
+        resendBtn.style.cssText = 'margin-top: 10px; padding: 8px 16px; background: #7c3aed; color: white; border: none; border-radius: 5px; cursor: pointer;';
+        resendBtn.onclick = () => this.resendVerificationEmail(email);
+        
+        this.authMessage.innerHTML = `<div style="color: #e74c3c;">${message || 'Please verify your email before logging in.'}</div>`;
+        this.authMessage.appendChild(resendBtn);
+    }
+
+    showRegistrationSuccessMessage(email, message, emailPreviewUrl = null) {
+        if (!this.authMessage) return;
+        const resendBtn = document.createElement('button');
+        resendBtn.textContent = 'Resend Verification Email';
+        resendBtn.className = 'resend-verification-btn';
+        resendBtn.style.cssText = 'margin-top: 10px; padding: 8px 16px; background: #7c3aed; color: white; border: none; border-radius: 5px; cursor: pointer;';
+        resendBtn.onclick = () => this.resendVerificationEmail(email);
+        
+        let messageHtml = `<div style="color: #27ae60;">${message || 'Registration successful! Please check your email to verify your account.'}</div>`;
+        
+        // If using test email service (Ethereal), show preview URL
+        if (emailPreviewUrl) {
+            messageHtml += `<div style="margin-top: 10px; padding: 10px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 5px; color: #856404;">
+                <strong>📧 Test Email Service:</strong> Since email is not configured, this is a test email. 
+                <a href="${emailPreviewUrl}" target="_blank" style="color: #7c3aed; text-decoration: underline;">Click here to view the verification email</a>
+            </div>`;
+        }
+        
+        this.authMessage.innerHTML = messageHtml;
+        this.authMessage.appendChild(resendBtn);
+        
+        // Clear form
+        this.registerForm.reset();
+    }
+
+    async resendVerificationEmail(email) {
+        try {
+            const response = await fetch('/api/auth/resend-verification', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                this.showAuthMessage(data.message || 'Verification email sent successfully. Please check your inbox.');
+            } else {
+                this.showAuthMessage(data.error || 'Failed to send verification email. Please try again later.');
+            }
+        } catch (error) {
+            console.error('Resend verification error:', error);
+            this.showAuthMessage('Unable to reach the server.');
+        }
     }
 
     toggleOnlinePlayers() {
