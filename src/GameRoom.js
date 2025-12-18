@@ -254,7 +254,6 @@ class GameRoom {
             matches: { X:0, O:0 }
         };
         this.gameState.board = Array(deck.length).fill('');
-        this.gameState.gameStatus = 'waiting';
     }
 
     flipMemoryCard(socketId, cardId) {

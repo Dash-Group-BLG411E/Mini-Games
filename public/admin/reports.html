@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Reports</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        .error {
+            background: #dc3545;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        thead {
+            background: rgba(124, 58, 237, 0.3);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        th {
+            font-weight: 600;
+            color: #fff;
+        }
+        td {
+            color: #ddd;
+        }
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        .status.open {
+            background: #ffc107;
+            color: #000;
+        }
+        .status.in_review {
+            background: #17a2b8;
+            color: #fff;
+        }
+        .status.resolved {
+            background: #28a745;
+            color: #fff;
+        }
+        .status.rejected {
+            background: #dc3545;
+            color: #fff;
+        }
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #7c3aed;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Back to Home</a>
+        <h1>Admin Reports</h1>
+        <div id="error" class="error hidden"></div>
+        <div id="loading" class="loading">Loading reports...</div>
+        <div id="reports-container" class="hidden">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Reporter</th>
+                        <th>Reported User</th>
+                        <th>Reason</th>
+                        <th>Message</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody id="reports-table-body">
+                </tbody>
+            </table>
+        </div>
+        <div id="empty" class="empty hidden">No reports found.</div>
+    </div>
+
+    <script>
+        // Helper functions
+        function showError(message) {
+            const errorEl = document.getElementById('error');
+            const loadingEl = document.getElementById('loading');
+            loadingEl.classList.add('hidden');
+            errorEl.textContent = message;
+            errorEl.classList.remove('hidden');
+        }
+
+        function escapeHtml(text) {
+            if (text === null || text === undefined) return '';
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleString();
+        }
+
+        // Main function to load reports
+        async function loadReports() {
+            const loadingEl = document.getElementById('loading');
+            const errorEl = document.getElementById('error');
+            const containerEl = document.getElementById('reports-container');
+            const emptyEl = document.getElementById('empty');
+            const tableBody = document.getElementById('reports-table-body');
+
+            // Get token from localStorage
+            const token = localStorage.getItem('tictactoe_token');
+            
+            if (!token) {
+                showError('You must be logged in to view reports.');
+                return;
+            }
+
+            try {
+                // Show loading, hide other elements
+                loadingEl.classList.remove('hidden');
+                errorEl.classList.add('hidden');
+                containerEl.classList.add('hidden');
+                emptyEl.classList.add('hidden');
+
+                console.log('Fetching reports from /api/reports...');
+                
+                // Fetch reports with Authorization header
+                const response = await fetch('/api/reports', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('Response status:', response.status);
+
+                if (response.status === 403) {
+                    showError('Access denied. Admin privileges required.');
+                    return;
+                }
+
+                if (response.status === 401) {
+                    showError('Authentication failed. Please log in again.');
+                    return;
+                }
+
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({ error: 'Failed to load reports' }));
+                    showError(data.error || 'Failed to load reports.');
+                    return;
+                }
+
+                const reports = await response.json();
+                console.log('Reports received:', reports);
+
+                loadingEl.classList.add('hidden');
+
+                if (!reports || reports.length === 0) {
+                    emptyEl.classList.remove('hidden');
+                    return;
+                }
+
+                // Render reports table
+                tableBody.innerHTML = '';
+                reports.forEach(report => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${escapeHtml(report.reporterId)}</td>
+                        <td>${escapeHtml(report.reportedUserId)}</td>
+                        <td>${escapeHtml(report.reason)}</td>
+                        <td>${escapeHtml(report.message || '-')}</td>
+                        <td><span class="status ${report.status}">${escapeHtml(report.status)}</span></td>
+                        <td>${formatDate(report.createdAt)}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                containerEl.classList.remove('hidden');
+            } catch (error) {
+                console.error('Error loading reports:', error);
+                showError('Failed to load reports. Please try again.');
+            }
+        }
+
+        // Load reports when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Admin reports page loaded');
+            loadReports();
+        });
+    </script>
+</body>
+</html>
+

@@ -48,6 +48,7 @@ class TicTacToeApp {
         this.userRoleBadge = document.getElementById('user-role-badge');
         this.userMenuDropdown = document.getElementById('user-menu-dropdown');
         this.profileNavBtn = document.getElementById('profile-nav-btn');
+        this.adminReportsBtn = document.getElementById('admin-reports-btn');
         this.logoutBtn = document.getElementById('logout-btn');
 
         this.authContainer = document.getElementById('auth-container');
@@ -106,6 +107,15 @@ class TicTacToeApp {
         this.roomChatTab = document.getElementById('room-chat-tab');
         this.roomChatDrawer = document.getElementById('room-chat-drawer');
         this.roomChatDrawerContent = document.getElementById('room-chat-drawer-content');
+
+        // Report user modal elements
+        this.reportModal = document.getElementById('report-modal');
+        this.reportTargetName = document.getElementById('report-target-name');
+        this.reportReasonSelect = document.getElementById('report-reason-select');
+        this.reportMessageInput = document.getElementById('report-message-input');
+        this.reportSubmitBtn = document.getElementById('report-submit-btn');
+        this.reportCancelBtn = document.getElementById('report-cancel-btn');
+        this.pendingReportUsername = null;
         this.onlinePlayersWidget = document.getElementById('online-players-widget');
         this.roomChatOpen = false;
         this.rpsStage = document.getElementById('rps-stage');
@@ -272,6 +282,10 @@ class TicTacToeApp {
                 return;
             }
             this.showProfile();
+        });
+        this.adminReportsBtn?.addEventListener('click', () => {
+            this.closeUserMenu();
+            window.location.href = '/admin/reports';
         });
         this.logoutBtn.addEventListener('click', () => {
             this.closeUserMenu();
@@ -512,6 +526,16 @@ class TicTacToeApp {
                 this.submitRpsChoice(button.dataset.choice);
             });
         });
+
+        // Report modal handlers
+        this.reportSubmitBtn?.addEventListener('click', () => this.submitReport());
+        this.reportCancelBtn?.addEventListener('click', () => this.closeReportModal());
+        this.reportModal?.addEventListener('click', (e) => {
+            if (e.target === this.reportModal) {
+                this.closeReportModal();
+            }
+        });
+
         this.memoryGrid?.addEventListener('click', (event) => {
             const card = event.target.closest('.memory-card');
             if (!card) return;
@@ -1734,6 +1758,15 @@ class TicTacToeApp {
                 this.userRoleBadge.textContent = '';
             }
         }
+        
+        // Show/hide admin reports link based on role
+        if (this.adminReportsBtn) {
+            if (this.userRole === 'admin') {
+                this.adminReportsBtn.classList.remove('hidden');
+            } else {
+                this.adminReportsBtn.classList.add('hidden');
+            }
+        }
     }
 
     loadProfileData() {
@@ -2317,6 +2350,73 @@ class TicTacToeApp {
         this.socket.emit('roomChatMessage', { roomId: this.currentRoom, message });
     }
 
+    openReportModal(username) {
+        if (!this.reportModal || this.userRole === 'guest') {
+            this.showNotification('You must be logged in to report users.');
+            return;
+        }
+        this.pendingReportUsername = username;
+        if (this.reportTargetName) {
+            this.reportTargetName.textContent = username;
+        }
+        if (this.reportReasonSelect) {
+            this.reportReasonSelect.value = 'cheating';
+        }
+        if (this.reportMessageInput) {
+            this.reportMessageInput.value = '';
+        }
+        this.reportModal.classList.remove('hidden');
+    }
+
+    closeReportModal() {
+        if (!this.reportModal) return;
+        this.reportModal.classList.add('hidden');
+        this.pendingReportUsername = null;
+    }
+
+    async submitReport() {
+        if (!this.pendingReportUsername) {
+            this.closeReportModal();
+            return;
+        }
+
+        const reason = this.reportReasonSelect?.value || 'cheating';
+        const message = this.reportMessageInput?.value || '';
+
+        try {
+            // We only have usernames here; backend expects reportedUserId,
+            // so keep it simple and send the username as a separate field.
+            const response = await fetch('/api/reports', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': this.token ? `Bearer ${this.token}` : '',
+                },
+                body: JSON.stringify({
+                    // Backend model uses reportedUserId; for now send the username
+                    // and let backend adapt or be extended later.
+                    reportedUserId: this.pendingReportUsername,
+                    reason,
+                    message,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                const errorMessage = data && data.error ? data.error : 'Failed to submit report.';
+                this.showNotification(errorMessage);
+            } else {
+                this.showNotification('Report submitted. Thank you for your feedback.');
+            }
+        } catch (error) {
+            console.error('Error submitting report:', error);
+            this.showNotification('Unable to submit report. Please try again later.');
+        } finally {
+            this.closeReportModal();
+        }
+    }
+
     updateLobbyUsers() {
         // Update both the lobby list and the widget popup list
         const lists = [this.lobbyUsersList, this.onlinePlayersList].filter(list => list !== null);
@@ -2347,6 +2447,14 @@ class TicTacToeApp {
                     inviteBtn.title = `Invite ${username} to play`;
                     inviteBtn.onclick = () => this.sendGameInvitation(username);
                     userRow.appendChild(inviteBtn);
+
+                    // Simple "Report" button next to username
+                    const reportBtn = document.createElement('button');
+                    reportBtn.className = 'report-btn';
+                    reportBtn.textContent = 'Report';
+                    reportBtn.title = `Report ${username}`;
+                    reportBtn.onclick = () => this.openReportModal(username);
+                    userRow.appendChild(reportBtn);
                 }
                 
                 list.appendChild(userRow);

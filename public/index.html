@@ -83,6 +83,9 @@
                     <button id="profile-nav-btn" class="user-menu-item">
                         <span>👤</span> Profile
                     </button>
+                    <button id="admin-reports-btn" class="user-menu-item hidden">
+                        <span>📊</span> Admin Reports
+                    </button>
                     <button id="logout-btn" class="user-menu-item">
                         <span class="logout-icon">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -513,6 +516,27 @@
             <p>If you want to quit, press the "Leave Game" button.</p>
             <div class="modal-actions">
                 <button id="close-nav-warning-btn" class="cancel-delete-btn">Okay</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report User Modal -->
+    <div id="report-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>Report User</h2>
+            <p id="report-target-label">Reporting: <span id="report-target-name"></span></p>
+            <label for="report-reason-select">Reason</label>
+            <select id="report-reason-select">
+                <option value="cheating">Cheating</option>
+                <option value="abuse">Abuse</option>
+                <option value="spam">Spam</option>
+                <option value="bug">Bug</option>
+            </select>
+            <label for="report-message-input">Details (optional)</label>
+            <textarea id="report-message-input" rows="3" placeholder="Describe what happened..."></textarea>
+            <div class="modal-actions">
+                <button id="report-submit-btn" class="modal-btn">Submit</button>
+                <button id="report-cancel-btn" class="modal-btn cancel-btn">Cancel</button>
             </div>
         </div>
     </div>

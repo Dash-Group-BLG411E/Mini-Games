@@ -32,8 +32,8 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['admin', 'player', 'guest'],
-    default: 'player'
+    enum: ['admin', 'user', 'player', 'guest'], // 'user' is default, 'player' kept for backward compatibility
+    default: 'user'
   },
   emailVerified: {
     type: Boolean,

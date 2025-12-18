@@ -4,6 +4,7 @@ const express = require("express")
 const socketio = require("socket.io")
 const SocketHandlers = require("./socketHandlers")
 const authRoutes = require("./auth/authRoutes")
+const reportsRoutes = require("./reportsRoutes")
 const { requireAuth, requireRole } = require("./auth/authMiddleware")
 const { verifyToken } = require("./auth/authUtils")
 const connectDB = require("./db/connection")
@@ -17,6 +18,7 @@ const publicDirPath = path.join(__dirname, "../public")
 app.use(express.static(publicDirPath))
 app.use(express.json());
 app.use("/api/auth", authRoutes)
+app.use(reportsRoutes)
 
 // Initialize socket handlers
 const socketHandlers = new SocketHandlers(io)
@@ -62,6 +64,12 @@ app.get('/api/scoreboard', requireAuth, requireRole('admin', 'player', 'guest'),
 // Profile route for front-end
 app.get('/api/profile', requireAuth, requireRole('admin', 'player', 'guest'), (req, res) => {
     res.json({ username: req.user.username, role: req.user.role || 'player' })
+})
+
+// Admin reports page - serve HTML (no auth required for the page itself)
+// The page will use JavaScript to call the protected /api/reports endpoint
+app.get('/admin/reports', (req, res) => {
+    res.sendFile(path.join(publicDirPath, 'admin', 'reports.html'));
 })
 
 // Initialize MongoDB connection and start server
