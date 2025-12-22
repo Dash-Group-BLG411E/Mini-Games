@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 
-const JWT_SECRET = process.env.JWT_SECRET || 'tic-tac-toe-secret'
+const JWT_SECRET = process.env.JWT_SECRET || 'minigames-secret'
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '12h'
 
 function generateToken(payload = {}) {

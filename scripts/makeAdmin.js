@@ -1,11 +1,3 @@
-/**
- * Simple script to promote a user to admin role
- * 
- * Usage: node scripts/makeAdmin.js <username>
- * 
- * Example: node scripts/makeAdmin.js john
- */
-
 const mongoose = require('mongoose');
 const User = require('../src/models/User');
 require('dotenv').config();
@@ -20,12 +12,10 @@ if (!username) {
 
 async function makeAdmin() {
   try {
-    // Connect to MongoDB
     const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/minigames';
     await mongoose.connect(mongoUri);
     console.log('✅ Connected to MongoDB');
 
-    // Find user
     const user = await User.findOne({ username: username.toLowerCase() });
     
     if (!user) {
@@ -33,14 +23,12 @@ async function makeAdmin() {
       process.exit(1);
     }
 
-    // Check if already admin
     if (user.role === 'admin') {
       console.log(`ℹ️  User "${username}" is already an admin`);
       await mongoose.disconnect();
       process.exit(0);
     }
 
-    // Promote to admin
     user.role = 'admin';
     await user.save();
 

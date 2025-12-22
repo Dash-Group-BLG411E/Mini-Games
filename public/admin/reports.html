@@ -147,7 +147,6 @@
             return date.toLocaleString();
         }
 
-        // Main function to load reports
         async function loadReports() {
             const loadingEl = document.getElementById('loading');
             const errorEl = document.getElementById('error');
@@ -156,7 +155,7 @@
             const tableBody = document.getElementById('reports-table-body');
 
             // Get token from localStorage
-            const token = localStorage.getItem('tictactoe_token');
+            const token = localStorage.getItem('minigames_token');
             
             if (!token) {
                 showError('You must be logged in to view reports.');
@@ -172,7 +171,6 @@
 
                 console.log('Fetching reports from /api/reports...');
                 
-                // Fetch reports with Authorization header
                 const response = await fetch('/api/reports', {
                     method: 'GET',
                     headers: {
@@ -231,7 +229,6 @@
             }
         }
 
-        // Load reports when page loads
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Admin reports page loaded');
             loadReports();

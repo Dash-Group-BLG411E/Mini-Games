@@ -12,20 +12,18 @@ class EmailService {
     const smtpUser = process.env.SMTP_USER || process.env.EMAIL_USER;
     const smtpPass = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
 
-    // Check if email credentials are configured
     if (smtpUser && smtpPass) {
       try {
         this.transporter = nodemailer.createTransport({
           host: process.env.SMTP_HOST || 'smtp.gmail.com',
           port: parseInt(process.env.SMTP_PORT || '587'),
-          secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+          secure: process.env.SMTP_SECURE === 'true',
           auth: {
             user: smtpUser,
             pass: smtpPass
           }
         });
         
-        // Verify connection
         await this.transporter.verify();
         this.isConfigured = true;
         console.log('Email service configured successfully');
@@ -35,7 +33,6 @@ class EmailService {
         this.isConfigured = false;
       }
     } else {
-      // For development/testing, use Ethereal Email if no credentials are set
       if (process.env.NODE_ENV === 'development' || !process.env.SMTP_USER) {
         console.log('No email credentials found. Using Ethereal Email for testing...');
         try {
@@ -68,7 +65,6 @@ class EmailService {
   }
 
   async sendVerificationEmail(email, username, token) {
-    // Check if email service is configured
     if (!this.isConfigured || !this.transporter) {
       console.error('Email service not configured. Cannot send verification email.');
       return { 
@@ -140,7 +136,6 @@ class EmailService {
       const info = await this.transporter.sendMail(mailOptions);
       console.log('Verification email sent:', info.messageId);
       
-      // If using Ethereal, log the preview URL
       const previewUrl = nodemailer.getTestMessageUrl(info);
       if (previewUrl) {
         console.log('═══════════════════════════════════════════════════════════');
@@ -157,7 +152,6 @@ class EmailService {
   }
 
   async sendResendVerificationEmail(email, username, token) {
-    // Check if email service is configured
     if (!this.isConfigured || !this.transporter) {
       console.error('Email service not configured. Cannot send verification email.');
       return { 
@@ -232,7 +226,6 @@ class EmailService {
       const info = await this.transporter.sendMail(mailOptions);
       console.log('Resend verification email sent:', info.messageId);
       
-      // If using Ethereal, log the preview URL
       const previewUrl = nodemailer.getTestMessageUrl(info);
       if (previewUrl) {
         console.log('═══════════════════════════════════════════════════════════');
