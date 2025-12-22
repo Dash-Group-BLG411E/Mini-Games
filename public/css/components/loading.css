@@ -1,0 +1,16 @@
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%);
+    z-index: 10000;
+    display: block;
+}
+
+.loading-screen.hidden {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}

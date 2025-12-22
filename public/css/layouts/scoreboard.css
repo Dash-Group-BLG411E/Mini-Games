@@ -1,0 +1,181 @@
+.leaderboard-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.leaderboard-tab {
+    padding: 0.75rem 1.5rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.leaderboard-tab:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+.leaderboard-tab.active {
+    background-color: rgba(124, 58, 237, 0.8);
+    border-color: rgba(124, 58, 237, 1);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+}
+
+.scoreboard-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.scoreboard-item {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease;
+    width: 100%;
+}
+
+.scoreboard-item:hover {
+    transform: translateY(-2px);
+}
+
+.rank {
+    font-size: 2rem;
+    margin-right: 1.5rem;
+    min-width: 60px;
+    text-align: center;
+}
+
+.player-info {
+    flex: 1;
+}
+
+.player-info h3 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+    font-size: 1.3rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-weight: 600;
+}
+
+.player-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.player-header h3 {
+    margin: 0;
+}
+
+.badges-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    background-color: rgba(124, 58, 237, 0.1);
+    border-radius: 8px;
+    cursor: help;
+    transition: all 0.2s ease;
+    font-size: 0.85rem;
+    border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+.badge:hover {
+    background-color: rgba(124, 58, 237, 0.2);
+    transform: translateY(-1px);
+}
+
+.badge-emoji {
+    font-size: 1.2rem;
+}
+
+.badge-name {
+    color: #333;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.badge-more {
+    font-size: 0.9rem;
+    color: #666;
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    cursor: help;
+    font-weight: 600;
+}
+
+.player-info p {
+    margin: 0.5rem 0 0 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.stats {
+    display: flex;
+    gap: 1rem;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.stat-value.wins {
+    color: #4CAF50;
+}
+
+.stat-value.losses {
+    color: #f44336;
+}
+
+.stat-value.draws {
+    color: #ff9800;
+}
+
+.no-scores {
+    text-align: center;
+    padding: 2rem;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    color: #666;
+    font-size: 1.1rem;
+}

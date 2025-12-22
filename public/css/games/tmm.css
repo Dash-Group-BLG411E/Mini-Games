@@ -1,0 +1,232 @@
+.tmm-stage {
+    margin: 0;
+    margin-top: 0;
+    padding: 1.25rem;
+    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+    max-width: 100%;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.tmm-game-container {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    justify-content: center;
+}
+
+.tmm-player-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 120px;
+}
+
+.tmm-player-role {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent-purple);
+    text-align: center;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.tmm-player-avatar {
+    font-size: 3rem;
+    line-height: 1;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-deep));
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.tmm-player-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tmm-player-score {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-purple);
+    text-align: center;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.game-board {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(244, 244, 244, 0.8));
+    border-radius: 24px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 25px 40px rgba(37, 0, 64, 0.25);
+    padding: 24px;
+    position: relative;
+}
+
+.tmm-board-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.tmm-intersection {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    border: 3px solid rgba(124, 58, 237, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 2;
+    transform: translate(-50%, -50%);
+}
+
+.tmm-intersection:hover:not(.has-piece) {
+    background: rgba(232, 232, 232, 0.95);
+    border-color: var(--accent-purple);
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+.tmm-intersection.has-piece {
+    cursor: pointer;
+}
+
+.tmm-intersection.has-piece:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.rows {
+    display: flex;
+    height: calc(100% / 3);
+    gap: 15px;
+}
+
+.cells {
+    flex: 1;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 238, 255, 0.9));
+    border: 3px solid rgba(124, 58, 237, 0.3);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    color: #3a1f62;
+    box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.5);
+    position: relative;
+    min-height: 100px;
+}
+
+.cells:hover:not(.has-piece) {
+    background-color: rgba(232, 232, 232, 0.9);
+    border-color: var(--accent-purple);
+    transform: scale(1.05);
+}
+
+.cells:active:not(.has-piece) {
+    background-color: rgba(216, 216, 216, 0.9);
+    border-color: var(--accent-purple);
+    transform: scale(0.95);
+}
+
+.tmm-piece {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.tmm-piece-x {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.tmm-piece-o {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.cells.has-piece {
+    cursor: pointer;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(250, 250, 250, 0.95));
+}
+
+.cells.has-piece:hover {
+    transform: scale(1.05);
+}
+
+.cells.has-piece:hover .tmm-piece {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.cells.has-piece .tmm-piece {
+    animation: piecePlace 0.3s ease;
+}
+
+@keyframes piecePlace {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.15);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .game-board {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .cells {
+        font-size: 2rem;
+    }
+}
+

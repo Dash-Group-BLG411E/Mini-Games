@@ -1,0 +1,137 @@
+.room-info {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: var(--panel-soft);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    text-align: center;
+    color: var(--text-dark);
+}
+
+.room-game-type {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background: rgba(124, 58, 237, 0.1);
+    border-radius: 12px;
+    color: var(--text-dark);
+    font-weight: 600;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.game-mode-message {
+    margin-bottom: 1.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    background: var(--panel-soft);
+    color: var(--text-dark);
+    font-size: 0.95rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.room-info h3 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+}
+
+.room-info p {
+    margin: 0.25rem 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.go-home {
+    display: none;
+    width: 300px;
+    height: 60px;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.go-home:hover {
+    transform: translateY(-2px);
+}
+
+.go-home-text {
+    font-size: 1.2rem;
+    color: #333;
+    font-weight: 600;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.info {
+    display: flex;
+    width: 300px;
+    min-height: 60px;
+    height: 60px;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    margin-top: 0;
+    text-align: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.info.your-turn-active {
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-deep));
+    box-shadow: 0 8px 32px rgba(124, 58, 237, 0.4);
+}
+
+.info.your-turn-active .class-text {
+    color: white;
+}
+
+.class-text {
+    font-size: 1rem;
+    color: #333;
+    font-weight: 600;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+    white-space: normal;
+}
+
+.game-result-message {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1rem 2rem;
+    background: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    z-index: 100;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.game-result-message.hidden {
+    display: none;
+}
+
+.game-action-buttons {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+}
