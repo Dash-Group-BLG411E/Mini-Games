@@ -1,208 +1,96 @@
-# 🎮 Multiplayer Mini-Games Platform
+# Mini-Games Platform
 
-A modern, feature-rich multiplayer gaming platform built with Node.js, Socket.IO, MongoDB, and vanilla JavaScript. Play Tic Tac Toe, Rock Paper Scissors, and Memory Match with friends in real-time!
+A real-time multiplayer gaming platform featuring three classic games: Three Men's Morris, Memory Match, and Battleship.
 
-## ✨ Features
+## Features
 
-### 🎯 Core Game Features
-- **User Authentication**: Secure registration and login system with JWT tokens
-- **Spectator Mode**: Watch ongoing games when rooms are full
-- **Real-time Multiplayer**: Play with friends using Socket.IO
-- **Game State Persistence**: All game states are synchronized across players and spectators
-- **Online Users Tracking**: See who's online in the lobby
+- **Three Men's Morris**: Strategic board game with piece placement and movement phases
+- **Memory Match**: Card matching game with competitive scoring
+- **Battleship**: Classic naval warfare game with ship placement and strategic guessing
+- **Real-time Multiplayer**: Socket.io powered real-time gameplay
+- **User Authentication**: Secure login/registration with email verification
+- **Scoreboard System**: Track wins, losses, and achievements
+- **Chat System**: Lobby and room-based chat functionality
+- **Admin Panel**: Report management and user administration
 
-### 🔐 Authentication & User Management
-- **Register & Login**: Secure account creation and authentication with password hashing
-- **JWT Tokens**: Tokens are stored in `localStorage` and automatically sent with Socket.IO handshakes and protected API requests
-- **Protected Views**: Lobby, game, and scoreboard views require a valid token
-- **Profile Management**: Update display name and avatar
-- **Password Management**: Change password with validation requirements
-- **Account Deletion**: Delete your account and all associated data
-- **Password Requirements**: Minimum 8 characters, must contain letters and numbers, no special characters
+## Tech Stack
 
-### 🕹️ Mini-Games
-- **Tic Tac Toe**: Best-of-3 rounds format - first player to win 3 rounds wins the game. Classic 3x3 grid gameplay with alternating turns.
-- **Rock Paper Scissors**: First-to-5 wins format - compete in multiple rounds until one player reaches 5 wins. Quick and exciting gameplay.
-- **Memory Match**: Flip cards to find matching pairs! Turn-based multiplayer with score tracking. First player to find all matches wins.
+- **Backend**: Node.js, Express, Socket.io
+- **Database**: MongoDB with Mongoose
+- **Frontend**: Vanilla JavaScript (ES6+), HTML5, CSS3
+- **Authentication**: JWT tokens, bcrypt password hashing
+- **Email**: Nodemailer with Ethereal Email for development
 
-### 🏠 Live Room Lobby
-- **Room Browser**: View all active rooms with player counts, game status, and game type
-- **Smart Joining**: Join as a player (if space available) or as a spectator
-- **Room Creation**: Create custom-named rooms with your choice of game type (Tic Tac Toe, Rock Paper Scissors, or Memory Match)
-- **Live Updates**: Real-time updates when players join/leave rooms
-- **Lobby Chat**: Chat with all online players in the lobby
-- **Room Chat**: Private chat within game rooms for players and spectators
+## Installation
 
-### 🏆 Scoreboard System
-- **Win/Loss/Draw Tracking**: Automatic tracking of all game results across all game types
-- **Player Statistics**: View wins, losses, draws, total games, and win rate
-- **Top Players Ranking**: See the best players ranked by wins, win rate, and total games
-- **MongoDB Storage**: All scores and user data are persistently stored in MongoDB
-- **Real-time Updates**: Scoreboard updates automatically as games finish
+1. Clone the repository
+```bash
+git clone <repository-url>
+cd Mini-Games
+```
 
-### 🎨 Modern UI/UX
-- **Beautiful Design**: Modern gradient background with glassmorphism effects
-- **Responsive Layout**: Works perfectly on desktop and mobile devices
-- **Smooth Animations**: Hover effects and transitions for better user experience
-- **Multi-view Navigation**: Easy navigation between lobby, game, and scoreboard
+2. Install dependencies
+```bash
+npm install
+```
 
-## 🚀 Getting Started
+3. Set up environment variables
+Create a `.env` file in the root directory:
+```env
+MONGODB_URI=mongodb://localhost:27017/minigames
+PORT=3000
+JWT_SECRET=your-secret-key-here
+SMTP_USER=your-email@example.com
+SMTP_PASS=your-email-password
+```
 
-### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn
-- MongoDB (local installation or MongoDB Atlas account)
+4. Start the server
+```bash
+npm start
+```
 
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd Mini-Games
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up MongoDB**
-   - **Option A: Local MongoDB**
-     - Install MongoDB from https://www.mongodb.com/try/download/community
-     - Start MongoDB service
-   - **Option B: MongoDB Atlas (Cloud)**
-     - Sign up at https://www.mongodb.com/cloud/atlas
-     - Create a cluster and get your connection string
-
-4. **Configure environment variables**
-   Create a `.env` file in the `Mini-Games` directory:
-   ```env
-   MONGODB_URI=mongodb://localhost:27017/minigames
-   # Or for MongoDB Atlas:
-   # MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/minigames
-   PORT=3000
-   ```
-
-5. **Start the server**
-   ```bash
-   npm start
-   ```
-
-6. **Open your browser**
-   Navigate to `http://localhost:3000`
-
-### Development Mode
-
-For development with auto-restart:
+For development with auto-reload:
 ```bash
 npm run dev
 ```
-*(Requires nodemon: `npm install -g nodemon`)*
 
-## 🎮 How to Play
+## Project Structure
 
-### First Time Setup
-1. **Register**: Create a new account with a unique username and password (minimum 8 characters, must contain letters and numbers)
-2. **Login**: Use your credentials to log in (token is saved automatically for future sessions)
-3. **Profile**: Optionally update your display name and avatar in your profile settings
-
-### Playing a Game
-1. **View Lobby**: See all available rooms, online users, and chat with others
-2. **Create Room**: Click "Create Room" to start a new game room (choose game type: Tic Tac Toe, Rock Paper Scissors, or Memory Match)
-3. **Join Room**: Click "Join as Player" on any room with available space
-4. **Watch Games**: Click "Watch as Spectator" to observe ongoing games
-5. **Gameplay**:
-   - **Tic Tac Toe**: Click on empty cells to place your X or O. First to win 3 rounds wins the game.
-   - **Rock Paper Scissors**: Select your choice each round. First to 5 wins wins the game.
-   - **Memory Match**: Click cards to flip them and find matching pairs. Take turns with your opponent.
-6. **Chat**: Use lobby chat or room chat to communicate with other players
-7. **Play Again**: After a game ends, both players can vote to restart
-
-### Viewing Scores
-1. **In-Game**: Click "View Scoreboard" from the lobby
-2. **Dedicated Page**: Visit `/scoreboard` for a full-page scoreboard view (requires login)
-3. **Statistics**: See wins, losses, draws, total games, and win rate for each player
-4. **Rankings**: Players are ranked by wins, then win rate, then total games
-
-## 🏗️ Architecture
-
-### Backend Structure
 ```
-src/
-├── index.js              # Main server file with Express and Socket.IO setup
-├── GameRoom.js           # GameRoom class managing individual game instances
-├── socketHandlers.js     # Modular socket event handling
-├── Scoreboard.js         # Score tracking and statistics management
-├── auth/
-│   ├── authRoutes.js     # Authentication API routes (register, login, profile)
-│   ├── authMiddleware.js # JWT authentication middleware
-│   ├── authUtils.js      # JWT token generation and verification
-│   └── UserStore.js      # User data management with MongoDB
-├── db/
-│   └── connection.js     # MongoDB connection setup
-└── models/
-    ├── User.js           # User MongoDB model
-    └── GameStats.js      # Game statistics MongoDB model
+Mini-Games/
+├── public/           # Frontend files
+│   ├── css/         # Stylesheets
+│   ├── js/           # Client-side JavaScript
+│   └── index.html    # Main HTML file
+├── src/              # Backend source code
+│   ├── auth/         # Authentication logic
+│   ├── core/         # Core game logic
+│   ├── games/        # Game implementations
+│   ├── handlers/     # Socket and route handlers
+│   ├── models/       # Database models
+│   └── routes/       # API routes
+└── scripts/          # Utility scripts
 ```
 
-### Frontend Structure
-```
-public/
-├── index.html         # Main application with multi-view structure
-├── scoreboard.html    # Dedicated scoreboard page
-├── app.js            # Main application logic and socket handling
-└── style.css         # Modern styling with responsive design
-```
+## Game Rules
 
-### Key Classes
+### Three Men's Morris
+- Place 3 pieces on the board
+- Form a line of 3 to win
+- Remove opponent's piece after forming a line
+- Move pieces to adjacent positions
 
-#### GameRoom Class
-- Manages individual game rooms
-- Handles player and spectator management
-- Tracks game state and validates moves
-- Implements win detection and game restart logic
+### Memory Match
+- Flip cards to find matching pairs
+- Player with most matches wins
+- Fastest matching time wins ties
 
-#### SocketHandlers Class
-- Centralized socket event management
-- Room creation and joining logic
-- Real-time game state broadcasting
-- Score tracking integration
+### Battleship
+- Place 5 ships on a 7x7 grid
+- Take turns guessing opponent's ship locations
+- First to sink all opponent's ships wins
 
-#### Scoreboard Class
-- Persistent score storage with MongoDB
-- Statistics calculation and ranking
-- API endpoint for scoreboard data
-- Automatic win/loss/draw tracking across all game types
+## License
 
-## 🔧 Configuration
-
-### Environment Variables
-Create a `.env` file in the `Mini-Games` directory:
-- `MONGODB_URI`: MongoDB connection string (required)
-  - Local: `mongodb://localhost:27017/minigames`
-  - Atlas: `mongodb+srv://username:password@cluster.mongodb.net/minigames`
-- `PORT`: Server port (default: 3000)
-
-### Customization
-- **Room ID Generation**: Modify `generateRoomId()` in socketHandlers.js
-- **Game Rules**: Adjust win conditions in GameRoom.js (e.g., TTT rounds, RPS wins needed)
-- **UI Themes**: Customize colors and styling in style.css
-- **Chat Limits**: Adjust `maxLobbyMessages` in socketHandlers.js
-
-## 📝 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-## 🛠️ Technology Stack
-
-- **Backend**: Node.js, Express.js
-- **Real-time Communication**: Socket.IO
-- **Database**: MongoDB with Mongoose ODM
-- **Authentication**: JWT (JSON Web Tokens) with bcryptjs
-- **Frontend**: Vanilla JavaScript, HTML5, CSS3
-
----
-
-**Enjoy playing Multiplayer Mini-Games! 🎉**
-
+ISC
 
