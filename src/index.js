@@ -1,3 +1,4 @@
+require('dotenv').config()
 const path = require("path")
 const http = require("http")
 const express = require("express")
@@ -65,7 +66,20 @@ app.get('/admin/reports', (req, res) => {
     res.sendFile(path.join(publicDirPath, 'admin', 'reports.html'));
 })
 
-connectDB().then(() => {
+connectDB().then(async () => {
+    // Cleanup expired and orphaned pending registrations on startup
+    const PendingRegistrationStore = require('./auth/PendingRegistrationStore')
+    try {
+        const expiredCount = await PendingRegistrationStore.cleanupExpiredRegistrations()
+        if (expiredCount > 0) {
+            console.log(`🧹 Cleaned up ${expiredCount} expired pending registrations`)
+        }
+        await PendingRegistrationStore.cleanupOrphanedRegistrations()
+        console.log('🧹 Cleaned up orphaned pending registrations')
+    } catch (error) {
+        console.error('Error during cleanup:', error)
+    }
+    
     server.listen(port, () => {
         console.log("Server is up on " + port)
     })

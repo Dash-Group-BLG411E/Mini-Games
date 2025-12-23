@@ -461,36 +461,71 @@ class AuthManager {
     }
 
     showEmailVerificationMessage(email, message) {
-        if (!this.authMessage) return;
-        const resendBtn = document.createElement('button');
-        resendBtn.textContent = 'Resend Verification Email';
-        resendBtn.className = 'resend-verification-btn';
-        resendBtn.style.cssText = 'margin-top: 10px; padding: 8px 16px; background: #7c3aed; color: white; border: none; border-radius: 5px; cursor: pointer;';
-        resendBtn.onclick = () => this.resendVerificationEmail(email);
+        if (!this.app.modalManager) return;
         
-        this.authMessage.innerHTML = `<div style="color: #e74c3c;">${message || 'Please verify your email before logging in.'}</div>`;
-        this.authMessage.appendChild(resendBtn);
+        const messageHtml = `
+            <div style="color: #e74c3c; font-weight: 600; margin-bottom: 15px; font-size: 1.1rem;">
+                ${message || 'Please verify your email before logging in.'}
+            </div>
+            <button id="resend-verification-btn" class="resend-verification-btn" style="margin-top: 15px; padding: 10px 20px; background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-deep)); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; transition: all 0.3s ease;">
+                Resend Verification Email
+            </button>
+        `;
+        
+        this.app.modalManager.showNotification(messageHtml, null, null);
+        
+        // Set up button event listener after modal is shown
+        setTimeout(() => {
+            const resendBtn = document.getElementById('resend-verification-btn');
+            if (resendBtn) {
+                resendBtn.onclick = () => {
+                    this.resendVerificationEmail(email);
+                    this.app.modalManager.hideNotification();
+                };
+                resendBtn.onmouseover = () => resendBtn.style.transform = 'translateY(-2px)';
+                resendBtn.onmouseout = () => resendBtn.style.transform = 'translateY(0)';
+            }
+        }, 10);
     }
 
     showRegistrationSuccessMessage(email, message, emailPreviewUrl = null) {
-        if (!this.authMessage) return;
-        const resendBtn = document.createElement('button');
-        resendBtn.textContent = 'Resend Verification Email';
-        resendBtn.className = 'resend-verification-btn';
-        resendBtn.style.cssText = 'margin-top: 10px; padding: 8px 16px; background: #7c3aed; color: white; border: none; border-radius: 5px; cursor: pointer;';
-        resendBtn.onclick = () => this.resendVerificationEmail(email);
+        if (!this.app.modalManager) return;
         
-        let messageHtml = `<div style="color: #27ae60;">${message || 'Registration successful! Please check your email to verify your account.'}</div>`;
+        let messageHtml = `
+            <div style="color: #111827; font-weight: 600; margin-bottom: 15px; font-size: 1.1rem;">
+                ${message || 'Registration successful!<br>Please check your email to verify your account.'}
+            </div>
+        `;
         
-        if (emailPreviewUrl) {
-            messageHtml += `<div style="margin-top: 10px; padding: 10px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 5px; color: #856404;">
-                <strong>📧 Test Email Service:</strong> Since email is not configured, this is a test email. 
-                <a href="${emailPreviewUrl}" target="_blank" style="color: #7c3aed; text-decoration: underline;">Click here to view the verification email</a>
-            </div>`;
-        }
+        // Don't show test email preview URL to users - only for development
+        // Preview URLs are logged in server console for development purposes
         
-        this.authMessage.innerHTML = messageHtml;
-        this.authMessage.appendChild(resendBtn);
+        messageHtml += `
+            <button id="resend-verification-btn" class="resend-verification-btn" style="margin-top: 15px; padding: 0.75rem 1.5rem; background: #fcd34d; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; font-weight: 700; color: #2c1b60; width: 70%; transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 4px 15px rgba(252, 211, 77, 0.4);">
+                Resend Verification Email
+            </button>
+        `;
+        
+        this.app.modalManager.showNotification(messageHtml, null, null);
+        
+        // Set up button event listener after modal is shown
+        setTimeout(() => {
+            const resendBtn = document.getElementById('resend-verification-btn');
+            if (resendBtn) {
+                resendBtn.onclick = () => {
+                    this.resendVerificationEmail(email);
+                    this.app.modalManager.hideNotification();
+                };
+                resendBtn.onmouseover = () => {
+                    resendBtn.style.transform = 'translateY(-2px)';
+                    resendBtn.style.boxShadow = '0 6px 20px rgba(252, 211, 77, 0.5)';
+                };
+                resendBtn.onmouseout = () => {
+                    resendBtn.style.transform = 'translateY(0)';
+                    resendBtn.style.boxShadow = '0 4px 15px rgba(252, 211, 77, 0.4)';
+                };
+            }
+        }, 10);
         
         const registerForm = document.getElementById('register-form');
         if (registerForm) registerForm.reset();
@@ -506,12 +541,18 @@ class AuthManager {
             const data = await response.json();
 
             if (response.ok) {
-                this.showAuthMessage(data.message || 'Verification email sent successfully. Please check your inbox.');
+                // Show success in modal
+                if (this.app.modalManager) {
+                    const successMessage = `<div style="color: #111827; font-weight: 600; font-size: 1.1rem;">${data.message || 'Verification email sent successfully. Please check your inbox.'}</div>`;
+                    this.app.modalManager.showNotification(successMessage);
+                }
             } else {
+                // Show errors in auth-message
                 this.showAuthMessage(data.error || 'Failed to send verification email. Please try again later.');
             }
         } catch (error) {
             console.error('Resend verification error:', error);
+            // Show errors in auth-message
             this.showAuthMessage('Unable to reach the server.');
         }
     }

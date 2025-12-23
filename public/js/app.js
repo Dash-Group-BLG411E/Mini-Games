@@ -906,6 +906,7 @@ class MiniGamesApp {
                     });
                     const data = await response.json();
                     if (response.ok && data.token) {
+                        // Guest user registration - immediate login
                         localStorage.setItem('minigames_token', data.token);
                         localStorage.setItem('minigames_username', data.username);
                         localStorage.setItem('minigames_role', data.role || 'player');
@@ -950,9 +951,17 @@ class MiniGamesApp {
                                 }
                             }, 500);
                         }
+                    } else if (response.ok && data.message) {
+                        // Registration successful but email verification required
+                        // Don't show error - RegisterHandler will handle showing the success modal
+                        // Just return silently to let RegisterHandler handle it
+                        return;
                     } else {
+                        // Only show error if response is not ok
                         const msgEl = document.getElementById('auth-message');
-                        if (msgEl) msgEl.textContent = data.error || 'Registration failed.';
+                        if (msgEl && !response.ok) {
+                            msgEl.textContent = data.error || 'Registration failed.';
+                        }
                     }
                 } catch (err) {
                     console.error('Register error:', err);

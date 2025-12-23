@@ -136,6 +136,8 @@
 .profile-form .show-password-btn {
     position: absolute;
     right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
     background: none !important;
     background-color: transparent !important;
     border: none !important;
@@ -147,7 +149,6 @@
     user-select: none;
     -webkit-user-select: none;
     box-shadow: none !important;
-    transform: none !important;
 }
 
 .profile-form .show-password-icon {
@@ -159,7 +160,7 @@
 }
 
 .profile-form .show-password-btn:hover {
-    transform: none !important;
+    transform: translateY(-50%);
 }
 
 .profile-form .show-password-btn:hover .show-password-icon {

@@ -71,8 +71,10 @@ class RegisterHandler {
         const form = event.target;
         const username = form.querySelector('input[name="username"]').value.trim();
         const email = form.querySelector('input[name="email"]')?.value.trim();
-        const password = form.querySelector('input[name="password"]').value;
-        const confirmPassword = form.querySelector('input[name="confirmPassword"]')?.value;
+        const password = form.querySelector('input[name="password"]').value.trim();
+        const confirmPassword = form.querySelector('input[name="confirmPassword"]')?.value.trim();
+
+        console.log('Registration attempt:', { username, email, passwordLength: password.length });
 
         if (!username || !email || !password) {
             this.authManager.showAuthMessage('Please fill out all fields.');
@@ -99,15 +101,21 @@ class RegisterHandler {
         }
 
         try {
+            const requestBody = { username, email, password };
+            console.log('Sending registration request:', { username, email, passwordLength: password.length });
+            
             const response = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, email, password })
+                body: JSON.stringify(requestBody)
             });
             
             let data;
             try {
-                data = await response.json();
+                const responseText = await response.text();
+                console.log('Registration response status:', response.status);
+                console.log('Registration response text:', responseText);
+                data = JSON.parse(responseText);
             } catch (e) {
                 console.error('Failed to parse response:', e);
                 this.authManager.showAuthMessage('Server error. Please try again.');
@@ -119,7 +127,9 @@ class RegisterHandler {
                     this.authManager.showEmailVerificationMessage(data.email, data.message);
                     return;
                 }
-                this.authManager.showAuthMessage(data.error || 'Registration failed.');
+                const errorMessage = data.error || data.message || `Registration failed (${response.status}).`;
+                console.error('Registration error:', errorMessage);
+                this.authManager.showAuthMessage(errorMessage);
                 return;
             }
 

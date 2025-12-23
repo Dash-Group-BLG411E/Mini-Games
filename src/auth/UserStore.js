@@ -70,7 +70,7 @@ class UserStore {
     }
   }
 
-  async addUser(username, email, passwordHash, role = 'player', verificationToken = null) {
+  async addUser(username, email, passwordHash, role = 'player', verificationToken = null, emailVerified = false) {
     try {
       const avatar = this.generateDefaultAvatar(username)
       const allowedRoles = ['admin', 'player', 'guest']
@@ -78,13 +78,16 @@ class UserStore {
       
       const verificationTokenExpiry = verificationToken ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null
       
+      // If verificationToken is null and email is provided, user is already verified
+      const isVerified = emailVerified || safeRole === 'guest' || (verificationToken === null && email)
+      
       const userData = {
         username: username.toLowerCase(),
         passwordHash,
         displayName: username,
         avatar,
         role: safeRole,
-        emailVerified: safeRole === 'guest',
+        emailVerified: isVerified,
         verificationToken: safeRole === 'guest' ? null : verificationToken,
         verificationTokenExpiry: safeRole === 'guest' ? null : verificationTokenExpiry
       }
