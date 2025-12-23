@@ -32,8 +32,15 @@ function createRegisterRoutes() {
       }
     }
 
-    if (await UserStore.hasUser(username)) {
-      return res.status(400).json({ error: 'Username is already registered' })
+    const normalizedUsername = username.toLowerCase().trim()
+    const existingUser = await UserStore.getUser(normalizedUsername)
+    if (existingUser) {
+      const userRole = existingUser.role || 'player'
+      console.log(`[Registration] Username "${normalizedUsername}" already exists. Role: ${userRole}, Created: ${existingUser.createdAt}`)
+      return res.status(400).json({ 
+        error: 'Username is already registered',
+        details: `The username "${normalizedUsername}" is already taken${userRole === 'guest' ? ' (as a guest account)' : ''}.`
+      })
     }
 
     if (!isGuest && await UserStore.hasEmail(email)) {

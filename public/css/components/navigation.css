@@ -527,6 +527,12 @@
     gap: 1rem;
 }
 
+.badges-grid .no-badges {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin: 0 auto;
+}
+
 .badge-item {
     display: flex;
     align-items: center;
@@ -578,9 +584,34 @@
 
 .no-badges {
     text-align: center;
-    padding: 2rem;
-    color: #666;
-    font-style: italic;
+    padding: 4rem 2rem;
+    color: var(--text-dark);
+    font-size: 1.15rem;
+    line-height: 1.7;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-weight: 400;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 250px;
+    gap: 0.75rem;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.no-badges::before {
+    content: '🏆';
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+    display: block;
+    line-height: 1;
+}
+
+.no-badges br {
+    display: block;
+    margin: 0.4rem 0;
 }
 
 .user-role-badge {

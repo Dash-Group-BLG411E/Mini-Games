@@ -365,6 +365,14 @@
         max-width: none;
     }
 
+    .user-profile-report-btn {
+        bottom: 1rem;
+        left: 1rem;
+        right: 1rem;
+        width: calc(100% - 2rem);
+        max-width: none;
+    }
+
     .join-btn,
     .spectate-btn {
         min-width: 0;
@@ -472,6 +480,15 @@
     }
 
     .game-info-btn {
+        bottom: 0.75rem;
+        left: 0.75rem;
+        right: 0.75rem;
+        width: calc(100% - 1.5rem);
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .user-profile-report-btn {
         bottom: 0.75rem;
         left: 0.75rem;
         right: 0.75rem;

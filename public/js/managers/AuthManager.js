@@ -152,6 +152,20 @@ class AuthManager {
                     localStorage.setItem('minigames_role', this.app.userRole);
                     this.updateUserAvatarDisplay();
                     
+                    // Hide chat and online players widget for guests
+                    if (this.app.userRole === 'guest') {
+                        const lobbyChatDrawer = document.getElementById('lobby-chat-drawer');
+                        const onlinePlayersWidget = document.getElementById('online-players-widget');
+                        if (lobbyChatDrawer) {
+                            lobbyChatDrawer.style.display = 'none';
+                            lobbyChatDrawer.classList.add('hidden');
+                        }
+                        if (onlinePlayersWidget) {
+                            onlinePlayersWidget.style.display = 'none';
+                            onlinePlayersWidget.classList.add('hidden');
+                        }
+                    }
+                    
                     this.app.currentRoom = null;
                     this.app.currentRoomName = null;
                     this.app.gameState = null;
@@ -168,6 +182,11 @@ class AuthManager {
                     const lobbyContainer = document.getElementById('lobby-container');
                     if (authContainer) authContainer.style.display = 'none';
                     if (lobbyContainer) lobbyContainer.style.display = 'block';
+                    
+                    // Update chat widgets after role is set (hides for guests)
+                    if (this.app.updateChatWidgets) {
+                        this.app.updateChatWidgets();
+                    }
                     
                     if (this.app.initializeSocket) {
                         this.app.initializeSocket();
@@ -315,6 +334,23 @@ class AuthManager {
         localStorage.setItem('minigames_username', this.app.currentUser);
         localStorage.setItem('minigames_role', this.app.userRole);
         
+        // Hide chat and online players widget for guests immediately
+        if (this.app.userRole === 'guest') {
+            const lobbyChatDrawer = document.getElementById('lobby-chat-drawer');
+            const onlinePlayersWidget = document.getElementById('online-players-widget');
+            if (lobbyChatDrawer) {
+                lobbyChatDrawer.style.display = 'none';
+                lobbyChatDrawer.classList.add('hidden');
+            }
+            if (onlinePlayersWidget) {
+                onlinePlayersWidget.style.display = 'none';
+                onlinePlayersWidget.classList.add('hidden');
+            }
+        }
+        
+        // Update avatar display (hides profile button for guests)
+        this.updateUserAvatarDisplay();
+        
         if (this.showAuthMessage) {
             this.showAuthMessage('');
         }
@@ -353,6 +389,11 @@ class AuthManager {
 
         if (this.app.initializeSocket) {
             this.app.initializeSocket();
+        }
+        
+        // Update chat widgets after role is set (hides for guests)
+        if (this.app.updateChatWidgets) {
+            this.app.updateChatWidgets();
         }
         
         setTimeout(async () => {
@@ -442,6 +483,14 @@ class AuthManager {
                 this.adminReportsBtn.classList.remove('hidden');
             } else {
                 this.adminReportsBtn.classList.add('hidden');
+            }
+        }
+        
+        if (this.profileNavBtn) {
+            if (this.app.userRole === 'guest') {
+                this.profileNavBtn.classList.add('hidden');
+            } else {
+                this.profileNavBtn.classList.remove('hidden');
             }
         }
     }

@@ -77,6 +77,7 @@ class ViewManager {
             const onlinePlayersWidget = document.getElementById('online-players-widget');
             const lobbyChatDrawer = document.getElementById('lobby-chat-drawer');
             const gameInfoBtn = document.getElementById('game-info-btn');
+            const userProfileReportBtn = document.getElementById('user-profile-report-btn');
             
             if (navContainer) {
                 navContainer.style.display = 'none';
@@ -94,29 +95,51 @@ class ViewManager {
                 gameInfoBtn.style.display = 'none';
                 gameInfoBtn.classList.add('hidden');
             }
+            if (userProfileReportBtn) {
+                userProfileReportBtn.style.display = 'none';
+                userProfileReportBtn.classList.add('hidden');
+            }
         } else {
             if (this.authContainer) {
                 this.authContainer.style.display = 'none';
                 this.authContainer.classList.remove('view-active');
             }
             const targetView = document.getElementById(`${viewName}-container`);
+            if (viewName === 'user-profile') {
+                console.log('[ViewManager.showView] Switching to user-profile view');
+                console.log('[ViewManager.showView] Looking for element: user-profile-container');
+                console.log('[ViewManager.showView] Found element:', targetView);
+            }
             if (targetView) {
                 targetView.style.display = 'block';
                 targetView.classList.add('view-active');
+                if (viewName === 'user-profile') {
+                    console.log('[ViewManager.showView] user-profile-container is now visible');
+                }
+            } else {
+                if (viewName === 'user-profile') {
+                    console.error('[ViewManager.showView] user-profile-container NOT FOUND!');
+                }
             }
             
             const navContainer = document.getElementById('nav-container');
             const onlinePlayersWidget = document.getElementById('online-players-widget');
             const lobbyChatDrawer = document.getElementById('lobby-chat-drawer');
             const gameInfoBtn = document.getElementById('game-info-btn');
+            const userProfileReportBtn = document.getElementById('user-profile-report-btn');
             
             if (navContainer) {
                 navContainer.style.display = '';
                 navContainer.classList.remove('hidden');
             }
+            
+            // Hide chat drawer and online players widget for guest users
+            const isGuest = this.app.userRole === 'guest';
+            
             // Show online players widget only on lobby, rooms, leaderboard, tournaments
+            // Hide for guest users
             const allowedViews = ['lobby', 'rooms', 'leaderboard', 'tournaments'];
-            if (onlinePlayersWidget && viewName !== 'auth' && allowedViews.includes(viewName)) {
+            if (onlinePlayersWidget && viewName !== 'auth' && allowedViews.includes(viewName) && !isGuest) {
                 onlinePlayersWidget.style.display = '';
                 onlinePlayersWidget.classList.remove('hidden');
             } else if (onlinePlayersWidget) {
@@ -141,9 +164,14 @@ class ViewManager {
                     }
                 }
             }
-            if (lobbyChatDrawer && viewName !== 'auth') {
+            
+            // Hide chat drawer for guest users and user-profile view
+            if (lobbyChatDrawer && viewName !== 'auth' && viewName !== 'user-profile' && !isGuest) {
                 lobbyChatDrawer.style.display = '';
                 lobbyChatDrawer.classList.remove('hidden');
+            } else if (lobbyChatDrawer) {
+                lobbyChatDrawer.style.display = 'none';
+                lobbyChatDrawer.classList.add('hidden');
             }
             if (gameInfoBtn) {
                 if (viewName === 'game') {
@@ -152,6 +180,15 @@ class ViewManager {
                 } else {
                     gameInfoBtn.style.display = 'none';
                     gameInfoBtn.classList.add('hidden');
+                }
+            }
+            if (userProfileReportBtn) {
+                if (viewName === 'user-profile') {
+                    userProfileReportBtn.style.display = 'block';
+                    userProfileReportBtn.classList.remove('hidden');
+                } else {
+                    userProfileReportBtn.style.display = 'none';
+                    userProfileReportBtn.classList.add('hidden');
                 }
             }
         }

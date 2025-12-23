@@ -144,18 +144,36 @@ class SocketHandlers {
         this.broadcastLobbyUpdate();
     }
 
-    broadcastLobbyUpdate() {
-        this.io.emit('lobbyUpdate', this.getLobbyState());
+    async broadcastLobbyUpdate() {
+        const lobbyState = await this.getLobbyState();
+        this.io.emit('lobbyUpdate', lobbyState);
     }
 
-    getLobbyState() {
+    async getLobbyState() {
         const rooms = Array.from(this.rooms.values())
             .map(room => room.getRoomInfo())
             .filter(room => room.gameStatus !== 'finished');
-        const users = Array.from(this.onlineUsers.values()).map(username => ({
-            username,
-            role: this.userRoles.get(username) || 'player'
-        }));
+        
+        const UserStore = require('../auth/UserStore');
+        const users = await Promise.all(
+            Array.from(this.onlineUsers.values()).map(async (username) => {
+                const role = this.userRoles.get(username) || 'player';
+                let avatar = null;
+                try {
+                    const user = await UserStore.getUser(username);
+                    if (user && user.avatar) {
+                        avatar = user.avatar;
+                    }
+                } catch (error) {
+                    console.error(`Failed to get avatar for ${username}:`, error);
+                }
+                return {
+                    username,
+                    role,
+                    avatar
+                };
+            })
+        );
         return { rooms, users };
     }
 

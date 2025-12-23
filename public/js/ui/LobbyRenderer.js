@@ -103,9 +103,33 @@ class LobbyRenderer {
                 userNameSpan.className = 'user-name';
                 userNameSpan.textContent = username;
                 
-                userRow.appendChild(userNameSpan);
-                
                 const targetUserRole = this.app.userRolesMap.get(username) || 'player';
+                const isGuestUser = targetUserRole === 'guest' || username.startsWith('guest-');
+                
+                if (this.app.userRole !== 'guest' && !isGuestUser) {
+                    userNameSpan.style.cursor = 'pointer';
+                    userNameSpan.title = `View ${username}'s profile`;
+                    userNameSpan.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        console.log("USERNAME CLICKED:", username);
+                        console.log("Current user role:", this.app.userRole);
+                        console.log("Target user role:", targetUserRole);
+                        if (this.app.showUserProfile) {
+                            console.log("Calling app.showUserProfile");
+                            this.app.showUserProfile(username);
+                        } else {
+                            console.error("app.showUserProfile is not defined!");
+                        }
+                    });
+                } else {
+                    if (this.app.userRole === 'guest') {
+                        console.log("Current user is guest, skipping click handler for:", username);
+                    } else if (isGuestUser) {
+                        console.log("Target user is guest, skipping click handler for:", username);
+                    }
+                }
+                
+                userRow.appendChild(userNameSpan);
                 if (this.app.userRole !== 'guest' && targetUserRole !== 'guest') {
                     const inviteBtn = document.createElement('button');
                     inviteBtn.className = 'invite-btn';
@@ -114,12 +138,15 @@ class LobbyRenderer {
                     inviteBtn.onclick = () => this.app.sendGameInvitation(username);
                     userRow.appendChild(inviteBtn);
 
-                    const reportBtn = document.createElement('button');
-                    reportBtn.className = 'report-btn';
-                    reportBtn.textContent = 'Report';
-                    reportBtn.title = `Report ${username}`;
-                    reportBtn.onclick = () => this.app.openReportModal(username);
-                    userRow.appendChild(reportBtn);
+                    // Only show report button in lobby users list, not in online players list
+                    if (list === this.lobbyUsersList) {
+                        const reportBtn = document.createElement('button');
+                        reportBtn.className = 'report-btn';
+                        reportBtn.textContent = 'Report';
+                        reportBtn.title = `Report ${username}`;
+                        reportBtn.onclick = () => this.app.openReportModal(username);
+                        userRow.appendChild(reportBtn);
+                    }
                 }
                 
                 list.appendChild(userRow);

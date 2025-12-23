@@ -48,6 +48,9 @@ class AppInitializer {
         if (typeof RoomManager !== 'undefined') {
             this.app.roomManager = new RoomManager(this.app);
         }
+        if (typeof UserProfileManager !== 'undefined') {
+            this.app.userProfileManager = new UserProfileManager(this.app);
+        }
     }
 
     initializeGameManagers() {
