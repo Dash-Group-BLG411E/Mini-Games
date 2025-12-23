@@ -34,7 +34,8 @@ function createRegisterRoutes() {
     }
 
     // Check if username exists in database OR pending registrations
-    if (await UserStore.hasUser(username)) {
+    const normalizedUsername = username.toLowerCase().trim()
+    if (await UserStore.hasUser(normalizedUsername)) {
       return res.status(400).json({ error: 'Username is already registered' })
     }
 

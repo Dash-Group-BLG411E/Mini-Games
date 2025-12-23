@@ -47,8 +47,26 @@ class ScoreboardManager {
     }
 
     showEarnedBadgesModal() {
+        console.log('[ScoreboardManager] showEarnedBadgesModal called');
         if (this.earnedBadgesModal) {
             this.earnedBadgesModal.classList.remove('hidden');
+            
+            // Check if modal content is empty or only has whitespace
+            if (this.modalEarnedBadges) {
+                const currentContent = this.modalEarnedBadges.innerHTML.trim();
+                console.log('[ScoreboardManager] Current modal content:', currentContent);
+                console.log('[ScoreboardManager] Modal content length:', currentContent.length);
+                
+                // If modal content is empty, show the "no badges" message
+                if (currentContent === '' || currentContent === null) {
+                    console.log('[ScoreboardManager] Modal is empty, showing no badges message');
+                    this.modalEarnedBadges.innerHTML = '<div class="no-badges">You don\'t have any badges.<br>Play games to win some!</div>';
+                }
+            } else {
+                console.warn('[ScoreboardManager] modalEarnedBadges element not found!');
+            }
+        } else {
+            console.warn('[ScoreboardManager] earnedBadgesModal element not found!');
         }
     }
 
@@ -112,8 +130,15 @@ class ScoreboardManager {
     
 
     displayBadges(earnedBadges = []) {
+        console.log('[ScoreboardManager] displayBadges called with:', earnedBadges);
         const allBadges = this.getAllBadges();
-        const earnedSet = new Set(earnedBadges);
+        
+        // Normalize earnedBadges - ensure it's an array
+        const normalizedBadges = Array.isArray(earnedBadges) ? earnedBadges : [];
+        const earnedSet = new Set(normalizedBadges);
+        
+        console.log('[ScoreboardManager] Normalized badges:', normalizedBadges);
+        console.log('[ScoreboardManager] Badge count:', normalizedBadges.length);
         
         // Clear all containers
         if (this.earnedBadgesContainer) this.earnedBadgesContainer.innerHTML = '';
@@ -122,12 +147,17 @@ class ScoreboardManager {
         if (this.modalAvailableBadges) this.modalAvailableBadges.innerHTML = '';
         
         // Display earned badges in modal
-        if (earnedBadges.length === 0) {
+        if (normalizedBadges.length === 0) {
+            console.log('[ScoreboardManager] No badges, showing empty message');
             if (this.modalEarnedBadges) {
-                this.modalEarnedBadges.innerHTML = '<div class="no-badges">No badges earned yet. Play games to earn badges!</div>';
+                this.modalEarnedBadges.innerHTML = '<div class="no-badges">You don\'t have any badges.<br>Play games to win some!</div>';
+                console.log('[ScoreboardManager] Set empty message in modal');
+            } else {
+                console.warn('[ScoreboardManager] modalEarnedBadges element not found!');
             }
         } else {
-            earnedBadges.forEach(badgeId => {
+            console.log('[ScoreboardManager] Displaying', normalizedBadges.length, 'badges');
+            normalizedBadges.forEach(badgeId => {
                 const badge = allBadges[badgeId];
                 if (badge) {
                     const badgeElement = this.createBadgeElement(badge, true);

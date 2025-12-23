@@ -39,6 +39,43 @@ class NavigationManager {
         } else {
             this.navContainer.style.display = 'flex';
         }
+        
+        // Ensure guest restrictions are enforced
+        this.enforceGuestRestrictions();
+    }
+    
+    
+
+    enforceGuestRestrictions() {
+        const isGuest = this.app.userRole === 'guest';
+        
+        if (isGuest) {
+            // Hide profile button
+            if (this.profileNavBtn) {
+                this.profileNavBtn.classList.add('hidden');
+            }
+            
+            // Hide chat drawer
+            if (this.lobbyChatDrawer) {
+                this.lobbyChatDrawer.style.display = 'none';
+                this.lobbyChatDrawer.classList.add('hidden');
+            }
+            if (this.roomChatDrawer) {
+                this.roomChatDrawer.style.display = 'none';
+                this.roomChatDrawer.classList.add('hidden');
+            }
+            
+            // Hide online players widget
+            if (this.onlinePlayersWidget) {
+                this.onlinePlayersWidget.style.display = 'none';
+                this.onlinePlayersWidget.classList.add('hidden');
+            }
+            
+            // Close any open drawers
+            this.closeLobbyChatDrawer();
+            this.closeOnlinePlayers();
+            this.closeRoomChatDrawer();
+        }
     }
 
     
@@ -102,6 +139,9 @@ class NavigationManager {
     
 
     updateChatWidgets() {
+        // Always enforce guest restrictions first
+        this.enforceGuestRestrictions();
+        
         if (this.app.viewManager && this.app.viewManager.currentView === 'auth') {
             if (this.lobbyChatDrawer) {
                 this.lobbyChatDrawer.classList.add('hidden');
@@ -118,6 +158,12 @@ class NavigationManager {
             return;
         }
 
+        // If guest, don't show any chat or online players widget
+        const isGuest = this.app.userRole === 'guest';
+        if (isGuest) {
+            return;
+        }
+
         if (this.app.currentRoom) {
             if (this.lobbyChatDrawer) {
                 this.lobbyChatDrawer.classList.add('hidden');
@@ -131,8 +177,13 @@ class NavigationManager {
             this.closeLobbyChatDrawer();
             this.closeOnlinePlayers();
         } else {
+            const isUserProfileView = this.app.viewManager && this.app.viewManager.currentView === 'user-profile';
             if (this.lobbyChatDrawer) {
-                this.lobbyChatDrawer.classList.remove('hidden');
+                if (isUserProfileView) {
+                    this.lobbyChatDrawer.classList.add('hidden');
+                } else {
+                    this.lobbyChatDrawer.classList.remove('hidden');
+                }
             }
             if (this.roomChatDrawer) {
                 this.roomChatDrawer.classList.add('hidden');
@@ -331,6 +382,10 @@ class NavigationManager {
         
         if (this.profileNavBtn) {
             this.profileNavBtn.addEventListener('click', () => {
+                // Block profile access for guests
+                if (this.app.userRole === 'guest') {
+                    return;
+                }
                 this.closeUserMenu();
                 if (this.app.currentRoom && !this.app.isSpectator) {
                     if (this.app.gameState && this.app.gameState.gameStatus === 'finished') {
@@ -514,6 +569,11 @@ class NavigationManager {
         this.app.userMenuOpen = !this.app.userMenuOpen;
         if (this.userMenuDropdown) {
             this.userMenuDropdown.classList.toggle('hidden', !this.app.userMenuOpen);
+        }
+        
+        // Ensure profile button is hidden for guests when menu opens
+        if (this.profileNavBtn && this.app.userRole === 'guest') {
+            this.profileNavBtn.classList.add('hidden');
         }
     }
 

@@ -42,9 +42,17 @@ class LobbySocketHandler {
             if (Array.isArray(data.users) && data.users.length > 0 && typeof data.users[0] === 'object') {
                 this.app.lobbyUsers = data.users.map(u => u.username);
                 this.app.userRolesMap.clear();
+                this.app.userAvatarsMap.clear();
                 data.users.forEach(u => {
                     if (u.username && u.role) {
                         this.app.userRolesMap.set(u.username, u.role);
+                    }
+                    if (u.username && u.avatar) {
+                        this.app.userAvatarsMap.set(u.username, u.avatar);
+                        // Also cache in avatar manager
+                        if (this.app.avatarManager) {
+                            this.app.avatarManager.playerAvatarsCache.set(u.username.toLowerCase(), u.avatar);
+                        }
                     }
                 });
             } else {

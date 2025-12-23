@@ -9,6 +9,7 @@ class MiniGamesApp {
         this.rooms = [];
         this.lobbyUsers = [];
         this.userRolesMap = new Map();
+        this.userAvatarsMap = new Map();
         this.lobbyMessages = [];
         this.roomMessages = [];
         this.gameState = null;
@@ -54,6 +55,18 @@ class MiniGamesApp {
         }
         
         this.setupEventListeners();
+        
+        // Enforce guest restrictions on initialization if user is guest
+        if (this.userRole === 'guest') {
+            setTimeout(() => {
+                if (this.navigationManager && this.navigationManager.enforceGuestRestrictions) {
+                    this.navigationManager.enforceGuestRestrictions();
+                }
+                if (this.authManager && this.authManager.updateUserAvatarDisplay) {
+                    this.authManager.updateUserAvatarDisplay();
+                }
+            }, 100);
+        }
     }
 
     bindDomElements() {
@@ -451,6 +464,16 @@ class MiniGamesApp {
         }
         if (this.viewManager) {
             this.viewManager.showView('profile');
+        }
+    }
+
+    showUserProfile(username) {
+        console.log('[app.showUserProfile] Called with username:', username);
+        if (this.userProfileManager) {
+            this.userProfileManager.showUserProfile(username);
+        } else {
+            console.error('[app.showUserProfile] userProfileManager is not initialized!');
+            console.error('[app.showUserProfile] Make sure UserProfileManager.js is loaded in index.html');
         }
     }
 

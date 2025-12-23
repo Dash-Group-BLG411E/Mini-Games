@@ -32,6 +32,22 @@ class ScoreboardHandler {
                 socket.emit('userBadges', { badges: [] });
             }
         });
+
+        socket.on('getUserBadgesFor', async (data) => {
+            try {
+                const targetUsername = data?.username;
+                if (!targetUsername) {
+                    socket.emit('userBadgesFor', { username: targetUsername, badges: [] });
+                    return;
+                }
+                const stats = await this.handlers.scoreboard.getPlayerStats(targetUsername);
+                const badges = stats.badges || [];
+                socket.emit('userBadgesFor', { username: targetUsername, badges });
+            } catch (error) {
+                console.error('Error getting user badges for:', error);
+                socket.emit('userBadgesFor', { username: data?.username, badges: [] });
+            }
+        });
     }
 }
 
