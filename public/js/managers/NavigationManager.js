@@ -137,8 +137,12 @@ class NavigationManager {
             if (this.roomChatDrawer) {
                 this.roomChatDrawer.classList.add('hidden');
             }
-            if (this.onlinePlayersWidget) {
+            // Only show online players widget on allowed views
+            const allowedViews = ['lobby', 'rooms', 'leaderboard', 'tournaments'];
+            if (this.onlinePlayersWidget && this.app.viewManager && allowedViews.includes(this.app.viewManager.currentView)) {
                 this.onlinePlayersWidget.classList.remove('hidden');
+            } else if (this.onlinePlayersWidget) {
+                this.onlinePlayersWidget.classList.add('hidden');
             }
             this.closeRoomChatDrawer();
         }
@@ -376,6 +380,134 @@ class NavigationManager {
                 }
             }
         });
+
+        // Mobile menu handlers
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileMenuClose = document.getElementById('mobile-menu-close');
+        const mobileNavDrawer = document.getElementById('mobile-nav-drawer');
+        const mobileLobbyBtn = document.getElementById('mobile-lobby-nav-btn');
+        const mobileRoomsBtn = document.getElementById('mobile-rooms-nav-btn');
+        const mobileLeaderboardBtn = document.getElementById('mobile-leaderboard-nav-btn');
+        const mobileTournamentsBtn = document.getElementById('mobile-tournaments-nav-btn');
+
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', () => {
+                this.toggleMobileMenu();
+            });
+        }
+
+        if (mobileMenuClose) {
+            mobileMenuClose.addEventListener('click', () => {
+                this.closeMobileMenu();
+            });
+        }
+
+        if (mobileNavDrawer) {
+            const overlay = mobileNavDrawer.querySelector('.mobile-nav-drawer-overlay');
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    this.closeMobileMenu();
+                });
+            }
+        }
+
+        // Mobile nav button handlers - reuse existing logic
+        if (mobileLobbyBtn) {
+            mobileLobbyBtn.addEventListener('click', () => {
+                this.closeMobileMenu();
+                if (this.lobbyNavBtn) {
+                    this.lobbyNavBtn.click();
+                }
+            });
+        }
+
+        if (mobileRoomsBtn) {
+            mobileRoomsBtn.addEventListener('click', () => {
+                this.closeMobileMenu();
+                if (this.roomsNavBtn) {
+                    this.roomsNavBtn.click();
+                }
+            });
+        }
+
+        if (mobileLeaderboardBtn) {
+            mobileLeaderboardBtn.addEventListener('click', () => {
+                this.closeMobileMenu();
+                if (this.leaderboardNavBtn) {
+                    this.leaderboardNavBtn.click();
+                }
+            });
+        }
+
+        if (mobileTournamentsBtn) {
+            mobileTournamentsBtn.addEventListener('click', () => {
+                this.closeMobileMenu();
+                if (this.tournamentsNavBtn) {
+                    this.tournamentsNavBtn.click();
+                }
+            });
+        }
+    }
+
+    toggleMobileMenu() {
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileNavDrawer = document.getElementById('mobile-nav-drawer');
+        
+        if (mobileNavDrawer) {
+            const isOpen = mobileNavDrawer.classList.contains('open');
+            if (isOpen) {
+                this.closeMobileMenu();
+            } else {
+                this.openMobileMenu();
+            }
+        }
+    }
+
+    openMobileMenu() {
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileNavDrawer = document.getElementById('mobile-nav-drawer');
+        const onlinePlayersWidget = document.getElementById('online-players-widget');
+        
+        if (mobileMenuToggle) {
+            mobileMenuToggle.classList.add('active');
+        }
+        if (mobileNavDrawer) {
+            mobileNavDrawer.classList.add('open');
+            // Prevent body scrolling when menu is open
+            document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+        }
+        // Hide online players widget when menu is open
+        if (onlinePlayersWidget) {
+            onlinePlayersWidget.style.display = 'none';
+            onlinePlayersWidget.classList.add('hidden');
+        }
+    }
+
+    closeMobileMenu() {
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileNavDrawer = document.getElementById('mobile-nav-drawer');
+        const onlinePlayersWidget = document.getElementById('online-players-widget');
+        
+        if (mobileMenuToggle) {
+            mobileMenuToggle.classList.remove('active');
+        }
+        if (mobileNavDrawer) {
+            mobileNavDrawer.classList.remove('open');
+            // Restore body scrolling when menu is closed
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+        }
+        // Restore online players widget if on allowed view
+        if (onlinePlayersWidget && this.app.viewManager) {
+            const allowedViews = ['lobby', 'rooms', 'leaderboard', 'tournaments'];
+            if (allowedViews.includes(this.app.viewManager.currentView)) {
+                onlinePlayersWidget.style.display = '';
+                onlinePlayersWidget.classList.remove('hidden');
+            }
+        }
     }
 
     toggleUserMenu() {

@@ -21,8 +21,59 @@ class BattleshipRenderer {
             return (cell === 'ship' ? '' : cell);
         });
 
-        this.renderBoard(this.battleshipGame.ownBoard, myBoardData, true);
-        this.renderBoard(this.battleshipGame.opponentBoard, opponentBoardView, false);
+        // Show only one board at a time on mobile, both on desktop
+        const ownBoardSection = document.getElementById('battleship-own-board-title')?.parentElement;
+        const opponentBoardSection = document.getElementById('battleship-opponent-board-title')?.parentElement;
+        
+        // Check if mobile (screen width <= 768px)
+        const isMobile = window.innerWidth <= 768;
+
+        if (isMobile) {
+            // Mobile: show only one board at a time
+            if (state.phase === 'placement') {
+                // During placement: show only own board
+                this.renderBoard(this.battleshipGame.ownBoard, myBoardData, true);
+                this.renderBoard(this.battleshipGame.opponentBoard, opponentBoardView, false);
+                
+                if (ownBoardSection) ownBoardSection.style.display = 'flex';
+                if (opponentBoardSection) opponentBoardSection.style.display = 'none';
+            } else if (state.phase === 'playing') {
+                // During battle: show own board when opponent is attacking, opponent board when user is attacking
+                const players = this.app.gameState.players || [];
+                const hasTwoPlayers = players.length === 2;
+                const isMyTurn = state.currentPlayer === role && hasTwoPlayers;
+                
+                if (isMyTurn) {
+                    // User's turn: show opponent's board for attacking
+                    this.renderBoard(this.battleshipGame.opponentBoard, opponentBoardView, false);
+                    this.renderBoard(this.battleshipGame.ownBoard, myBoardData, true);
+                    
+                    if (ownBoardSection) ownBoardSection.style.display = 'none';
+                    if (opponentBoardSection) opponentBoardSection.style.display = 'flex';
+                } else {
+                    // Opponent's turn: show own board (opponent is attacking)
+                    this.renderBoard(this.battleshipGame.ownBoard, myBoardData, true);
+                    this.renderBoard(this.battleshipGame.opponentBoard, opponentBoardView, false);
+                    
+                    if (ownBoardSection) ownBoardSection.style.display = 'flex';
+                    if (opponentBoardSection) opponentBoardSection.style.display = 'none';
+                }
+            } else {
+                // Fallback: show both
+                this.renderBoard(this.battleshipGame.ownBoard, myBoardData, true);
+                this.renderBoard(this.battleshipGame.opponentBoard, opponentBoardView, false);
+                
+                if (ownBoardSection) ownBoardSection.style.display = 'flex';
+                if (opponentBoardSection) opponentBoardSection.style.display = 'flex';
+            }
+        } else {
+            // Desktop: always show both boards
+            this.renderBoard(this.battleshipGame.ownBoard, myBoardData, true);
+            this.renderBoard(this.battleshipGame.opponentBoard, opponentBoardView, false);
+            
+            if (ownBoardSection) ownBoardSection.style.display = 'flex';
+            if (opponentBoardSection) opponentBoardSection.style.display = 'flex';
+        }
     }
 
     renderBoard(container, boardData, isOwnBoard) {

@@ -5,86 +5,74 @@ class ScoreboardManager {
         this.app = app;
         
         this.scoreboardList = document.getElementById('scoreboard-list');
-        this.badgesPanel = document.getElementById('badges-panel');
-        this.badgesToggleBtn = document.getElementById('badges-toggle-btn');
-        this.badgesDropdown = document.getElementById('badges-dropdown');
-        this.earnedBadgesContainer = document.getElementById('earned-badges');
-        this.availableBadgesContainer = document.getElementById('available-badges');
+        this.earnedBadgesContainer = document.getElementById('profile-earned-badges');
+        this.availableBadgesContainer = document.getElementById('profile-available-badges');
+        this.modalEarnedBadges = document.getElementById('modal-earned-badges');
+        this.modalAvailableBadges = document.getElementById('modal-available-badges');
+        this.viewEarnedBadgesBtn = document.getElementById('view-earned-badges-btn');
+        this.viewAvailableBadgesBtn = document.getElementById('view-available-badges-btn');
+        this.earnedBadgesModal = document.getElementById('earned-badges-modal');
+        this.availableBadgesModal = document.getElementById('available-badges-modal');
+        this.closeEarnedBadgesBtn = document.getElementById('close-earned-badges-btn');
+        this.closeAvailableBadgesBtn = document.getElementById('close-available-badges-btn');
         
-        this.setupEventListeners();
+        this.setupBadgeModalListeners();
     }
 
-    setupEventListeners() {
-        this.badgesToggleBtn?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.toggleBadgesPanel();
+    setupBadgeModalListeners() {
+        // Re-bind elements in case they weren't available during construction
+        this.viewEarnedBadgesBtn = document.getElementById('view-earned-badges-btn');
+        this.viewAvailableBadgesBtn = document.getElementById('view-available-badges-btn');
+        this.earnedBadgesModal = document.getElementById('earned-badges-modal');
+        this.availableBadgesModal = document.getElementById('available-badges-modal');
+        this.closeEarnedBadgesBtn = document.getElementById('close-earned-badges-btn');
+        this.closeAvailableBadgesBtn = document.getElementById('close-available-badges-btn');
+        
+        this.viewEarnedBadgesBtn?.addEventListener('click', () => this.showEarnedBadgesModal());
+        this.viewAvailableBadgesBtn?.addEventListener('click', () => this.showAvailableBadgesModal());
+        this.closeEarnedBadgesBtn?.addEventListener('click', () => this.hideEarnedBadgesModal());
+        this.closeAvailableBadgesBtn?.addEventListener('click', () => this.hideAvailableBadgesModal());
+        
+        this.earnedBadgesModal?.addEventListener('click', (e) => {
+            if (e.target === this.earnedBadgesModal) {
+                this.hideEarnedBadgesModal();
+            }
         });
-
-        document.addEventListener('click', (e) => {
-            if (this.badgesPanel && !this.badgesPanel.contains(e.target) && 
-                this.badgesToggleBtn && !this.badgesToggleBtn.contains(e.target)) {
-                this.closeBadgesPanel();
+        
+        this.availableBadgesModal?.addEventListener('click', (e) => {
+            if (e.target === this.availableBadgesModal) {
+                this.hideAvailableBadgesModal();
             }
         });
     }
 
-    
+    showEarnedBadgesModal() {
+        if (this.earnedBadgesModal) {
+            this.earnedBadgesModal.classList.remove('hidden');
+        }
+    }
+
+    hideEarnedBadgesModal() {
+        if (this.earnedBadgesModal) {
+            this.earnedBadgesModal.classList.add('hidden');
+        }
+    }
+
+    showAvailableBadgesModal() {
+        if (this.availableBadgesModal) {
+            this.availableBadgesModal.classList.remove('hidden');
+        }
+    }
+
+    hideAvailableBadgesModal() {
+        if (this.availableBadgesModal) {
+            this.availableBadgesModal.classList.add('hidden');
+        }
+    }
 
     loadLeaderboard() {
         if (!this.app.socket) return;
         this.app.socket.emit('getScoreboard', { gameType: null });
-    }
-
-    
-
-    updateScoreboard(data) {
-        if (!this.scoreboardList) return;
-        this.scoreboardList.innerHTML = '';
-
-        if (!data || data.length === 0) {
-            this.scoreboardList.innerHTML = '<div class="no-scores">No scores yet. Be the first to play!</div>';
-            return;
-        }
-
-        data.forEach((player, index) => {
-            const rank = index + 1;
-            const row = document.createElement('div');
-            row.className = 'scoreboard-row';
-            
-            const totalGames = (player.wins || 0) + (player.losses || 0) + (player.draws || 0);
-            const winRate = totalGames > 0 ? ((player.wins || 0) / totalGames * 100).toFixed(1) : '0.0';
-            
-            row.innerHTML = `
-                <div class="rank">${rank}</div>
-                <div class="username">${player.username}</div>
-                <div class="stats">
-                    <span class="wins">${player.wins || 0}W</span>
-                    <span class="losses">${player.losses || 0}L</span>
-                    <span class="draws">${player.draws || 0}D</span>
-                </div>
-                <div class="win-rate">${winRate}%</div>
-            `;
-            
-            this.scoreboardList.appendChild(row);
-        });
-    }
-
-    
-
-    toggleBadgesPanel() {
-        if (!this.badgesDropdown) return;
-        this.badgesDropdown.classList.toggle('hidden');
-        if (!this.badgesDropdown.classList.contains('hidden')) {
-            this.loadUserBadges();
-        }
-    }
-
-    
-
-    closeBadgesPanel() {
-        if (this.badgesDropdown) {
-            this.badgesDropdown.classList.add('hidden');
-        }
     }
 
     
@@ -108,6 +96,11 @@ class ScoreboardManager {
             'memory-50-wins': { emoji: '🌟', name: 'Memory 50 Wins', description: 'Win 50 games of Memory Match' },
             'memory-100-wins': { emoji: '💎', name: 'Memory Master', description: 'Win 100 games of Memory Match' },
             'memory-80-percent': { emoji: '🏆', name: 'Memory Expert', description: 'Achieve 80% win rate in Memory Match (min 10 games)' },
+            'battleship-first-win': { emoji: '🎯', name: 'First Battleship Win', description: 'Win your first game of Battleship' },
+            'battleship-10-wins': { emoji: '⭐', name: 'Battleship 10 Wins', description: 'Win 10 games of Battleship' },
+            'battleship-50-wins': { emoji: '🌟', name: 'Battleship 50 Wins', description: 'Win 50 games of Battleship' },
+            'battleship-100-wins': { emoji: '💎', name: 'Battleship Master', description: 'Win 100 games of Battleship' },
+            'battleship-80-percent': { emoji: '🏆', name: 'Battleship Expert', description: 'Achieve 80% win rate in Battleship (min 10 games)' },
             'overall-10-wins': { emoji: '🔥', name: 'Rising Star', description: 'Win 10 games across all games' },
             'overall-50-wins': { emoji: '⚡', name: 'Champion', description: 'Win 50 games across all games' },
             'overall-100-wins': { emoji: '👑', name: 'Legend', description: 'Win 100 games across all games' },
@@ -119,31 +112,40 @@ class ScoreboardManager {
     
 
     displayBadges(earnedBadges = []) {
-        if (!this.earnedBadgesContainer || !this.availableBadgesContainer) return;
-        
         const allBadges = this.getAllBadges();
         const earnedSet = new Set(earnedBadges);
         
-        this.earnedBadgesContainer.innerHTML = '';
-        this.availableBadgesContainer.innerHTML = '';
+        // Clear all containers
+        if (this.earnedBadgesContainer) this.earnedBadgesContainer.innerHTML = '';
+        if (this.availableBadgesContainer) this.availableBadgesContainer.innerHTML = '';
+        if (this.modalEarnedBadges) this.modalEarnedBadges.innerHTML = '';
+        if (this.modalAvailableBadges) this.modalAvailableBadges.innerHTML = '';
         
+        // Display earned badges in modal
         if (earnedBadges.length === 0) {
-            this.earnedBadgesContainer.innerHTML = '<div class="no-badges">No badges earned yet. Play games to earn badges!</div>';
+            if (this.modalEarnedBadges) {
+                this.modalEarnedBadges.innerHTML = '<div class="no-badges">No badges earned yet. Play games to earn badges!</div>';
+            }
         } else {
             earnedBadges.forEach(badgeId => {
                 const badge = allBadges[badgeId];
                 if (badge) {
                     const badgeElement = this.createBadgeElement(badge, true);
-                    this.earnedBadgesContainer.appendChild(badgeElement);
+                    if (this.modalEarnedBadges) {
+                        this.modalEarnedBadges.appendChild(badgeElement.cloneNode(true));
+                    }
                 }
             });
         }
         
+        // Display available badges in modal
         Object.keys(allBadges).forEach(badgeId => {
             if (!earnedSet.has(badgeId)) {
                 const badge = allBadges[badgeId];
                 const badgeElement = this.createBadgeElement(badge, false);
-                this.availableBadgesContainer.appendChild(badgeElement);
+                if (this.modalAvailableBadges) {
+                    this.modalAvailableBadges.appendChild(badgeElement);
+                }
             }
         });
     }
@@ -166,37 +168,8 @@ class ScoreboardManager {
     
 
     getBadgeDisplay(badges) {
-        if (!badges || badges.length === 0) return '';
-        
-        const badgeMap = {
-            'tmm-first-win': { emoji: '🎯', name: 'First TMM Win' },
-            'tmm-10-wins': { emoji: '⭐', name: 'TMM 10 Wins' },
-            'tmm-50-wins': { emoji: '🌟', name: 'TMM 50 Wins' },
-            'tmm-100-wins': { emoji: '💎', name: 'TMM Master' },
-            'tmm-80-percent': { emoji: '🏆', name: 'TMM Expert' },
-            'memory-first-win': { emoji: '🎯', name: 'First Memory Win' },
-            'memory-10-wins': { emoji: '⭐', name: 'Memory 10 Wins' },
-            'memory-50-wins': { emoji: '🌟', name: 'Memory 50 Wins' },
-            'memory-100-wins': { emoji: '💎', name: 'Memory Master' },
-            'memory-80-percent': { emoji: '🏆', name: 'Memory Expert' },
-            'overall-10-wins': { emoji: '🔥', name: 'Rising Star' },
-            'overall-50-wins': { emoji: '⚡', name: 'Champion' },
-            'overall-100-wins': { emoji: '👑', name: 'Legend' },
-            'veteran': { emoji: '🎖️', name: 'Veteran' },
-            'legend': { emoji: '🏅', name: 'Hall of Fame' }
-        };
-        
-        const badgeElements = badges.slice(0, 5).map(badgeId => {
-            const badge = badgeMap[badgeId] || { emoji: '🏅', name: badgeId };
-            return `<span class="badge" title="${badge.name}">
-                <span class="badge-emoji">${badge.emoji}</span>
-                <span class="badge-name">${badge.name}</span>
-            </span>`;
-        }).join('');
-        
-        const moreBadges = badges.length > 5 ? `<span class="badge-more" title="${badges.slice(5).map(b => badgeMap[b]?.name || b).join(', ')}">+${badges.length - 5}</span>` : '';
-        
-        return `<div class="badges-container">${badgeElements}${moreBadges}</div>`;
+        // Badges removed from leaderboard - return empty string
+        return '';
     }
 
     

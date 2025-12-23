@@ -193,12 +193,173 @@
     border: 1px solid #bee5eb;
 }
 
-.delete-account-section {
-    margin-top: 0;
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+.profile-badges-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid rgba(17, 24, 39, 0.1);
+}
+
+.profile-badges-section .badges-section {
+    margin-bottom: 2rem;
+}
+
+.profile-badges-section .badges-section:last-child {
+    margin-bottom: 0;
+}
+
+.profile-badges-section .badges-section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid rgba(124, 58, 237, 0.2);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.profile-badges-section .badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.profile-badges-section .badge-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 10px;
+    background: rgba(243, 244, 246, 0.8);
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.profile-badges-section .badge-item.earned {
+    background: rgba(124, 58, 237, 0.1);
+    border-color: rgba(124, 58, 237, 0.3);
+}
+
+.profile-badges-section .badge-item.available {
+    background: rgba(0, 0, 0, 0.05);
+    opacity: 0.7;
+}
+
+.profile-badges-section .badge-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.profile-badges-section .badge-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.profile-badges-section .badge-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-badges-section .badge-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 0.25rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.profile-badges-section .badge-description {
+    font-size: 0.75rem;
+    color: #666;
+    line-height: 1.3;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.profile-badges-section .no-badges {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    font-style: italic;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.profile-actions-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
     border-top: 2px solid rgba(17, 24, 39, 0.1);
     display: flex;
+    gap: 1rem;
     justify-content: center;
+    align-items: center;
     margin-bottom: 0;
+    flex-wrap: wrap;
+}
+
+.change-password-btn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-deep));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-weight: 600;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
+}
+
+.change-password-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+}
+
+.profile-form.hidden {
+    display: none;
+}
+
+.view-badges-btn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-deep));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-weight: 600;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    flex: 1;
+}
+
+.view-badges-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+}
+
+.delete-account-btn {
+    padding: 0.75rem 1.5rem;
+    margin: 0;
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-weight: 600;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
+}
+
+.delete-account-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+    background: linear-gradient(135deg, #b91c1c, #991b1b);
 }

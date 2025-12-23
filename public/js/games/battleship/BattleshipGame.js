@@ -30,6 +30,16 @@ class BattleshipGame {
         this.selectedShip = null;
         this.isHorizontal = true;
         this.clearCountdown();
+        
+        // Handle window resize to update board visibility
+        if (!this.handleResize) {
+            this.handleResize = () => {
+                if (this.app.gameState && this.app.gameState.battleshipState) {
+                    this.renderBoards();
+                }
+            };
+            window.addEventListener('resize', this.handleResize);
+        }
     }
 
     renderBoards() {

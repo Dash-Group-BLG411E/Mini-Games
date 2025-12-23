@@ -114,9 +114,32 @@ class ViewManager {
                 navContainer.style.display = '';
                 navContainer.classList.remove('hidden');
             }
-            if (onlinePlayersWidget && viewName !== 'auth') {
+            // Show online players widget only on lobby, rooms, leaderboard, tournaments
+            const allowedViews = ['lobby', 'rooms', 'leaderboard', 'tournaments'];
+            if (onlinePlayersWidget && viewName !== 'auth' && allowedViews.includes(viewName)) {
                 onlinePlayersWidget.style.display = '';
                 onlinePlayersWidget.classList.remove('hidden');
+            } else if (onlinePlayersWidget) {
+                onlinePlayersWidget.style.display = 'none';
+                onlinePlayersWidget.classList.add('hidden');
+            }
+            
+            // Load badges when profile view is shown
+            if (viewName === 'profile') {
+                if (this.app.scoreboardManager) {
+                    this.app.scoreboardManager.loadUserBadges();
+                    // Re-setup badge modal listeners in case profile wasn't loaded when ScoreboardManager was initialized
+                    if (this.app.scoreboardManager.setupBadgeModalListeners) {
+                        this.app.scoreboardManager.setupBadgeModalListeners();
+                    }
+                }
+                if (this.app.authManager && this.app.authManager.profileManager) {
+                    this.app.authManager.loadProfileData();
+                    // Re-setup profile listeners
+                    if (this.app.authManager.profileManager.setupEventListeners) {
+                        this.app.authManager.profileManager.setupEventListeners();
+                    }
+                }
             }
             if (lobbyChatDrawer && viewName !== 'auth') {
                 lobbyChatDrawer.style.display = '';

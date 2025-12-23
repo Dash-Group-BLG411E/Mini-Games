@@ -263,6 +263,22 @@
     min-height: 200px;
 }
 
+/* Hide chat on mobile */
+@media (max-width: 768px) {
+    .chat-drawer,
+    .chat-drawer-content,
+    .chat-drawer-tab,
+    #lobby-chat-drawer,
+    #room-chat-drawer {
+        display: none !important;
+    }
+
+    #lobby-chat-widget,
+    .fixed-widget:has(#lobby-chat-popup) {
+        display: none !important;
+    }
+}
+
 .widget-form {
     padding: 1rem 1.5rem;
     border-top: 2px solid rgba(17, 24, 39, 0.1);

@@ -8,10 +8,12 @@ class RoomManager {
         this.modalRoomNameInput = document.getElementById('modal-room-name-input');
         this.modalCreateBtn = document.getElementById('modal-create-btn');
         this.modalCancelBtn = document.getElementById('modal-cancel-btn');
-        this.roomInfoBox = document.getElementById('room-info-box');
-        this.roomInfoName = document.getElementById('room-info-name');
-        this.roomInfoPlayers = document.getElementById('room-info-players');
-        this.roomInfoSpectators = document.getElementById('room-info-spectators');
+        this.roomInfoBtn = document.getElementById('room-info-btn');
+        this.roomInfoModal = document.getElementById('room-info-modal');
+        this.roomInfoModalClose = document.getElementById('room-info-modal-close');
+        this.roomInfoModalName = document.getElementById('room-info-modal-name');
+        this.roomInfoModalPlayers = document.getElementById('room-info-modal-players');
+        this.roomInfoModalSpectators = document.getElementById('room-info-modal-spectators');
         this.leaveRoomBtn = document.getElementById('leave-room-btn');
         this.leaveRoomModal = document.getElementById('leave-room-modal');
         this.confirmLeaveBtn = document.getElementById('confirm-leave-btn');
@@ -24,6 +26,18 @@ class RoomManager {
     }
 
     setupEventListeners() {
+        // Room info button and modal
+        this.roomInfoBtn?.addEventListener('click', () => {
+            this.openRoomInfoModal();
+        });
+
+        // Close modal when clicking overlay
+        this.roomInfoModal?.addEventListener('click', (e) => {
+            if (e.target === this.roomInfoModal || e.target.classList.contains('room-info-modal-overlay')) {
+                this.closeRoomInfoModal();
+            }
+        });
+
         this.leaveRoomBtn?.addEventListener('click', () => {
             if (this.app.gameState && this.app.gameState.gameStatus === 'finished') {
                 this.leaveRoom();
@@ -290,42 +304,49 @@ class RoomManager {
     
 
     updateRoomInfoBox() {
-        if (!this.roomInfoBox) return;
+        if (!this.roomInfoBtn) return;
 
         if (this.app.currentRoom) {
-            this.roomInfoBox.classList.remove('hidden');
-            
-            if (this.roomInfoName) {
-                const roomName = this.app.currentRoomName || `Room ${this.app.currentRoom}`;
-                this.roomInfoName.textContent = roomName;
-                this.roomInfoName.title = roomName;
-            }
-            
-            if (this.roomInfoPlayers) {
-                if (this.app.gameState && this.app.gameState.players && this.app.gameState.players.length > 0) {
-                    const playerNames = this.app.gameState.players.map(p => p.username).join(', ');
-                    const playersText = `Players: ${playerNames}`;
-                    this.roomInfoPlayers.textContent = playersText;
-                    this.roomInfoPlayers.title = playersText;
-                } else {
-                    this.roomInfoPlayers.textContent = 'Players: -';
-                    this.roomInfoPlayers.title = '';
-                }
-            }
-            
-            if (this.roomInfoSpectators) {
-                let spectatorCount = 0;
-                if (this.app.rooms && this.app.currentRoom) {
-                    const room = this.app.rooms.find(r => r.roomId === this.app.currentRoom);
-                    if (room) {
-                        spectatorCount = room.spectatorCount || 0;
-                    }
-                }
-                this.roomInfoSpectators.textContent = `Spectators: ${spectatorCount}`;
-            }
+            this.roomInfoBtn.classList.remove('hidden');
+            this.updateRoomInfoModalContent();
         } else {
-            this.roomInfoBox.classList.add('hidden');
+            this.roomInfoBtn.classList.add('hidden');
+            this.closeRoomInfoModal();
         }
+    }
+
+    updateRoomInfoModalContent() {
+        if (!this.roomInfoModalName || !this.roomInfoModalPlayers || !this.roomInfoModalSpectators) return;
+
+        const roomName = this.app.currentRoomName || `Room ${this.app.currentRoom}`;
+        this.roomInfoModalName.textContent = roomName;
+
+        if (this.app.gameState && this.app.gameState.players && this.app.gameState.players.length > 0) {
+            const playerNames = this.app.gameState.players.map(p => p.username).join(', ');
+            this.roomInfoModalPlayers.textContent = playerNames;
+        } else {
+            this.roomInfoModalPlayers.textContent = '-';
+        }
+
+        let spectatorCount = 0;
+        if (this.app.rooms && this.app.currentRoom) {
+            const room = this.app.rooms.find(r => r.roomId === this.app.currentRoom);
+            if (room) {
+                spectatorCount = room.spectatorCount || 0;
+            }
+        }
+        this.roomInfoModalSpectators.textContent = spectatorCount.toString();
+    }
+
+    openRoomInfoModal() {
+        if (!this.roomInfoModal) return;
+        this.updateRoomInfoModalContent();
+        this.roomInfoModal.classList.remove('hidden');
+    }
+
+    closeRoomInfoModal() {
+        if (!this.roomInfoModal) return;
+        this.roomInfoModal.classList.add('hidden');
     }
 }
 

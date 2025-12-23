@@ -43,7 +43,9 @@ body:has(#game-container.view-active) #lobby-container {
     padding-top: 2rem;
     min-height: calc(100vh - 80px);
     width: 100%;
+    max-width: 100%;
     position: relative;
+    box-sizing: border-box;
 }
 
 #auth-container {
@@ -84,4 +86,6 @@ body:has(#game-container.view-active) #lobby-container {
     box-shadow: 0 30px 60px rgba(15, 15, 27, 0.45);
     color: var(--text-dark);
     overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
 }

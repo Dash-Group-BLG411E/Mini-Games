@@ -162,9 +162,6 @@ class AuthManager {
                     
                     await this.app.waitForBadgesAndShowLobby();
                     
-                    if (this.app.scoreboardManager && this.app.scoreboardManager.badgesPanel) {
-                        this.app.scoreboardManager.badgesPanel.classList.remove('hidden');
-                    }
                     hideLoadingScreen();
                     
                     const authContainer = document.getElementById('auth-container');
@@ -178,10 +175,6 @@ class AuthManager {
                     
                     if (this.app.waitForBadgesAndShowLobby) {
                         await this.app.waitForBadgesAndShowLobby();
-                    }
-                    
-                    if (this.app.scoreboardManager && this.app.scoreboardManager.badgesPanel) {
-                        this.app.scoreboardManager.badgesPanel.classList.remove('hidden');
                     }
                     return;
                 } else {
@@ -207,9 +200,6 @@ class AuthManager {
                 lobbyContainer.style.display = 'none';
             }
         }, 100);
-        if (this.app.scoreboardManager && this.app.scoreboardManager.badgesPanel) {
-            this.app.scoreboardManager.badgesPanel.classList.add('hidden');
-        }
     }
 
     clearStoredAuth() {
@@ -406,9 +396,6 @@ class AuthManager {
                 this.app.roomManager.roomInfoBox.classList.add('hidden');
             }
         }
-        if (this.app.scoreboardManager && this.app.scoreboardManager.badgesPanel) {
-            this.app.scoreboardManager.badgesPanel.classList.add('hidden');
-        }
     }
 
     async loadUserProfile() {
@@ -461,6 +448,10 @@ class AuthManager {
 
     loadProfileData() {
         this.profileManager.loadProfileData();
+        // Load badges when profile is shown
+        if (this.app.scoreboardManager) {
+            this.app.scoreboardManager.loadUserBadges();
+        }
     }
 
     showAuthMessage(message) {
