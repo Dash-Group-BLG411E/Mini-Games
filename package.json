@@ -1,22 +1,35 @@
 {
-  "name": "tictactoe",
+  "name": "minigames",
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js"
   },
-  "keywords": [],
+  "keywords": [
+    "games",
+    "multiplayer",
+    "realtime",
+    "battleship",
+    "memory-match",
+    "three-mens-morris",
+    "socket.io"
+  ],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Real-time multiplayer gaming platform with Three Men's Morris, Memory Match, and Battleship",
   "dependencies": {
+    "@getbrevo/brevo": "^3.0.1",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^9.0.0",
-    "nodemailer": "^6.9.8",
+    "nodemailer": "^7.0.11",
+    "resend": "^4.8.0",
     "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
   }
 }

@@ -2,7 +2,6 @@ const User = require('../models/User')
 
 class UserStore {
   generateDefaultAvatar(username) {
-    // Generate a simple emoji-based avatar from first letter
     const emojis = ['😀', '😃', '😄', '😁', '😆', '😊', '😎', '🤓', '🧐', '😇']
     const index = username.charCodeAt(0) % emojis.length
     return emojis[index]
@@ -23,7 +22,6 @@ class UserStore {
       const user = await User.findOne({ username: username.toLowerCase() })
       if (!user) return null
       
-      // Convert to plain object similar to old format
       return {
         username: user.username,
         email: user.email,
@@ -72,33 +70,31 @@ class UserStore {
     }
   }
 
-  async addUser(username, email, passwordHash, role = 'player', verificationToken = null) {
+  async addUser(username, email, passwordHash, role = 'player', verificationToken = null, emailVerified = false) {
     try {
       const avatar = this.generateDefaultAvatar(username)
       const allowedRoles = ['admin', 'player', 'guest']
       const safeRole = allowedRoles.includes(role) ? role : 'player'
       
-      // Set token expiry to 24 hours from now
       const verificationTokenExpiry = verificationToken ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null
       
-      // For guest accounts, email can be null
+      // If verificationToken is null and email is provided, user is already verified
+      const isVerified = emailVerified || safeRole === 'guest' || (verificationToken === null && email)
+      
       const userData = {
         username: username.toLowerCase(),
         passwordHash,
         displayName: username,
         avatar,
         role: safeRole,
-        emailVerified: safeRole === 'guest', // Guests are auto-verified
+        emailVerified: isVerified,
         verificationToken: safeRole === 'guest' ? null : verificationToken,
         verificationTokenExpiry: safeRole === 'guest' ? null : verificationTokenExpiry
       }
       
-      // Only add email if provided and not a guest
-      // For guests, explicitly don't set email (undefined) to avoid index issues
       if (email && safeRole !== 'guest') {
         userData.email = email.toLowerCase()
       } else if (safeRole === 'guest') {
-        // Explicitly set to undefined (not null) for guests to avoid index conflicts
         userData.email = undefined
       }
       
@@ -107,7 +103,6 @@ class UserStore {
       return user
     } catch (error) {
       if (error.code === 11000) {
-        // Duplicate key error - check which field
         if (error.keyPattern?.username) {
           throw new Error('Username already exists')
         } else if (error.keyPattern?.email) {
@@ -145,7 +140,7 @@ class UserStore {
 
   async updateVerificationToken(username, token) {
     try {
-      const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+      const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000)
       const user = await User.findOneAndUpdate(
         { username: username.toLowerCase() },
         { 
@@ -165,7 +160,6 @@ class UserStore {
 
   async updateUser(username, updates) {
     try {
-      // Don't allow changing username
       const { username: _, ...safeUpdates } = updates
       
       const user = await User.findOneAndUpdate(

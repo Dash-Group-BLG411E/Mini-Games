@@ -1,12 +1,15 @@
+require('dotenv').config()
 const path = require("path")
 const http = require("http")
 const express = require("express")
 const socketio = require("socket.io")
-const SocketHandlers = require("./socketHandlers")
+const SocketHandlers = require("./core/SocketHandlers")
 const authRoutes = require("./auth/authRoutes")
+const reportsRoutes = require("./routes/reportsRoutes")
 const { requireAuth, requireRole } = require("./auth/authMiddleware")
 const { verifyToken } = require("./auth/authUtils")
 const connectDB = require("./db/connection")
+const { normalizeGameType } = require("./utils/gameTypeUtils")
 
 const app = express()
 const server = http.createServer(app)
@@ -17,8 +20,8 @@ const publicDirPath = path.join(__dirname, "../public")
 app.use(express.static(publicDirPath))
 app.use(express.json());
 app.use("/api/auth", authRoutes)
+app.use(reportsRoutes)
 
-// Initialize socket handlers
 const socketHandlers = new SocketHandlers(io)
 
 io.use((socket, next) => {
@@ -39,18 +42,14 @@ io.use((socket, next) => {
     }
 })
 
-// Handle socket connections
 io.on("connection", (socket) => {
     socketHandlers.handleConnection(socket)
 })
 
-// API endpoint for scoreboard (protected)
 app.get('/api/scoreboard', requireAuth, requireRole('admin', 'player', 'guest'), async (req, res) => {
     try {
         const gameType = req.query.gameType || null;
-        const normalizedGameType = gameType ? (gameType === 'tic-tac-toe' ? 'ticTacToe' : 
-                                                gameType === 'rock-paper-scissors' ? 'rockPaperScissors' : 
-                                                gameType === 'memory-match' ? 'memoryMatch' : null) : null;
+        const normalizedGameType = gameType ? normalizeGameType(gameType) : null;
         const scoreboardData = await socketHandlers.getScoreboardData(normalizedGameType);
         res.json(scoreboardData);
     } catch (error) {
@@ -59,13 +58,28 @@ app.get('/api/scoreboard', requireAuth, requireRole('admin', 'player', 'guest'),
     }
 });
 
-// Profile route for front-end
 app.get('/api/profile', requireAuth, requireRole('admin', 'player', 'guest'), (req, res) => {
     res.json({ username: req.user.username, role: req.user.role || 'player' })
 })
 
-// Initialize MongoDB connection and start server
-connectDB().then(() => {
+app.get('/admin/reports', (req, res) => {
+    res.sendFile(path.join(publicDirPath, 'admin', 'reports.html'));
+})
+
+connectDB().then(async () => {
+    // Cleanup expired and orphaned pending registrations on startup
+    const PendingRegistrationStore = require('./auth/PendingRegistrationStore')
+    try {
+        const expiredCount = await PendingRegistrationStore.cleanupExpiredRegistrations()
+        if (expiredCount > 0) {
+            console.log(`🧹 Cleaned up ${expiredCount} expired pending registrations`)
+        }
+        await PendingRegistrationStore.cleanupOrphanedRegistrations()
+        console.log('🧹 Cleaned up orphaned pending registrations')
+    } catch (error) {
+        console.error('Error during cleanup:', error)
+    }
+    
     server.listen(port, () => {
         console.log("Server is up on " + port)
     })

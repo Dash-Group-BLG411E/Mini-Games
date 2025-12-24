@@ -1,0 +1,98 @@
+.view {
+    display: none;
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-top: 100px;
+    padding-bottom: 2rem;
+    margin: 0;
+}
+
+#lobby-container {
+    padding-top: 140px;
+}
+
+#game-container {
+    padding-top: 80px;
+    padding-bottom: 0;
+    position: relative;
+    overflow: hidden;
+    display: none;
+}
+
+#game-container.view-active {
+    display: block;
+}
+
+#game-container.view-active ~ #lobby-container,
+body:has(#game-container.view-active) #lobby-container {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+.game-main-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 2rem;
+    padding-top: 2rem;
+    min-height: calc(100vh - 80px);
+    width: 100%;
+    max-width: 100%;
+    position: relative;
+    box-sizing: border-box;
+}
+
+#auth-container {
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 100vh;
+    width: 100%;
+    padding: 1.5rem;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+@media (min-width: 769px) {
+    #auth-container {
+        overflow-y: hidden;
+        overflow-x: hidden;
+        padding: 2rem;
+    }
+}
+
+#auth-container.view-active {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#auth-container .auth-card {
+    margin: 0 auto;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--panel-high);
+    border-radius: 24px;
+    border: 1px solid rgba(17, 24, 39, 0.1);
+    box-shadow: 0 30px 60px rgba(15, 15, 27, 0.45);
+    color: var(--text-dark);
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
+}

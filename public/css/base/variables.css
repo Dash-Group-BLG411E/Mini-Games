@@ -1,0 +1,13 @@
+:root {
+    --bg-main: #1e1b4b;
+    --bg-main-dark: #130f33;
+    --panel-high: #ffffff;
+    --panel-soft: #f3f4f6;
+    --text-light: #fefefe;
+    --text-dark: #111827;
+    --accent-purple: #7c3aed;
+    --accent-blue: #2563eb;
+    --accent-purple-deep: #4c1d95;
+    --accent-teal: #14b8a6;
+    --accent-orange: #fb923c;
+}

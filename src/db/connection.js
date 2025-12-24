@@ -5,9 +5,8 @@ const connectDB = async () => {
   try {
     const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/minigames';
     
-    // Set connection options
     const options = {
-      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      serverSelectionTimeoutMS: 5000,
     };
     
     await mongoose.connect(mongoURI, options);

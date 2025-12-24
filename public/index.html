@@ -7,72 +7,59 @@
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="style.css">
-    
-        <!-- Simple CSS fix -->
-        <style>
-            .lobby-main-grid {
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 24px;
-                margin-top: 24px;
-                max-width: 600px;
-                margin-left: auto;
-                margin-right: auto;
-            }
-    
-            .lobby-section {
-                background: rgba(255, 255, 255, 0.05);
-                padding: 16px;
-                border-radius: 12px;
-                backdrop-filter: blur(6px);
-            }
-    
-            .lobby-section h2 {
-                margin-top: 0;
-                font-size: 1.3rem;
-                color: #fff;
-                font-weight: 600;
-            }
-    
-            .rooms-list, .users-list, .chat-list {
-                max-height: 350px;
-                overflow-y: auto;
-                border-radius: 8px;
-                padding: 8px;
-            }
-        </style>
+        <link rel="stylesheet" href="/css/base/variables.css">
+        <link rel="stylesheet" href="/css/base/reset.css">
+        <link rel="stylesheet" href="/css/base/typography.css">
+        <link rel="stylesheet" href="/css/components/loading.css">
+        <link rel="stylesheet" href="/css/components/navigation.css">
+        <link rel="stylesheet" href="/css/components/buttons.css">
+        <link rel="stylesheet" href="/css/components/forms.css">
+        <link rel="stylesheet" href="/css/components/modals.css">
+        <link rel="stylesheet" href="/css/components/chat.css">
+        <link rel="stylesheet" href="/css/layouts/views.css">
+        <link rel="stylesheet" href="/css/layouts/auth.css">
+        <link rel="stylesheet" href="/css/layouts/lobby.css">
+        <link rel="stylesheet" href="/css/layouts/game.css">
+        <link rel="stylesheet" href="/css/layouts/scoreboard.css">
+        <link rel="stylesheet" href="/css/layouts/profile.css">
+        <link rel="stylesheet" href="/css/layouts/tournaments.css">
+        <link rel="stylesheet" href="/css/utilities/animations.css">
+        <link rel="stylesheet" href="/css/utilities/responsive.css">
+        <link rel="stylesheet" href="/css/games/battleship.css">
+        <link rel="stylesheet" href="/css/games/tmm.css">
+        <link rel="stylesheet" href="/css/games/memory.css">
     </head>
-    
 <body>
-    <!-- Loading Screen -->
     <div id="loading-screen" class="loading-screen">
     </div>
-
     <div id="nav-container" class="nav-container">
+        <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div id="mobile-nav-drawer" class="mobile-nav-drawer">
+            <div class="mobile-nav-drawer-overlay"></div>
+            <div class="mobile-nav-drawer-content">
+                <div class="mobile-nav-drawer-header">
+                    <h2>Menu</h2>
+                    <button id="mobile-menu-close" class="mobile-menu-close" aria-label="Close menu">×</button>
+                </div>
+                <div class="mobile-nav-drawer-body">
+                    <button id="mobile-lobby-nav-btn" class="mobile-nav-btn">Lobby</button>
+                    <button id="mobile-rooms-nav-btn" class="mobile-nav-btn">Active Rooms</button>
+                    <button id="mobile-leaderboard-nav-btn" class="mobile-nav-btn">Leaderboard</button>
+                    <button id="mobile-tournaments-nav-btn" class="mobile-nav-btn">Tournaments</button>
+                </div>
+            </div>
+        </div>
         <div class="nav-left">
             <button id="lobby-nav-btn" class="nav-btn">Lobby</button>
             <button id="rooms-nav-btn" class="nav-btn">Active Rooms</button>
             <button id="leaderboard-nav-btn" class="nav-btn">Leaderboard</button>
-            <button id="tournaments-nav-btn" class="nav-btn" disabled>Tournaments</button>
+            <button id="tournaments-nav-btn" class="nav-btn">Tournaments</button>
         </div>
         <div class="nav-right">
-            <!-- Badges Panel -->
-            <div id="badges-panel" class="badges-panel hidden">
-                <button id="badges-toggle-btn" class="badges-toggle-btn" aria-label="Toggle badges">
-                    <span>🏅</span> Badges
-                </button>
-                <div id="badges-dropdown" class="badges-dropdown hidden">
-                    <div class="badges-section">
-                        <h3 class="badges-section-title">Your Badges</h3>
-                        <div id="earned-badges" class="badges-grid"></div>
-                    </div>
-                    <div class="badges-section">
-                        <h3 class="badges-section-title">Available Badges</h3>
-                        <div id="available-badges" class="badges-grid"></div>
-                    </div>
-                </div>
-            </div>
             <div class="user-menu-container">
                 <button id="user-avatar-btn" class="user-avatar-btn" aria-label="User menu">
                     <span id="user-avatar-display" class="user-avatar-display">👤</span>
@@ -82,6 +69,9 @@
                 <div id="user-menu-dropdown" class="user-menu-dropdown hidden">
                     <button id="profile-nav-btn" class="user-menu-item">
                         <span>👤</span> Profile
+                    </button>
+                    <button id="admin-reports-btn" class="user-menu-item hidden">
+                        <span>📊</span> Admin Reports
                     </button>
                     <button id="logout-btn" class="user-menu-item">
                         <span class="logout-icon">
@@ -96,17 +86,37 @@
             </div>
         </div>
     </div>
-
-    <!-- Room Info Box -->
-    <div id="room-info-box" class="room-info-box hidden">
-        <div class="room-info-title">Room Info</div>
-        <div class="room-info-name" id="room-info-name">-</div>
-        <div class="room-info-players" id="room-info-players">Players: -</div>
-        <div class="room-info-spectators" id="room-info-spectators">Spectators: 0</div>
+    <button id="room-info-btn" class="room-info-btn hidden" aria-label="Room information">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+    </button>
+    <div id="room-info-modal" class="room-info-modal hidden">
+        <div class="room-info-modal-overlay"></div>
+        <div class="room-info-modal-content">
+            <div class="room-info-modal-header">
+                <h2>Room Information</h2>
+                <button id="room-info-modal-close" class="room-info-modal-close" aria-label="Close">×</button>
+            </div>
+            <div class="room-info-modal-body">
+                <div class="room-info-item">
+                    <strong>Room Name:</strong>
+                    <span id="room-info-modal-name">-</span>
+                </div>
+                <div class="room-info-item">
+                    <strong>Players:</strong>
+                    <span id="room-info-modal-players">-</span>
+                </div>
+                <div class="room-info-item">
+                    <strong>Spectators:</strong>
+                    <span id="room-info-modal-spectators">0</span>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <!-- Authentication View -->
-    <div id="auth-container" class="view" style="display: none;">
+    <div id="auth-container" class="view">
         <div class="auth-card">
                 <h1>Welcome</h1>
                 <div class="auth-tabs">
@@ -132,7 +142,7 @@
                     <label for="register-username">Username</label>
                     <input type="text" id="register-username" name="username" placeholder="Choose a username" required autocomplete="off">
                     <label for="register-email">Email</label>
-                    <input type="email" id="register-email" name="email" placeholder="your.email@example.com" required autocomplete="email">
+                    <input type="email" id="register-email" name="email" placeholder="Enter your email" required autocomplete="email">
                     <label for="register-password" class="label-with-info">
                         Password
                         <span class="info-icon" id="password-info-icon" tabindex="0" aria-label="Password requirements">
@@ -178,40 +188,33 @@
                         <span>or</span>
                     </div>
                     <button type="button" id="guest-login-btn" class="guest-btn">Play as Guest</button>
-                    <p class="guest-hint">Guests can spectate and chat. Register to unlock playing.</p>
+                    <p class="guest-hint">Play as a guest. Register to unlock more.</p>
                 </div>
                 <div id="auth-message" class="auth-message"></div>
             </div>
         </div>
     </div>
-
-  
-    <!-- Lobby View -->
     <div id="lobby-container" class="view">
         <div class="container">
             <h1>Game Lobby</h1>
-
-            <!-- GAME SELECTION CARDS -->
             <div class="lobby-actions">
                 <div class="lobby-card-grid" id="lobby-game-grid">
-                    <div class="game-card game-card--tic is-active" data-game="tic-tac-toe" aria-pressed="true" role="button" tabindex="0">
-                        <span class="game-card__icon" aria-hidden="true">❌</span>
+                    <div class="game-card game-card--tic is-active" data-game="three-mens-morris" aria-pressed="true" role="button" tabindex="0">
+                        <span class="game-card__icon" aria-hidden="true">⚫</span>
                         <div class="game-card__content">
-                            <h3 class="game-card__title">Tic Tac Toe</h3>
-                            <p class="game-card__subtitle">Classic 3×3 board duels.</p>
-                            <button type="button" class="game-card__action" data-game="tic-tac-toe">Create Room</button>
+                            <h3 class="game-card__title">Three Men's Morris</h3>
+                            <p class="game-card__subtitle">3-piece strategy game.</p>
+                            <button type="button" class="game-card__action" data-game="three-mens-morris">Create Room</button>
                         </div>
                     </div>
-
-                    <div class="game-card game-card--rps" data-game="rock-paper-scissors" aria-pressed="false" role="button" tabindex="0">
-                        <span class="game-card__icon" aria-hidden="true">✂️</span>
+                    <div class="game-card game-card--battleship" data-game="battleship" aria-pressed="false" role="button" tabindex="0">
+                        <span class="game-card__icon" aria-hidden="true">🚢</span>
                         <div class="game-card__content">
-                            <h3 class="game-card__title">Rock Paper Scissors</h3>
-                            <p class="game-card__subtitle">Fast hand clash rounds.</p>
-                            <button type="button" class="game-card__action" data-game="rock-paper-scissors">Create Room</button>
+                            <h3 class="game-card__title">Battleship</h3>
+                            <p class="game-card__subtitle">Strategic naval warfare.</p>
+                            <button type="button" class="game-card__action" data-game="battleship">Create Room</button>
                         </div>
                     </div>
-
                     <div class="game-card game-card--memory" data-game="memory-match" aria-pressed="false" role="button" tabindex="0">
                         <span class="game-card__icon" aria-hidden="true">🧩</span>
                         <div class="game-card__content">
@@ -222,99 +225,89 @@
                     </div>
                 </div>
             </div>
-
-            <!-- 🔥 FIXED MAIN LOBBY GRID -->
             <div class="lobby-main-grid">
-                <!-- Lobby grid is now empty - chat is in the widget drawer -->
             </div>
-
         </div>
     </div>
-
-    <!-- Game View -->
     <div id="game-container" class="view">
-        <!-- Main Game Area -->
         <div class="game-main-area">
-            <div class="go-home" style="display: none;">
-                <div class="go-home-text">Play Again</div>
-            </div>    
-            
             <div class="info">
                 <div class="class-text"></div>
             </div>
-            
-            <div id="ttt-stage" class="ttt-stage">
-                <div class="ttt-game-container">
-                    <div class="ttt-player-info" id="ttt-player-x">
-                        <div class="ttt-player-role" id="ttt-player-x-role">X</div>
-                        <div class="ttt-player-avatar" id="ttt-player-x-avatar">👤</div>
-                        <div class="ttt-player-name" id="ttt-player-x-name">Player X</div>
-                        <div class="ttt-player-score" id="ttt-player-x-score">0</div>
+            <div id="tmm-stage" class="tmm-stage">
+                <div class="tmm-game-container">
+                    <div class="tmm-player-info" id="tmm-player-1">
+                        <div class="tmm-player-role" id="tmm-player-1-role">X</div>
+                        <div class="tmm-player-avatar" id="tmm-player-1-avatar">👤</div>
+                        <div class="tmm-player-name" id="tmm-player-1-name">You</div>
+                        <div class="tmm-player-score" id="tmm-player-1-score">0</div>
                     </div>
-                    <div class="game-board" id="tic-tac-toe-board"></div>
-                    <div class="ttt-player-info" id="ttt-player-o">
-                        <div class="ttt-player-role" id="ttt-player-o-role">O</div>
-                        <div class="ttt-player-avatar" id="ttt-player-o-avatar">👤</div>
-                        <div class="ttt-player-name" id="ttt-player-o-name">Opponent</div>
-                        <div class="ttt-player-score" id="ttt-player-o-score">0</div>
+                    <div class="game-board" id="three-mens-morris-board"></div>
+                    <div class="tmm-player-info" id="tmm-player-2">
+                        <div class="tmm-player-role" id="tmm-player-2-role">O</div>
+                        <div class="tmm-player-avatar" id="tmm-player-2-avatar">👤</div>
+                        <div class="tmm-player-name" id="tmm-player-2-name">Opponent</div>
+                        <div class="tmm-player-score" id="tmm-player-2-score">0</div>
                     </div>
                 </div>
             </div>
-            <div id="rps-stage" class="rps-stage hidden">
-                <div class="rps-game-container">
-                    <div class="rps-player-info" id="rps-player-x">
-                        <div class="rps-player-avatar" id="rps-player-x-avatar">👤</div>
-                        <div class="rps-player-name" id="rps-player-x-name">Player X</div>
-                        <div class="rps-player-score" id="rps-player-x-score">0</div>
-                    </div>
-                    <div class="rps-center-area">
-                        <div class="rps-versus">
-                            <div class="rps-spot player">
-                                <div class="rps-icon" id="rps-player-choice">?</div>
+            <div id="battleship-stage" class="battleship-stage hidden">
+                <div class="battleship-layout-container">
+                    <div class="battleship-main-area">
+                        <div class="battleship-game-container">
+                            <div class="battleship-player-info" id="battleship-player-1">
+                                <div class="battleship-player-role" id="battleship-player-1-role"></div>
+                                <div class="battleship-player-avatar" id="battleship-player-1-avatar">👤</div>
+                                <div class="battleship-player-name" id="battleship-player-1-name">You</div>
                             </div>
-                            <div class="rps-vs-text">VS</div>
-                            <div class="rps-spot opponent">
-                                <div class="rps-icon" id="rps-opponent-choice">?</div>
+                            <div class="battleship-boards-container">
+                            <div class="battleship-board-section">
+                                <h3 class="battleship-board-title" id="battleship-own-board-title">Your Fleet</h3>
+                                <div class="battleship-board" id="battleship-own-board"></div>
+                            </div>
+                            <div class="battleship-board-section">
+                                <h3 class="battleship-board-title" id="battleship-opponent-board-title">Opponent's Fleet</h3>
+                                <div class="battleship-board" id="battleship-opponent-board"></div>
+                            </div>
+                            </div>
+                            <div class="battleship-player-info" id="battleship-player-2">
+                                <div class="battleship-player-role" id="battleship-player-2-role"></div>
+                                <div class="battleship-player-avatar" id="battleship-player-2-avatar">👤</div>
+                                <div class="battleship-player-name" id="battleship-player-2-name">Opponent</div>
                             </div>
                         </div>
-                        <div class="rps-result" id="rps-result">Select your move</div>
-                        <div class="rps-controls" id="rps-controls">
-                            <button type="button" class="rps-btn" data-choice="rock"><span class="rps-emoji">🪨</span><span class="rps-label">Rock</span></button>
-                            <button type="button" class="rps-btn" data-choice="paper"><span class="rps-emoji">📄</span><span class="rps-label">Paper</span></button>
-                            <button type="button" class="rps-btn" data-choice="scissors"><span class="rps-emoji">✂️</span><span class="rps-label">Scissors</span></button>
-                        </div>
                     </div>
-                    <div class="rps-player-info" id="rps-player-o">
-                        <div class="rps-player-avatar" id="rps-player-o-avatar">👤</div>
-                        <div class="rps-player-name" id="rps-player-o-name">Opponent</div>
-                        <div class="rps-player-score" id="rps-player-o-score">0</div>
-                    </div>
+                </div>
+                <div class="battleship-ships-container hidden" id="battleship-ships-container">
+                    <div class="battleship-ships-box" id="battleship-ships-box"></div>
+                </div>
+                <div class="battleship-controls">
+                    <div id="battleship-status" class="battleship-status"></div>
                 </div>
             </div>
             <div class="memory-match-message hidden" id="memory-match-message"></div>
             <div id="memory-stage" class="memory-stage hidden">
                 <div class="memory-game-container">
-                    <div class="memory-player-info" id="memory-player-x">
-                        <div class="memory-player-avatar" id="memory-player-x-avatar">👤</div>
-                        <div class="memory-player-name" id="memory-player-x-name">Player X</div>
-                        <div class="memory-player-score" id="memory-player-x-score">0</div>
+                    <div class="memory-player-info" id="memory-player-1">
+                        <div class="memory-player-avatar" id="memory-player-1-avatar">👤</div>
+                        <div class="memory-player-name" id="memory-player-1-name">You</div>
+                        <div class="memory-player-score" id="memory-player-1-score">0</div>
                     </div>
                     <div class="memory-grid" id="memory-grid"></div>
-                    <div class="memory-player-info" id="memory-player-o">
-                        <div class="memory-player-avatar" id="memory-player-o-avatar">👤</div>
-                        <div class="memory-player-name" id="memory-player-o-name">Opponent</div>
-                        <div class="memory-player-score" id="memory-player-o-score">0</div>
+                    <div class="memory-player-info" id="memory-player-2">
+                        <div class="memory-player-avatar" id="memory-player-2-avatar">👤</div>
+                        <div class="memory-player-name" id="memory-player-2-name">Opponent</div>
+                        <div class="memory-player-score" id="memory-player-2-score">0</div>
                     </div>
                 </div>
                 <div id="memory-status" class="memory-status" style="display: none;">Flip two cards to find a match.</div>
             </div>
-            <button id="leave-room-btn" class="leave-room-btn">Leave Game</button>
+            <div class="game-action-buttons">
+                <button id="rematch-btn" class="rematch-btn hidden">Rematch</button>
+                <button id="leave-room-btn" class="leave-room-btn">Leave Game</button>
+            </div>
         </div>
-
-        <!-- Game Info Button -->
         <button id="game-info-btn" class="game-info-btn">Game Info</button>
-
-        <!-- Game Info Modal -->
         <div id="game-info-modal" class="game-info-modal hidden">
             <div class="game-info-card" id="game-info-card">
                 <h2 id="game-info-title"></h2>
@@ -322,24 +315,18 @@
             </div>
         </div>
     </div>
-
-    <!-- Active Rooms View -->
     <div id="rooms-container" class="view">
         <div class="container">
             <h1>Active Rooms</h1>
             <div id="rooms-list" class="rooms-list"></div>
         </div>
     </div>
-
-    <!-- Leaderboard View -->
     <div id="leaderboard-container" class="view">
         <div class="container">
             <h1>🏆 Leaderboard</h1>
             <div id="scoreboard-list" class="scoreboard-list"></div>
         </div>
     </div>
-
-    <!-- Room Name Modal -->
     <div id="room-name-modal" class="modal hidden">
         <div class="modal-content">
             <h2>Create Room</h2>
@@ -353,8 +340,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Online Players Widget -->
     <div id="online-players-widget" class="fixed-widget">
         <button id="online-players-toggle" class="widget-toggle-btn">
             <span class="online-indicator"></span>
@@ -367,8 +352,6 @@
                 <div id="online-players-list" class="users-list widget-content"></div>
             </div>
     </div>
-
-    <!-- Lobby Chat Drawer -->
     <div id="lobby-chat-drawer" class="chat-drawer">
         <div id="lobby-chat-drawer-content" class="chat-drawer-content">
             <div id="lobby-chat-tab" class="chat-drawer-tab">
@@ -385,8 +368,6 @@
             </form>
         </div>
     </div>
-
-    <!-- Room Chat Drawer -->
     <div id="room-chat-drawer" class="chat-drawer hidden">
         <div id="room-chat-drawer-content" class="chat-drawer-content">
             <div id="room-chat-tab" class="chat-drawer-tab">
@@ -403,8 +384,6 @@
             </form>
         </div>
     </div>
-
-    <!-- Profile View -->
     <div id="profile-container" class="view">
         <div class="container">
             <h1>Profile</h1>
@@ -428,85 +407,95 @@
                     </div>
                     <button id="update-avatar-btn" class="update-btn">Update Avatar</button>
                 </div>
-                
-                <div class="profile-form-section">
-                    <h2 style="color: var(--text-dark); font-size: 1.5rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0;">Change Password</h2>
-                    <form id="profile-password-form" class="profile-form">
-                        <label for="profile-current-password">Current Password</label>
-                        <div class="password-input-wrapper">
-                            <input type="password" id="profile-current-password" name="currentPassword" placeholder="Enter current password" required>
-                            <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
-                                <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                            </button>
-                        </div>
-                        <label for="profile-new-password" class="label-with-info">
-                            New Password
-                            <span class="info-icon" id="profile-password-info-icon" tabindex="0" aria-label="Password requirements">
-                                <span class="info-icon-text">?</span>
-                                <div class="info-tooltip" id="profile-password-requirements-tooltip">
-                                    <div class="tooltip-content">
-                                        <strong>Password Requirements:</strong>
-                                        <ul>
-                                            <li>At least 8 characters long</li>
-                                            <li>Contains at least one letter (a-z, A-Z)</li>
-                                            <li>Contains at least one number (0-9)</li>
-                                            <li>No special characters (! @ # $ % ^ & * ( ) , . ' " ? /)</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </span>
-                        </label>
-                        <div class="password-input-wrapper">
-                            <input type="password" id="profile-new-password" name="newPassword" placeholder="Enter new password" required>
-                            <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
-                                <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                            </button>
-                        </div>
-                        <div id="profile-new-password-error" class="password-error"></div>
-                        <label for="profile-confirm-password">Confirm New Password</label>
-                        <div class="password-input-wrapper">
-                            <input type="password" id="profile-confirm-password" name="confirmPassword" placeholder="Re-enter new password" required>
-                            <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
-                                <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                            </button>
-                        </div>
-                        <div id="profile-confirm-password-error" class="password-error"></div>
-                        <button type="submit" class="update-btn">Change Password</button>
-                    </form>
-                </div>
-
                 <div id="profile-message" class="profile-message"></div>
-                <div class="delete-account-section">
+                <div class="profile-badges-section">
+                    <h2 style="color: var(--text-dark); font-size: 1.5rem; font-weight: 600; margin-top: 1rem; margin-bottom: 1rem;">Badges</h2>
+                    <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                        <button id="view-earned-badges-btn" class="view-badges-btn">Your Badges</button>
+                        <button id="view-available-badges-btn" class="view-badges-btn">Available Badges</button>
+                    </div>
+                </div>
+                <div class="profile-actions-section">
+                    <button id="change-password-btn" class="change-password-btn">Change Password</button>
                     <button id="delete-account-btn" class="delete-account-btn">Delete Account</button>
                 </div>
+                <form id="profile-password-form" class="profile-form hidden" style="display: none;">
+                    <label for="profile-current-password">Current Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="profile-current-password" name="currentPassword" placeholder="Enter current password" required>
+                        <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
+                            <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                    <label for="profile-new-password" class="label-with-info">
+                        New Password
+                        <span class="info-icon" id="profile-password-info-icon" tabindex="0" aria-label="Password requirements">
+                            <span class="info-icon-text">?</span>
+                            <div class="info-tooltip" id="profile-password-requirements-tooltip">
+                                <div class="tooltip-content">
+                                    <strong>Password Requirements:</strong>
+                                    <ul>
+                                        <li>At least 8 characters long</li>
+                                        <li>Contains at least one letter (a-z, A-Z)</li>
+                                        <li>Contains at least one number (0-9)</li>
+                                        <li>No special characters (! @ # $ % ^ & * ( ) , . ' " ? /)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </span>
+                    </label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="profile-new-password" name="newPassword" placeholder="Enter new password" required>
+                        <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
+                            <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="profile-new-password-error" class="password-error"></div>
+                    <label for="profile-confirm-password">Confirm New Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="profile-confirm-password" name="confirmPassword" placeholder="Re-enter new password" required>
+                        <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
+                            <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="profile-confirm-password-error" class="password-error"></div>
+                    <button type="submit" class="update-btn">Change Password</button>
+                </form>
             </div>
         </div>
     </div>
-
-    <!-- Leave Room Confirmation Modal -->
+    <div id="user-profile-container" class="view">
+        <div class="container">
+            <div id="user-profile-avatar" class="user-profile-avatar">👤</div>
+            <h1 id="user-profile-username">Username</h1>
+            <p id="user-profile-role">Role</p>
+            <div class="profile-badges-section" style="margin-top: 1.5rem;">
+                <button id="view-user-badges-btn" class="view-badges-btn">View Badges</button>
+            </div>
+        </div>
+    </div>
+    <button id="user-profile-report-btn" class="user-profile-report-btn">Report user</button>
     <div id="leave-room-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <h2>Leave Game</h2>
-            <p class="modal-warning">⚠️ Warning: You will be counted as the loser!</p>
+            <p class="modal-warning">⚠️ Warning: You will lose the game!</p>
             <p>Are you sure you want to leave this game?</p>
-            <p id="leave-room-message">If you leave now, your opponent will win and your stats will be updated.</p>
+            <p id="leave-room-message"></p>
             <div class="modal-actions">
                 <button id="confirm-leave-btn" class="confirm-delete-btn">Yes, Leave Game</button>
                 <button id="cancel-leave-btn" class="cancel-delete-btn">Cancel</button>
             </div>
         </div>
     </div>
-
-    <!-- Navigation Warning Modal -->
     <div id="navigation-warning-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <h2>You are in a game</h2>
@@ -516,8 +505,25 @@
             </div>
         </div>
     </div>
-
-    <!-- Delete Account Confirmation Modal -->
+    <div id="report-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>Report User</h2>
+            <p id="report-target-label">Reporting: <span id="report-target-name"></span></p>
+            <label for="report-reason-select">Reason</label>
+            <select id="report-reason-select">
+                <option value="cheating">Cheating</option>
+                <option value="abuse">Abuse</option>
+                <option value="spam">Spam</option>
+                <option value="bug">Bug</option>
+            </select>
+            <label for="report-message-input">Details (optional)</label>
+            <textarea id="report-message-input" rows="3" placeholder="Describe what happened..."></textarea>
+            <div class="modal-actions">
+                <button id="report-submit-btn" class="modal-btn">Submit</button>
+                <button id="report-cancel-btn" class="modal-btn cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
     <div id="delete-account-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <h2>Delete Account</h2>
@@ -535,8 +541,93 @@
             </div>
         </div>
     </div>
-
-    <!-- Notification Modal -->
+    <div id="change-password-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>Change Password</h2>
+            <form id="modal-password-form" class="profile-form">
+                <label for="modal-current-password">Current Password</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="modal-current-password" name="currentPassword" placeholder="Enter current password" required>
+                    <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
+                        <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+                <div id="modal-current-password-error" class="password-error"></div>
+                <label for="modal-new-password" class="label-with-info">
+                    New Password
+                    <span class="info-icon" id="modal-password-info-icon" tabindex="0" aria-label="Password requirements">
+                        <span class="info-icon-text">?</span>
+                        <div class="info-tooltip" id="modal-password-requirements-tooltip">
+                            <div class="tooltip-content">
+                                <strong>Password Requirements:</strong>
+                                <ul>
+                                    <li>At least 8 characters long</li>
+                                    <li>Contains at least one letter (a-z, A-Z)</li>
+                                    <li>Contains at least one number (0-9)</li>
+                                    <li>No special characters (! @ # $ % ^ & * ( ) , . ' " ? /)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </span>
+                </label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="modal-new-password" name="newPassword" placeholder="Enter new password" required>
+                    <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
+                        <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+                <div id="modal-new-password-error" class="password-error"></div>
+                <label for="modal-confirm-password">Confirm New Password</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="modal-confirm-password" name="confirmPassword" placeholder="Re-enter new password" required>
+                    <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
+                        <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+                <div id="modal-confirm-password-error" class="password-error"></div>
+                <div class="modal-actions">
+                    <button type="submit" class="update-btn">Change Password</button>
+                    <button type="button" id="cancel-password-btn" class="cancel-delete-btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="earned-badges-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>Your Badges</h2>
+            <div id="modal-earned-badges" class="badges-grid" style="max-height: 60vh; overflow-y: auto; padding: 1rem 0;"></div>
+            <div class="modal-actions">
+                <button id="close-earned-badges-btn" class="cancel-delete-btn">Close</button>
+            </div>
+        </div>
+    </div>
+    <div id="available-badges-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>Available Badges</h2>
+            <div id="modal-available-badges" class="badges-grid" style="max-height: 60vh; overflow-y: auto; padding: 1rem 0;"></div>
+            <div class="modal-actions">
+                <button id="close-available-badges-btn" class="cancel-delete-btn">Close</button>
+            </div>
+        </div>
+    </div>
+    <div id="user-profile-badges-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 id="user-profile-badges-modal-title">Badges</h2>
+            <div id="user-profile-badges-modal-content" class="badges-grid" style="max-height: 60vh; overflow-y: auto; padding: 1rem 0;"></div>
+            <div class="modal-actions">
+                <button id="close-user-profile-badges-btn" class="cancel-delete-btn">Close</button>
+            </div>
+        </div>
+    </div>
     <div id="notification-modal" class="notification-modal hidden">
         <div class="notification-overlay"></div>
         <div class="notification-card">
@@ -548,8 +639,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Invitation Modal -->
     <div id="invitation-modal" class="notification-modal hidden">
         <div class="notification-overlay"></div>
         <div class="notification-card">
@@ -562,20 +651,31 @@
             </div>
         </div>
     </div>
-
-    <!-- Invite Game Type Modal -->
+    <div id="game-end-modal" class="game-end-modal hidden">
+        <div class="game-end-overlay"></div>
+        <div class="game-end-card">
+            <div class="game-end-content">
+                <h2 id="game-end-title" class="game-end-title"></h2>
+                <p id="game-end-message" class="game-end-message"></p>
+                <div class="game-end-actions">
+                    <button id="game-end-rematch-btn" class="game-end-rematch-btn">Rematch</button>
+                </div>
+                <div id="game-end-rematch-status" class="game-end-rematch-status hidden"></div>
+            </div>
+        </div>
+    </div>
     <div id="invite-game-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <h2>Invite Player</h2>
             <p>Select a game type to invite <span id="invite-player-name"></span> to play:</p>
             <div class="game-type-selector">
                 <label class="game-type-option">
-                    <input type="radio" name="invite-game-type" value="tic-tac-toe" checked>
-                    <span>🎮 Tic Tac Toe</span>
+                    <input type="radio" name="invite-game-type" value="three-mens-morris" checked>
+                    <span>⚫ Three Men's Morris</span>
                 </label>
                 <label class="game-type-option">
-                    <input type="radio" name="invite-game-type" value="rock-paper-scissors">
-                    <span>✂️ Rock Paper Scissors</span>
+                    <input type="radio" name="invite-game-type" value="battleship">
+                    <span>🚢 Battleship</span>
                 </label>
                 <label class="game-type-option">
                     <input type="radio" name="invite-game-type" value="memory-match">
@@ -588,17 +688,98 @@
             </div>
         </div>
     </div>
-
-    <!-- Tournaments View (Placeholder) -->
     <div id="tournaments-container" class="view">
         <div class="container">
-            <h1>Tournaments</h1>
-            <p>Tournaments feature coming soon!</p>
-            <button id="tournaments-back-btn" class="back-btn">Back to Lobby</button>
+            <div class="tournaments-header">
+                <h1>🏆 Tournaments</h1>
+                <button id="create-tournament-btn" class="btn-primary">
+                    <span>🏆</span>
+                    <span>Create Tournament</span>
+                </button>
+            </div>
+            <div id="tournaments-list" class="tournaments-list"></div>
         </div>
     </div>
-
+    <div id="create-tournament-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>Create Tournament</h2>
+            <form id="create-tournament-form" class="modal-form">
+                <label for="tournament-name-input">Tournament Name</label>
+                <input type="text" id="tournament-name-input" placeholder="Enter tournament name" autocomplete="off">
+                
+                <label for="tournament-game-type">Game Type</label>
+                <select id="tournament-game-type" required>
+                    <option value="three-mens-morris">⚫ Three Men's Morris</option>
+                    <option value="battleship">🚢 Battleship</option>
+                    <option value="memory-match">🧩 Memory Match</option>
+                </select>
+                
+                <label for="tournament-max-players">Number of Players</label>
+                <select id="tournament-max-players" required>
+                    <option value="4">4 Players</option>
+                    <option value="8">8 Players</option>
+                    <option value="16">16 Players</option>
+                </select>
+                
+                <div class="modal-actions">
+                    <button type="submit" class="modal-btn-primary">Create</button>
+                    <button type="button" id="cancel-create-tournament-btn" class="modal-btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="tournament-post-match-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>Match Finished</h2>
+            <div id="tournament-post-match-message" class="tournament-post-match-message"></div>
+            <div id="tournament-active-matches" class="tournament-active-matches"></div>
+            <div id="tournament-post-match-options" class="tournament-post-match-options"></div>
+        </div>
+    </div>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js"></script>
+    <script src="/js/init-fallback.js"></script>
+    <script src="/js/ui/ModalManager.js"></script>
+    <script src="/js/ui/ChatRenderer.js"></script>
+    <script src="/js/ui/LobbyRenderer.js"></script>
+    <script src="/js/ui/ScoreboardManager.js"></script>
+    <script src="/js/ui/TournamentRenderer.js"></script>
+    <script src="/js/utils/AvatarManager.js"></script>
+    <script src="/js/utils/WarningManager.js"></script>
+    <script src="/js/managers/socket/LobbySocketHandler.js"></script>
+    <script src="/js/managers/socket/RoomSocketHandler.js"></script>
+    <script src="/js/managers/socket/game/GameStateHandler.js"></script>
+    <script src="/js/managers/socket/game/RematchHandler.js"></script>
+    <script src="/js/managers/socket/game/GameLifecycleHandler.js"></script>
+    <script src="/js/managers/socket/GameSocketHandler.js"></script>
+    <script src="/js/managers/socket/BattleshipSocketHandler.js"></script>
+    <script src="/js/managers/socket/MemorySocketHandler.js"></script>
+    <script src="/js/managers/socket/TMMSocketHandler.js"></script>
+    <script src="/js/managers/socket/InvitationSocketHandler.js"></script>
+    <script src="/js/managers/socket/ScoreboardSocketHandler.js"></script>
+    <script src="/js/managers/socket/TournamentSocketHandler.js"></script>
+    <script src="/js/managers/auth/PasswordValidator.js"></script>
+    <script src="/js/managers/auth/LoginHandler.js"></script>
+    <script src="/js/managers/auth/RegisterHandler.js"></script>
+    <script src="/js/managers/auth/ProfileManager.js"></script>
+    <script src="/js/managers/DOMManager.js"></script>
+    <script src="/js/managers/AppInitializer.js"></script>
+    <script src="/js/managers/AuthManager.js"></script>
+    <script src="/js/managers/ViewManager.js"></script>
+    <script src="/js/managers/RoomManager.js"></script>
+    <script src="/js/managers/SocketManager.js"></script>
+    <script src="/js/managers/NavigationManager.js"></script>
+    <script src="/js/managers/GameStateManager.js"></script>
+    <script src="/js/managers/BattleshipManager.js"></script>
+    <script src="/js/managers/InvitationManager.js"></script>
+    <script src="/js/managers/ReportManager.js"></script>
+    <script src="/js/managers/TournamentManager.js"></script>
+    <script src="/js/managers/UserProfileManager.js"></script>
+    <script src="/js/games/battleship/ShipPlacementPhase.js"></script>
+    <script src="/js/games/battleship/BattlePhase.js"></script>
+    <script src="/js/games/battleship/BattleshipRenderer.js"></script>
+    <script src="/js/games/battleship/BattleshipGame.js"></script>
+    <script src="/js/games/tmm/TMMGame.js"></script>
+    <script src="/js/games/memory/MemoryGame.js"></script>
+    <script src="/js/app.js"></script>
 </body>
 </html>

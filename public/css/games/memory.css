@@ -1,0 +1,353 @@
+.memory-stage {
+    margin: 0;
+    margin-top: 0;
+    padding: 1.25rem;
+    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+    max-width: 100%;
+    overflow: visible;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.memory-game-container {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    justify-content: center;
+    width: 100%;
+}
+
+.memory-player-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 120px;
+}
+
+.memory-player-avatar {
+    font-size: 3rem;
+    line-height: 1;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-deep));
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.memory-player-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.memory-player-score {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-purple);
+    text-align: center;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.memory-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.75rem;
+    justify-items: center;
+    flex: 1;
+    max-width: calc(100% - 280px);
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.memory-grid:has(.memory-card:hover) .memory-card.revealed {
+    transform: none !important;
+    transition: none !important;
+}
+
+.memory-card {
+    width: 70px;
+    height: 90px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 
+        0 4px 15px rgba(124, 58, 237, 0.3),
+        inset 0 2px 4px rgba(0, 0, 0, 0.15),
+        inset 0 -2px 4px rgba(255, 255, 255, 0.1);
+    color: white;
+    position: relative;
+    font-weight: 700;
+    overflow: hidden;
+}
+
+.memory-card:not(.revealed):not(.matched)::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 6px,
+            rgba(255, 255, 255, 0.15) 6px,
+            rgba(255, 255, 255, 0.15) 12px
+        ),
+        repeating-linear-gradient(
+            -45deg,
+            transparent,
+            transparent 6px,
+            rgba(255, 255, 255, 0.15) 6px,
+            rgba(255, 255, 255, 0.15) 12px
+        );
+    opacity: 0.4;
+    pointer-events: none;
+    border-radius: 12px;
+}
+
+.memory-card.revealed,
+.memory-card.revealed:hover,
+.memory-card.revealed:active,
+.memory-card.revealed:focus {
+    transform: none !important;
+    transition: none !important;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.memory-card.revealed::after {
+    display: none;
+}
+
+.memory-card:not(.revealed):not(.matched)::before {
+    content: '?';
+    font-size: 2.5rem;
+    z-index: 1;
+    position: relative;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.memory-card:not(.revealed):not(.matched) {
+    color: white;
+}
+
+.memory-card:hover:not(.disabled):not(.matched):not(.revealed) {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+}
+
+.memory-card.revealed {
+    background: linear-gradient(135deg, #ffffff, #f8f9fa);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    border: 2px solid rgba(124, 58, 237, 0.2);
+    color: #333;
+}
+
+.memory-card.matched {
+    background: linear-gradient(135deg, #c8e6c9, #a5d6a7);
+    pointer-events: none;
+    animation: memoryMatch 0.8s ease forwards;
+    border: 2px solid #4caf50;
+    color: #2e7d32;
+}
+
+.memory-card.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.memory-status {
+    margin-top: 1rem;
+    text-align: center;
+    font-weight: 600;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    color: #333;
+    font-size: 1rem;
+}
+
+.memory-match-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) translateY(-20px);
+    background: rgba(255, 255, 255, 0.85);
+    color: var(--accent-purple);
+    padding: 1.5rem 3rem;
+    border-radius: 16px;
+    font-size: 2.5rem;
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    z-index: 3000;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.memory-match-message.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(0);
+}
+
+.memory-match-message.hidden {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(-20px);
+}
+
+@keyframes memoryMatch {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+@media (max-width: 768px) {
+    .memory-stage {
+        padding: 0.5rem;
+        overflow: visible;
+    }
+
+    .memory-game-container {
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+
+    .memory-player-info {
+        min-width: 100px;
+        width: auto;
+    }
+
+    .memory-player-avatar {
+        width: 60px;
+        height: 60px;
+        font-size: 2.25rem;
+    }
+
+    .memory-player-name {
+        font-size: 0.9rem;
+        max-width: 100px;
+    }
+
+    .memory-player-score {
+        font-size: 1.25rem;
+    }
+
+    .memory-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+        max-width: 100%;
+        width: 100%;
+        padding: 0 0.5rem;
+        margin: 0;
+    }
+
+    .memory-stage {
+        padding: 0.5rem;
+    }
+
+    .memory-game-container {
+        gap: 0.75rem;
+    }
+
+    .memory-card {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 0.85;
+        min-height: 70px;
+        font-size: 1.5rem;
+    }
+
+    .memory-card:not(.revealed):not(.matched)::before {
+        font-size: 2rem;
+    }
+
+    .memory-status {
+        font-size: 0.9rem;
+        padding: 0 1rem;
+    }
+
+    .memory-match-message {
+        font-size: 1.75rem;
+        padding: 1rem 2rem;
+        max-width: 90vw;
+        white-space: normal;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .memory-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.4rem;
+        padding: 0 0.5rem;
+        margin: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .memory-game-container {
+        padding: 0;
+        gap: 0.5rem;
+    }
+
+    .memory-stage {
+        padding: 0.25rem;
+    }
+
+    .memory-card {
+        min-height: 65px;
+        font-size: 1.25rem;
+    }
+
+    .memory-card:not(.revealed):not(.matched)::before {
+        font-size: 1.75rem;
+    }
+
+    .memory-player-avatar {
+        width: 50px;
+        height: 50px;
+        font-size: 1.75rem;
+    }
+
+    .memory-player-name {
+        font-size: 0.85rem;
+    }
+
+    .memory-player-score {
+        font-size: 1.1rem;
+    }
+
+    .memory-match-message {
+        font-size: 1.5rem;
+        padding: 0.75rem 1.5rem;
+    }
+}

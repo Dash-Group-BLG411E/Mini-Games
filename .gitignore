@@ -1,3 +1,15 @@
-node_modules
+node_modules/
 .env
+.env.local
+.env.*.local
 *.log
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+dist/
+build/
+coverage/
+.nyc_output/

@@ -8,7 +8,6 @@ const gameStatsSchema = new mongoose.Schema({
     lowercase: true,
     trim: true
   },
-  // Overall stats (for backward compatibility)
   wins: {
     type: Number,
     default: 0,
@@ -24,13 +23,7 @@ const gameStatsSchema = new mongoose.Schema({
     default: 0,
     min: 0
   },
-  // Game-specific stats
-  ticTacToe: {
-    wins: { type: Number, default: 0, min: 0 },
-    losses: { type: Number, default: 0, min: 0 },
-    draws: { type: Number, default: 0, min: 0 }
-  },
-  rockPaperScissors: {
+  threeMensMorris: {
     wins: { type: Number, default: 0, min: 0 },
     losses: { type: Number, default: 0, min: 0 },
     draws: { type: Number, default: 0, min: 0 }
@@ -40,7 +33,11 @@ const gameStatsSchema = new mongoose.Schema({
     losses: { type: Number, default: 0, min: 0 },
     draws: { type: Number, default: 0, min: 0 }
   },
-  // Badges earned
+  battleship: {
+    wins: { type: Number, default: 0, min: 0 },
+    losses: { type: Number, default: 0, min: 0 },
+    draws: { type: Number, default: 0, min: 0 }
+  },
   badges: [{
     type: String
   }],
@@ -50,11 +47,8 @@ const gameStatsSchema = new mongoose.Schema({
   }
 });
 
-// unique: true already creates an index on username
-// Add index for sorting by wins
 gameStatsSchema.index({ wins: -1 });
 
-// Update the updatedAt field before saving
 gameStatsSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();

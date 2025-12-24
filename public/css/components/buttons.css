@@ -1,0 +1,270 @@
+.join-btn, .spectate-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    width: 100%;
+    min-width: 140px;
+}
+
+.join-btn {
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-deep));
+    color: white;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+}
+
+.join-btn:hover:not(.disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+}
+
+.join-btn.disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.join-btn.disabled:hover {
+    transform: none;
+}
+
+.spectate-btn {
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-deep));
+    color: white;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+}
+
+.spectate-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+}
+
+.secondary-btn {
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--text-dark);
+    border: 2px solid rgba(17, 24, 39, 0.15);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-weight: 600;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.secondary-btn:hover {
+    background: #fff;
+    color: var(--text-dark);
+    box-shadow: 0 4px 20px rgba(17, 24, 39, 0.25);
+}
+
+.rematch-btn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-deep));
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-weight: 700;
+    color: white;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+    width: 300px;
+}
+
+.rematch-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
+}
+
+.rematch-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.rematch-btn.hidden {
+    display: none;
+}
+
+.leave-room-btn {
+    padding: 0.75rem 1.5rem;
+    background: #fcd34d;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-weight: 700;
+    color: #2c1b60;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(252, 211, 77, 0.4);
+    width: 300px;
+}
+
+.leave-room-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(252, 211, 77, 0.5);
+}
+
+.game-info-btn {
+    position: fixed;
+    bottom: 2rem;
+    left: 2rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-deep));
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-weight: 600;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    z-index: 100;
+}
+
+.game-info-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+}
+
+.invite-btn {
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 6px;
+    background-color: rgba(124, 58, 237, 0.8);
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.invite-btn:hover {
+    background-color: rgba(124, 58, 237, 1);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+}
+
+.invite-btn:active {
+    transform: translateY(0);
+}
+
+.report-btn {
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 6px;
+    background-color: rgba(220, 38, 38, 0.8);
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.report-btn:hover {
+    background-color: rgba(220, 38, 38, 1);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+.back-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: #ee5c6b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-bottom: 2rem;
+}
+
+.back-btn:hover {
+    background-color: #c84d59;
+    transform: translateY(-2px);
+}
+
+.update-btn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-deep));
+    color: var(--text-light);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-weight: 600;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+}
+
+.update-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+}
+
+.delete-account-btn {
+    padding: 0.75rem 1.5rem;
+    margin: 0;
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-weight: 600;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+}
+
+.delete-account-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+    background: linear-gradient(135deg, #b91c1c, #991b1b);
+}
+
+.widget-toggle-btn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-deep));
+    color: var(--text-light);
+    border: none;
+    border-radius: 25px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.widget-toggle-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(124, 58, 237, 0.5);
+}
+
+.online-indicator {
+    width: 10px;
+    height: 10px;
+    background-color: #10b981;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+    flex-shrink: 0;
+}
