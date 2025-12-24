@@ -9,6 +9,37 @@ class BattleshipRenderer {
 
         const state = this.app.gameState.battleshipState;
         const role = this.app.myRole;
+        const isSpectator = this.app.isSpectator;
+        
+        // For spectators, show both boards (X and O)
+        if (isSpectator) {
+            const xBoardData = state.boards['X'] || Array(64).fill('');
+            const oBoardData = state.boards['O'] || Array(64).fill('');
+            
+            const xBoardView = xBoardData.map(cell => {
+                if (state.phase === 'placement') {
+                    return '';
+                }
+                return (cell === 'ship' ? '' : cell);
+            });
+            
+            const oBoardView = oBoardData.map(cell => {
+                if (state.phase === 'placement') {
+                    return '';
+                }
+                return (cell === 'ship' ? '' : cell);
+            });
+            
+            // Always show both boards for spectators
+            this.renderBoard(this.battleshipGame.ownBoard, xBoardView, false, 'X');
+            this.renderBoard(this.battleshipGame.opponentBoard, oBoardView, false, 'O');
+            
+            const ownBoardSection = document.getElementById('battleship-own-board-title')?.parentElement;
+            const opponentBoardSection = document.getElementById('battleship-opponent-board-title')?.parentElement;
+            if (ownBoardSection) ownBoardSection.style.display = 'flex';
+            if (opponentBoardSection) opponentBoardSection.style.display = 'flex';
+            return;
+        }
         
         const myBoardData = state.boards[role] || Array(64).fill('');
         const opponentRole = role === 'X' ? 'O' : 'X';
@@ -76,13 +107,14 @@ class BattleshipRenderer {
         }
     }
 
-    renderBoard(container, boardData, isOwnBoard) {
+    renderBoard(container, boardData, isOwnBoard, forcedRole = null) {
         if (!container || !this.app.gameState || !this.app.gameState.battleshipState) return;
         
         container.innerHTML = '';
         
         const state = this.app.gameState.battleshipState;
-        const role = this.app.myRole;
+        const role = forcedRole || this.app.myRole;
+        const isSpectator = this.app.isSpectator;
         
         for (let row = 0; row < 7; row++) {
             for (let col = 0; col < 7; col++) {
@@ -124,12 +156,12 @@ class BattleshipRenderer {
                 const players = this.app.gameState.players || [];
                 const hasTwoPlayers = players.length === 2;
                 
-                if (!isOwnBoard && state.phase === 'playing' && hasTwoPlayers &&
+                if (!isSpectator && !isOwnBoard && state.phase === 'playing' && hasTwoPlayers &&
                     state.currentPlayer === role &&
                     cellState !== 'hit' && cellState !== 'miss') {
                     cell.classList.add('battleship-clickable');
                     cell.addEventListener('click', () => this.battleshipGame.battlePhase.makeGuess(index));
-                } else if (isOwnBoard && state.phase === 'placement' && hasTwoPlayers) {
+                } else if (!isSpectator && isOwnBoard && state.phase === 'placement' && hasTwoPlayers) {
                     const placementFinished = state.placementFinished && state.placementFinished[role];
                     if (!placementFinished) {
                         const selectedShip = this.battleshipGame.selectedShip || this.app.battleshipSelectedShip;
@@ -213,6 +245,43 @@ class BattleshipRenderer {
             players = this.app.lastKnownPlayers;
         }
 
+        const isSpectator = this.app.isSpectator;
+        const hasTwoPlayers = players.length === 2;
+        
+        // For spectators, show both player names
+        if (isSpectator) {
+            const playerX = players.find(p => p.role === 'X');
+            const playerO = players.find(p => p.role === 'O');
+            
+            if (playerX) {
+                const avatarX = this.app.avatarManager ? await this.app.avatarManager.getPlayerAvatar(playerX.username, playerX.avatar) : '👤';
+                if (this.battleshipGame.player1Avatar) {
+                    this.battleshipGame.player1Avatar.textContent = avatarX;
+                }
+                if (this.battleshipGame.player1Name) {
+                    this.battleshipGame.player1Name.textContent = playerX.username;
+                }
+                if (this.battleshipGame.ownBoardTitle) {
+                    this.battleshipGame.ownBoardTitle.textContent = `${playerX.username}'s Fleet`;
+                }
+            }
+            
+            if (playerO) {
+                const avatarO = this.app.avatarManager ? await this.app.avatarManager.getPlayerAvatar(playerO.username, playerO.avatar) : '👤';
+                if (this.battleshipGame.player2Avatar) {
+                    this.battleshipGame.player2Avatar.textContent = avatarO;
+                }
+                if (this.battleshipGame.player2Name) {
+                    this.battleshipGame.player2Name.textContent = playerO.username;
+                }
+                if (this.battleshipGame.opponentBoardTitle) {
+                    this.battleshipGame.opponentBoardTitle.textContent = `${playerO.username}'s Fleet`;
+                }
+            }
+            return;
+        }
+
+        // For players, show "You" and "Opponent"
         const currentUserPlayer = players.find(p => p.username === this.app.currentUser);
         const myRole = currentUserPlayer ? currentUserPlayer.role : null;
         const opponentRole = myRole === 'X' ? 'O' : 'X';
@@ -227,14 +296,15 @@ class BattleshipRenderer {
             if (this.battleshipGame.player1Name) {
                 this.battleshipGame.player1Name.textContent = 'You';
             }
+            if (this.battleshipGame.ownBoardTitle) {
+                this.battleshipGame.ownBoardTitle.textContent = 'Your Fleet';
+            }
             if (this.battleshipGame.player1Role) {
                 this.battleshipGame.player1Role.textContent = '';
                 this.battleshipGame.player1Role.style.display = 'none';
             }
         }
 
-        const hasTwoPlayers = players.length === 2;
-        
         if (opponentPlayer) {
             const opponentAvatar = this.app.avatarManager ? await this.app.avatarManager.getPlayerAvatar(opponentPlayer.username, opponentPlayer.avatar) : '👤';
             if (this.battleshipGame.player2Avatar) {
@@ -242,6 +312,9 @@ class BattleshipRenderer {
             }
             if (this.battleshipGame.player2Name) {
                 this.battleshipGame.player2Name.textContent = hasTwoPlayers ? 'Opponent' : 'Waiting...';
+            }
+            if (this.battleshipGame.opponentBoardTitle) {
+                this.battleshipGame.opponentBoardTitle.textContent = "Opponent's Fleet";
             }
             if (this.battleshipGame.player2Role) {
                 this.battleshipGame.player2Role.textContent = '';
@@ -253,6 +326,9 @@ class BattleshipRenderer {
             }
             if (this.battleshipGame.player2Name) {
                 this.battleshipGame.player2Name.textContent = 'Waiting...';
+            }
+            if (this.battleshipGame.opponentBoardTitle) {
+                this.battleshipGame.opponentBoardTitle.textContent = "Opponent's Fleet";
             }
             if (this.battleshipGame.player2Role) {
                 this.battleshipGame.player2Role.textContent = '';

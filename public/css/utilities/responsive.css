@@ -22,7 +22,17 @@
     }
 
     .user-username-display {
-        display: none;
+        display: block;
+    }
+    
+    .user-avatar-btn {
+        min-width: auto;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .user-username-display {
+        max-width: 100px;
+        font-size: 0.85rem;
     }
 
     .badges-toggle-btn {
@@ -194,12 +204,13 @@
 
     .stats {
         justify-content: center;
-        flex-wrap: wrap;
-        gap: 1rem;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 2rem;
     }
 
     .stat {
-        min-width: 80px;
+        min-width: 60px;
     }
 
     .stat-value {

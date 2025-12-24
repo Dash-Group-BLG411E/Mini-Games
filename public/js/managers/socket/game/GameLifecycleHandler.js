@@ -79,7 +79,10 @@ class GameLifecycleHandler {
                 this.app.navigationManager.updateChatWidgets();
             }
             
-            const message = 'The other user left the room.<br><br>Redirecting to lobby...';
+            // Show different message for spectators vs players
+            const message = wasSpectator 
+                ? 'Someone left the room.<br><br>Redirecting to lobby...'
+                : 'The other user left the room.<br><br>Redirecting to lobby...';
             
             if (this.app.modalManager) {
                 this.app.modalManager.showNotification(message, () => {
@@ -160,8 +163,6 @@ class GameLifecycleHandler {
             let message;
             if (data.reason === 'creator_left') {
                 message = 'The room creator left the room.<br><br>Redirecting to lobby...';
-            } else if (winnerName === 'Draw') {
-                message = `Game finished!<br><br>The game ended in a draw!<br><br>Redirecting to lobby...`;
             } else {
                 message = `Game finished!<br><br>The winner is ${winnerName}! 🎉<br><br>Redirecting to lobby...`;
             }
@@ -182,9 +183,8 @@ class GameLifecycleHandler {
         } else {
             if (this.app.gameState) {
                 this.app.gameState.gameStatus = 'finished';
-                if (data.winner) {
-                    this.app.gameState.winner = data.winner;
-                }
+                // Don't overwrite winner from gameState - it's already set as role from broadcast
+                // data.winner is username for display purposes only
             }
             if (this.app.updateGameInfo) {
                 this.app.updateGameInfo();

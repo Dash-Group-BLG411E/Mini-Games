@@ -119,14 +119,58 @@ class MemoryGame {
         const score1 = (state && state.matches) ? state.matches.X || 0 : 0;
         const score2 = (state && state.matches) ? state.matches.O || 0 : 0;
         
-        const isPlayer1 = player1 && player1.username === this.app.currentUser;
-        const isPlayer2 = player2 && player2.username === this.app.currentUser;
-        
+        const isSpectator = this.app.isSpectator;
         const hasTwoPlayers = players.length === 2;
         
-        const leftPlayer = isPlayer1 ? player1 : (isPlayer2 ? player2 : player1);
-        const leftIsMe = leftPlayer && leftPlayer.username === this.app.currentUser;
-        const leftScore = leftPlayer === player1 ? score1 : score2;
+        // For spectators, show both player names
+        if (isSpectator) {
+            if (player1) {
+                const avatar1 = this.app.avatarManager ? await this.app.avatarManager.getPlayerAvatar(player1.username, player1.avatar) : '👤';
+                if (this.player1Avatar) {
+                    this.player1Avatar.textContent = avatar1;
+                }
+                if (this.player1Name) {
+                    this.player1Name.textContent = player1.username;
+                }
+                if (this.player1Score) {
+                    if (hasTwoPlayers) {
+                        this.player1Score.textContent = score1;
+                    } else {
+                        this.player1Score.textContent = '';
+                    }
+                }
+            }
+            
+            if (player2) {
+                const avatar2 = this.app.avatarManager ? await this.app.avatarManager.getPlayerAvatar(player2.username, player2.avatar) : '👤';
+                if (this.player2Avatar) {
+                    this.player2Avatar.textContent = avatar2;
+                }
+                if (this.player2Name) {
+                    this.player2Name.textContent = player2.username;
+                }
+                if (this.player2Score) {
+                    if (hasTwoPlayers) {
+                        this.player2Score.textContent = score2;
+                    } else {
+                        this.player2Score.textContent = '';
+                    }
+                }
+            }
+            return;
+        }
+        
+        // For players, show "You" on left and "Opponent" on right with correct scores
+        const myRole = this.app.myRole;
+        const myPlayer = players.find(p => p.role === myRole);
+        const opponentRole = myRole === 'X' ? 'O' : 'X';
+        const opponentPlayer = players.find(p => p.role === opponentRole);
+        
+        // Left side always shows current user (You), right side shows opponent
+        const leftPlayer = myPlayer;
+        const rightPlayer = opponentPlayer;
+        const leftScore = myRole === 'X' ? score1 : score2;
+        const rightScore = opponentRole === 'X' ? score1 : score2;
         
         if (leftPlayer) {
             const avatar1 = this.app.avatarManager ? await this.app.avatarManager.getPlayerAvatar(leftPlayer.username, leftPlayer.avatar) : '👤';
@@ -144,10 +188,6 @@ class MemoryGame {
                 }
             }
         }
-        
-        const rightPlayer = isPlayer1 ? player2 : (isPlayer2 ? player1 : player2);
-        const rightScore = rightPlayer === player1 ? score1 : score2;
-        const rightIsMe = rightPlayer && rightPlayer.username === this.app.currentUser;
         
         if (rightPlayer) {
             const avatar2 = this.app.avatarManager ? await this.app.avatarManager.getPlayerAvatar(rightPlayer.username, rightPlayer.avatar) : '👤';

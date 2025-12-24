@@ -64,7 +64,14 @@ class Scoreboard {
             );
 
             if (updatedStats) {
+                console.log(`✅ Stats updated for ${usernameLower}:`, {
+                    wins: updatedStats.wins,
+                    losses: updatedStats.losses,
+                    gameType: gameType ? updatedStats[gameType] : 'overall'
+                });
                 await this.checkAndAwardBadges(usernameLower, gameType);
+            } else {
+                console.warn(`⚠️  Failed to update stats for ${usernameLower}`);
             }
         } catch (error) {
             console.error('Error updating stats:', error);
@@ -238,13 +245,18 @@ class Scoreboard {
 
     async getTopPlayers(limit = 10, gameType = null) {
         try {
+            console.log(`📊 Getting top players: limit=${limit}, gameType=${gameType || 'all'}`);
             if (gameType) {
-                return await this.getTopPlayersByGame(limit, gameType);
+                const result = await this.getTopPlayersByGame(limit, gameType);
+                console.log(`📊 Found ${result.length} players for game type ${gameType}`);
+                return result;
             }
             const allStats = await this.getAllStats(null);
+            console.log(`📊 Found ${allStats.length} total players`);
             return allStats.slice(0, limit);
         } catch (error) {
             console.error('Error getting top players:', error);
+            console.error('Error stack:', error.stack);
             return [];
         }
     }

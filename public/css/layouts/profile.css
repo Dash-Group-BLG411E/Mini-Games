@@ -201,8 +201,8 @@
 }
 
 .profile-badges-section {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
+    margin-top: 0;
+    padding-top: 0;
 }
 
 .profile-badges-section .badges-section {
@@ -311,13 +311,13 @@
 
 .profile-actions-section {
     margin-top: 2rem;
-    padding-top: 1.5rem;
+    padding-top: 2rem;
     border-top: 2px solid rgba(17, 24, 39, 0.1);
     display: flex;
     gap: 1rem;
     justify-content: center;
     align-items: center;
-    margin-bottom: 0;
+    margin-bottom: 2rem;
     flex-wrap: wrap;
 }
 
@@ -349,8 +349,8 @@
 
 .view-badges-btn {
     padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-deep));
-    color: white;
+    background: #fcd34d;
+    color: #2c1b60;
     border: none;
     border-radius: 8px;
     cursor: pointer;

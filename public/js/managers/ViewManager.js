@@ -165,8 +165,8 @@ class ViewManager {
                 }
             }
             
-            // Hide chat drawer for guest users and user-profile view
-            if (lobbyChatDrawer && viewName !== 'auth' && viewName !== 'user-profile' && !isGuest) {
+            // Hide chat drawer for guest users, profile, and user-profile views
+            if (lobbyChatDrawer && viewName !== 'auth' && viewName !== 'user-profile' && viewName !== 'profile' && !isGuest) {
                 lobbyChatDrawer.style.display = '';
                 lobbyChatDrawer.classList.remove('hidden');
             } else if (lobbyChatDrawer) {

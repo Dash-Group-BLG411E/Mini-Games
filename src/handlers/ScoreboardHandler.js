@@ -7,12 +7,15 @@ class ScoreboardHandler {
         socket.on('getScoreboard', async (data) => {
             try {
                 const gameType = data?.gameType || null;
-                const { normalizeGameType } = require('../../utils/gameTypeUtils');
+                const { normalizeGameType } = require('../utils/gameTypeUtils');
                 const normalizedGameType = gameType ? normalizeGameType(gameType) : null;
+                console.log(`📊 Scoreboard request: gameType=${gameType}, normalized=${normalizedGameType}`);
                 const topPlayers = await this.handlers.scoreboard.getTopPlayers(20, normalizedGameType);
+                console.log(`📊 Sending ${topPlayers.length} players to client`);
                 socket.emit('scoreboardData', topPlayers);
             } catch (error) {
-                console.error('Error getting scoreboard:', error);
+                console.error('❌ Error getting scoreboard:', error);
+                console.error('Error stack:', error.stack);
                 socket.emit('scoreboardData', []);
             }
         });

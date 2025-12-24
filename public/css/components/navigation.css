@@ -618,11 +618,11 @@
     margin-left: 0.5rem;
     padding: 0.15rem 0.5rem;
     border-radius: 8px;
-    background: #eef1ff;
-    color: #2f4cff;
+    background: #fcd34d;
+    color: #2c1b60;
     font-size: 0.85rem;
     font-weight: 600;
-    border: 1px solid #d9ddff;
+    border: none;
 }
 
 .user-menu-container .user-role-badge {

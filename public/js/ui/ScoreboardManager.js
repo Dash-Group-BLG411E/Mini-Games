@@ -237,10 +237,6 @@ class ScoreboardManager {
                         <span class="stat-label">Losses</span>
                         <span class="stat-value losses">${player.losses}</span>
                     </div>
-                    <div class="stat">
-                        <span class="stat-label">Draws</span>
-                        <span class="stat-value draws">${player.draws}</span>
-                    </div>
                 </div>
             `;
             this.scoreboardList.appendChild(playerElement);

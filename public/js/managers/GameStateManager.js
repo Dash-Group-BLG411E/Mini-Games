@@ -130,14 +130,19 @@ class GameStateManager {
                 this.app.modalManager.hideGameEndModal();
             }
             if (this.infoText) {
-                const winner = String(this.app.gameState.winner || '');
-                const myRole = String(this.app.myRole || '');
-                if (winner && myRole && winner === myRole) {
+                const winner = this.app.gameState.winner;
+                const myRole = this.app.myRole;
+                // Ensure both are strings for comparison
+                const winnerStr = String(winner || '').trim();
+                const myRoleStr = String(myRole || '').trim();
+                
+                if (winnerStr && myRoleStr && winnerStr === myRoleStr) {
                     this.infoText.textContent = 'Game Over: You Win! 🎉';
-                } else if (winner && myRole && winner !== myRole) {
+                } else if (winnerStr && myRoleStr && winnerStr !== myRoleStr) {
                     this.infoText.textContent = 'Game Over: You Lose! 😔';
                 } else {
-                    this.infoText.textContent = 'Game Over: Draw!';
+                    // If winner is not set, show generic message
+                    this.infoText.textContent = 'Game Over!';
                 }
             }
             if (this.infoText && this.infoText.parentElement) {
@@ -197,7 +202,9 @@ class GameStateManager {
                 } else if (winner && myRole && winner !== myRole) {
                     this.infoText.textContent = 'Game Over: You Lose! 😔';
                 } else {
-                    this.infoText.textContent = 'Game Over: Draw!';
+                    // If winner is not set, check if we have a winner from gameState
+                    console.warn('Battleship winner not set correctly:', { winner, myRole, gameState: this.app.gameState });
+                    this.infoText.textContent = 'Game Over!';
                 }
             }
             if (this.infoText && this.infoText.parentElement) {
@@ -260,7 +267,9 @@ class GameStateManager {
                 } else if (winner && myRole && winner !== myRole) {
                     this.infoText.textContent = 'Game Over: You Lose! 😔';
                 } else {
-                    this.infoText.textContent = 'Game Over: Draw!';
+                    // If winner is not set, check if we have a winner from gameState
+                    console.warn('Battleship winner not set correctly:', { winner, myRole, gameState: this.app.gameState });
+                    this.infoText.textContent = 'Game Over!';
                 }
             }
             if (this.infoText && this.infoText.parentElement) {
