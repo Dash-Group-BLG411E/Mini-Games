@@ -909,8 +909,12 @@ class MiniGamesApp {
             });
         }
         
+        // Register form is handled by RegisterHandler - no duplicate listener needed
+        // Removed duplicate event listener to prevent double submissions
         if (registerForm && !registerForm.hasAttribute('data-listener-attached')) {
             registerForm.setAttribute('data-listener-attached', 'true');
+            // RegisterHandler handles form submission - this listener removed to prevent duplicates
+            /*
             registerForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const username = this.querySelector('input[name="username"]')?.value.trim();
@@ -992,6 +996,7 @@ class MiniGamesApp {
                     if (msgEl) msgEl.textContent = 'Unable to connect to server.';
                 }
             });
+            */
         }
         
         if (guestBtn && !guestBtn.hasAttribute('data-listener-attached')) {

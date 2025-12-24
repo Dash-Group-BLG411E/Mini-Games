@@ -48,6 +48,14 @@ class TMMHandler {
                 if (result.gameOver) {
                     room.gameState.gameStatus = 'finished';
                     
+                    // Record game result for leaderboard and badges
+                    const winnerRole = result.gameWinner || result.winner || room.gameState.winner;
+                    if (winnerRole && winnerRole !== 'draw') {
+                        this.handlers.scoreboard.recordGameResult(winnerRole, room.players, room.gameType).catch(err => {
+                            console.error('Error recording game result:', err);
+                        });
+                    }
+                    
                     this.handlers.broadcastGameState(roomId);
                     this.handlers.broadcastRoomsList();
                     

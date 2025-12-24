@@ -5,13 +5,40 @@ class EmailService {
   constructor() {
     this.transporter = null;
     this.resend = null;
+    this.brevoApi = null;
     this.isConfigured = false;
     this.useResend = false;
+    this.useBrevoApi = false;
     this.initTransporter();
   }
 
   async initTransporter() {
-    // Check for Resend API key first (easiest option)
+    // Priority 1: Brevo (SendinBlue) HTTP API - Free, works on Render, 300 emails/day
+    // Use API instead of SMTP to avoid Render's SMTP port blocking
+    // Note: Get API key from Brevo dashboard > Settings > API Keys (not SMTP key)
+    const brevoApiKey = process.env.BREVO_API_KEY || process.env.SENDINBLUE_API_KEY || process.env.BREVO_SMTP_KEY || process.env.SENDINBLUE_SMTP_KEY;
+    
+    if (brevoApiKey) {
+      try {
+        console.log('🔧 Attempting to configure Brevo HTTP API...');
+        const brevo = require('@getbrevo/brevo');
+        this.brevoApi = new brevo.TransactionalEmailsApi();
+        // Set API key using the correct method
+        this.brevoApi.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, brevoApiKey);
+        this.brevoApiKey = brevoApiKey; // Store for later use
+        this.useBrevoApi = true;
+        this.isConfigured = true;
+        console.log('✅ Email service configured successfully (Brevo HTTP API)');
+        return;
+      } catch (error) {
+        console.error('❌ Failed to configure Brevo API:');
+        console.error('   Error:', error.message);
+        console.error('   Stack:', error.stack);
+        console.log('Falling back to other options...');
+      }
+    }
+
+    // Priority 2: Resend API (if configured)
     const resendApiKey = process.env.RESEND_API_KEY;
     
     if (resendApiKey) {
@@ -28,7 +55,7 @@ class EmailService {
       }
     }
 
-    // Fallback to SMTP
+    // Priority 3: Generic SMTP (Gmail, Outlook, etc.)
     const smtpUser = process.env.SMTP_USER || process.env.EMAIL_USER;
     const smtpPass = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
 
@@ -89,7 +116,7 @@ class EmailService {
       console.error('Email service not configured. Cannot send verification email.');
       return { 
         success: false, 
-        error: 'Email service not configured. Please set RESEND_API_KEY or SMTP_USER and SMTP_PASS environment variables.' 
+        error: 'Email service not configured. Please set BREVO_SMTP_KEY and BREVO_EMAIL, or RESEND_API_KEY, or SMTP_USER and SMTP_PASS environment variables.' 
       };
     }
 
@@ -103,9 +130,27 @@ class EmailService {
     
     const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${token}`;
 
-    const fromEmail = process.env.EMAIL_FROM || 
-                      (process.env.SMTP_USER || process.env.EMAIL_USER) || 
-                      'onboarding@resend.dev';
+    // Determine FROM email address
+    // Priority: EMAIL_FROM env var > Brevo email > SMTP_USER > Resend default
+    let fromEmail = process.env.EMAIL_FROM;
+    
+    if (!fromEmail) {
+      // If using Brevo, use the Brevo email
+      const brevoEmail = process.env.BREVO_EMAIL || process.env.SENDINBLUE_EMAIL;
+      if (brevoEmail) {
+        fromEmail = brevoEmail;
+      } else {
+        // Fallback to SMTP_USER or Resend default
+        fromEmail = (process.env.SMTP_USER || process.env.EMAIL_USER) || 'onboarding@resend.dev';
+      }
+    }
+    
+    // If using Resend and EMAIL_FROM is set to a Gmail address, use Resend's default
+    if (this.useResend && fromEmail.includes('@gmail.com') && !process.env.EMAIL_FROM_VERIFIED) {
+      console.warn('⚠️  WARNING: Cannot send FROM Gmail address without domain verification.');
+      console.warn('   Using onboarding@resend.dev as FROM address instead.');
+      fromEmail = 'onboarding@resend.dev';
+    }
     
     // Warn if using localhost with Resend (spam filter risk)
     if (this.useResend && baseUrl.includes('localhost')) {
@@ -161,10 +206,52 @@ class EmailService {
       If you didn't create an account, please ignore this email.
     `;
 
-    // Use Resend if configured
+    // Use Brevo API if configured (Priority 1)
+    if (this.useBrevoApi && this.brevoApi) {
+      try {
+        console.log('📧 Attempting to send email via Brevo API...');
+        console.log('   From:', fromEmail);
+        console.log('   To:', email);
+        
+        const brevo = require('@getbrevo/brevo');
+        const sendSmtpEmail = new brevo.SendSmtpEmail();
+        sendSmtpEmail.subject = 'Verify Your Email - MiniGamesHub';
+        sendSmtpEmail.htmlContent = emailHtml;
+        sendSmtpEmail.textContent = emailText;
+        sendSmtpEmail.sender = { name: 'MiniGamesHub', email: fromEmail };
+        sendSmtpEmail.to = [{ email: email }];
+        
+        const response = await this.brevoApi.sendTransacEmail(sendSmtpEmail);
+        
+        // Brevo API returns { body: { messageId: '...' } }
+        const emailId = response?.body?.messageId || response?.messageId;
+        if (!emailId) {
+          console.warn('⚠️  Brevo API did not return a message ID. Response:', JSON.stringify(response, null, 2));
+          return { success: false, error: 'Email sent but no confirmation ID received' };
+        }
+        
+        console.log('✅ Verification email sent via Brevo API:', emailId);
+        console.log('   To:', email);
+        return { success: true, messageId: emailId };
+      } catch (error) {
+        console.error('❌ Error sending verification email via Brevo API:');
+        console.error('   Error:', error);
+        console.error('   To:', email);
+        if (error.response) {
+          console.error('   Brevo API response:', error.response.body || error.response.text);
+        }
+        return { success: false, error: error.message || 'Failed to send email' };
+      }
+    }
+
+    // Use Resend if configured (Priority 2)
     if (this.useResend && this.resend) {
       try {
-        const data = await this.resend.emails.send({
+        console.log('📧 Attempting to send email via Resend...');
+        console.log('   From:', fromEmail);
+        console.log('   To:', email);
+        
+        const response = await this.resend.emails.send({
           from: `MiniGamesHub <${fromEmail}>`,
           to: email,
           subject: 'Verify Your Email - MiniGamesHub',
@@ -172,16 +259,43 @@ class EmailService {
           text: emailText
         });
         
-        console.log('✅ Verification email sent via Resend:', data.id);
-        console.log('   To:', email);
-        return { success: true, messageId: data.id };
-      } catch (error) {
-        console.error('❌ Error sending verification email via Resend:', error);
-        console.error('   To:', email);
-        console.error('   Error details:', error.message);
-        if (error.response) {
-          console.error('   Resend API response:', error.response);
+        // Log full response for debugging
+        console.log('📬 Resend API Response:', JSON.stringify(response, null, 2));
+        
+        // Check for errors in the response first
+        if (response?.error) {
+          console.error('❌ Resend API Error:', response.error);
+          const errorMessage = response.error.message || 'Failed to send email';
+          console.error('   Error details:', errorMessage);
+          return { success: false, error: errorMessage };
         }
+        
+        // Resend API returns { data: { id: '...' } } or { id: '...' } depending on version
+        const emailId = response?.data?.id || response?.id;
+        
+        if (!emailId) {
+          console.warn('⚠️  Resend API did not return an email ID. Response:', response);
+          return { success: false, error: 'Email sent but no confirmation ID received' };
+        }
+        
+        console.log('✅ Verification email sent via Resend:', emailId);
+        console.log('   To:', email);
+        return { success: true, messageId: emailId };
+      } catch (error) {
+        console.error('❌ Error sending verification email via Resend:');
+        console.error('   Error:', error);
+        console.error('   Error message:', error.message);
+        console.error('   To:', email);
+        console.error('   From:', fromEmail);
+        
+        // Log more details about the error
+        if (error.response) {
+          console.error('   Resend API error response:', JSON.stringify(error.response, null, 2));
+        }
+        if (error.message) {
+          console.error('   Error details:', error.message);
+        }
+        
         return { success: false, error: error.message || 'Failed to send email' };
       }
     }
@@ -224,7 +338,7 @@ class EmailService {
       console.error('Email service not configured. Cannot send verification email.');
       return { 
         success: false, 
-        error: 'Email service not configured. Please set RESEND_API_KEY or SMTP_USER and SMTP_PASS environment variables.' 
+        error: 'Email service not configured. Please set BREVO_SMTP_KEY and BREVO_EMAIL, or RESEND_API_KEY, or SMTP_USER and SMTP_PASS environment variables.' 
       };
     }
 
@@ -233,9 +347,21 @@ class EmailService {
     baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash if present
     const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${token}`;
 
-    const fromEmail = process.env.EMAIL_FROM || 
-                      (process.env.SMTP_USER || process.env.EMAIL_USER) || 
-                      'onboarding@resend.dev';
+    // Determine FROM email address (same logic as sendVerificationEmail)
+    let fromEmail = process.env.EMAIL_FROM;
+    
+    if (!fromEmail) {
+      const brevoEmail = process.env.BREVO_EMAIL || process.env.SENDINBLUE_EMAIL;
+      if (brevoEmail) {
+        fromEmail = brevoEmail;
+      } else {
+        fromEmail = (process.env.SMTP_USER || process.env.EMAIL_USER) || 'onboarding@resend.dev';
+      }
+    }
+    
+    if (this.useResend && fromEmail.includes('@gmail.com') && !process.env.EMAIL_FROM_VERIFIED) {
+      fromEmail = 'onboarding@resend.dev';
+    }
 
     const emailHtml = `
       <!DOCTYPE html>
@@ -288,10 +414,45 @@ class EmailService {
       If you didn't request this email, please ignore it.
     `;
 
-    // Use Resend if configured
+    // Use Brevo API if configured (Priority 1)
+    if (this.useBrevoApi && this.brevoApi) {
+      try {
+        console.log('📧 Attempting to send resend verification email via Brevo API...');
+        console.log('   From:', fromEmail);
+        console.log('   To:', email);
+        
+        const brevo = require('@getbrevo/brevo');
+        const sendSmtpEmail = new brevo.SendSmtpEmail();
+        sendSmtpEmail.subject = 'Verify Your Email - MiniGamesHub';
+        sendSmtpEmail.htmlContent = emailHtml;
+        sendSmtpEmail.textContent = emailText;
+        sendSmtpEmail.sender = { name: 'MiniGamesHub', email: fromEmail };
+        sendSmtpEmail.to = [{ email: email }];
+        
+        const response = await this.brevoApi.sendTransacEmail(sendSmtpEmail);
+        
+        // Brevo API returns { body: { messageId: '...' } }
+        const emailId = response?.body?.messageId || response?.messageId;
+        if (!emailId) {
+          console.warn('⚠️  Brevo API did not return a message ID. Response:', JSON.stringify(response, null, 2));
+          return { success: false, error: 'Email sent but no confirmation ID received' };
+        }
+        
+        console.log('✅ Resend verification email sent via Brevo API:', emailId);
+        return { success: true, messageId: emailId };
+      } catch (error) {
+        console.error('❌ Error sending resend verification email via Brevo API:', error);
+        if (error.response) {
+          console.error('   Brevo API response:', error.response.body || error.response.text);
+        }
+        return { success: false, error: error.message || 'Failed to send email' };
+      }
+    }
+
+    // Use Resend if configured (Priority 2)
     if (this.useResend && this.resend) {
       try {
-        const data = await this.resend.emails.send({
+        const response = await this.resend.emails.send({
           from: `MiniGamesHub <${fromEmail}>`,
           to: email,
           subject: 'Verify Your Email - MiniGamesHub',
@@ -299,8 +460,21 @@ class EmailService {
           text: emailText
         });
         
-        console.log('Resend verification email sent via Resend:', data.id);
-        return { success: true, messageId: data.id };
+        // Check for errors in the response first
+        if (response?.error) {
+          console.error('❌ Resend API Error:', response.error);
+          const errorMessage = response.error.message || 'Failed to send email';
+          return { success: false, error: errorMessage };
+        }
+        
+        // Resend API returns { data: { id: '...' } } or { id: '...' } depending on version
+        const emailId = response?.data?.id || response?.id;
+        if (!emailId) {
+          return { success: false, error: 'Email sent but no confirmation ID received' };
+        }
+        
+        console.log('Resend verification email sent via Resend:', emailId);
+        return { success: true, messageId: emailId };
       } catch (error) {
         console.error('Error sending resend verification email via Resend:', error);
         return { success: false, error: error.message };

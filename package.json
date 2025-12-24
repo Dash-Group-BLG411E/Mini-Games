@@ -19,6 +19,7 @@
   "license": "ISC",
   "description": "Real-time multiplayer gaming platform with Three Men's Morris, Memory Match, and Battleship",
   "dependencies": {
+    "@getbrevo/brevo": "^3.0.1",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",

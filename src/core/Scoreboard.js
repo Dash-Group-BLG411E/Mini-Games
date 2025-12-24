@@ -3,18 +3,28 @@ const { normalizeGameType } = require('../utils/gameTypeUtils');
 
 class Scoreboard {
     async recordGameResult(winner, players, gameType = 'three-mens-morris') {
-        const player1 = players[0];
-        const player2 = players[1];
+        if (!winner || !players || players.length < 2) {
+            console.warn('Invalid game result data:', { winner, players });
+            return;
+        }
+
         const normalizedGameType = normalizeGameType(gameType);
 
         try {
             const winnerPlayer = players.find(p => p.role === winner);
             const loserPlayer = players.find(p => p.role !== winner);
 
+            if (!winnerPlayer || !loserPlayer) {
+                console.warn('Could not find winner or loser player:', { winner, players });
+                return;
+            }
+
             await Promise.all([
                 this.updateStats(winnerPlayer.username, { wins: 1 }, normalizedGameType),
                 this.updateStats(loserPlayer.username, { losses: 1 }, normalizedGameType)
             ]);
+
+            console.log(`✅ Game result recorded: ${winnerPlayer.username} won, ${loserPlayer.username} lost (${normalizedGameType})`);
         } catch (error) {
             console.error('Error recording game result:', error);
         }
