@@ -9,6 +9,8 @@ class AuthManager {
         this.userUsernameDisplay = document.getElementById('user-username-display');
         this.userRoleBadge = document.getElementById('user-role-badge');
         this.adminReportsBtn = document.getElementById('admin-reports-btn');
+        this.logoutBtn = document.getElementById('logout-btn');
+        this.profileNavBtn = document.getElementById('profile-nav-btn');
         
         if (typeof PasswordValidator !== 'undefined') {
             this.passwordValidator = new PasswordValidator();
@@ -491,6 +493,14 @@ class AuthManager {
                 this.profileNavBtn.classList.add('hidden');
             } else {
                 this.profileNavBtn.classList.remove('hidden');
+            }
+        }
+        
+        if (this.logoutBtn) {
+            if (this.app.userRole === 'guest') {
+                this.logoutBtn.classList.add('hidden');
+            } else {
+                this.logoutBtn.classList.remove('hidden');
             }
         }
     }

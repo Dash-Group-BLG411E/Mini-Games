@@ -55,6 +55,11 @@ class NavigationManager {
                 this.profileNavBtn.classList.add('hidden');
             }
             
+            // Hide logout button
+            if (this.logoutBtn) {
+                this.logoutBtn.classList.add('hidden');
+            }
+            
             // Hide chat drawer
             if (this.lobbyChatDrawer) {
                 this.lobbyChatDrawer.style.display = 'none';
@@ -177,9 +182,10 @@ class NavigationManager {
             this.closeLobbyChatDrawer();
             this.closeOnlinePlayers();
         } else {
-            const isUserProfileView = this.app.viewManager && this.app.viewManager.currentView === 'user-profile';
+            const currentView = this.app.viewManager && this.app.viewManager.currentView;
+            const isProfileView = currentView === 'profile' || currentView === 'user-profile';
             if (this.lobbyChatDrawer) {
-                if (isUserProfileView) {
+                if (isProfileView) {
                     this.lobbyChatDrawer.classList.add('hidden');
                 } else {
                     this.lobbyChatDrawer.classList.remove('hidden');
@@ -571,9 +577,14 @@ class NavigationManager {
             this.userMenuDropdown.classList.toggle('hidden', !this.app.userMenuOpen);
         }
         
-        // Ensure profile button is hidden for guests when menu opens
-        if (this.profileNavBtn && this.app.userRole === 'guest') {
-            this.profileNavBtn.classList.add('hidden');
+        // Ensure profile and logout buttons are hidden for guests when menu opens
+        if (this.app.userRole === 'guest') {
+            if (this.profileNavBtn) {
+                this.profileNavBtn.classList.add('hidden');
+            }
+            if (this.logoutBtn) {
+                this.logoutBtn.classList.add('hidden');
+            }
         }
     }
 

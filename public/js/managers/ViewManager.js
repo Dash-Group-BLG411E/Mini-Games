@@ -165,8 +165,10 @@ class ViewManager {
                 }
             }
             
-            // Hide chat drawer for guest users and user-profile view
-            if (lobbyChatDrawer && viewName !== 'auth' && viewName !== 'user-profile' && !isGuest) {
+            // Hide chat drawer for guest users, profile view, and user-profile view
+            // Only show on lobby, rooms, leaderboard, and tournaments
+            const allowedChatViews = ['lobby', 'rooms', 'leaderboard', 'tournaments'];
+            if (lobbyChatDrawer && viewName !== 'auth' && allowedChatViews.includes(viewName) && !isGuest) {
                 lobbyChatDrawer.style.display = '';
                 lobbyChatDrawer.classList.remove('hidden');
             } else if (lobbyChatDrawer) {
