@@ -280,7 +280,7 @@ class AuthManager {
     }
 
     async loginAsGuest() {
-        const randomSuffix = Math.floor(100000 + Math.random() * 900000);
+        const randomSuffix = Math.floor(1000 + Math.random() * 9000);
         const username = `guest-${randomSuffix}`;
         const password = `guest-${randomSuffix}-${Date.now()}`;
 

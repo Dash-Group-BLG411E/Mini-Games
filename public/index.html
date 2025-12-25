@@ -59,6 +59,20 @@
             <button id="tournaments-nav-btn" class="nav-btn" disabled>Tournaments</button>
         </div>
         <div class="nav-right">
+            <div class="notifications-container">
+                <button id="notifications-btn" class="notifications-btn" aria-label="Notifications">
+                    <span class="notifications-icon">🔔</span>
+                    <span id="notifications-badge" class="notifications-badge hidden">0</span>
+                </button>
+                <div id="notifications-dropdown" class="notifications-dropdown hidden">
+                    <div class="notifications-header">
+                        <h3>📩 Invitations</h3>
+                    </div>
+                    <div id="notifications-list" class="notifications-list">
+                        <div class="notification-empty">No pending invitations</div>
+                    </div>
+                </div>
+            </div>
             <div class="user-menu-container">
                 <button id="user-avatar-btn" class="user-avatar-btn" aria-label="User menu">
                     <span id="user-avatar-display" class="user-avatar-display">👤</span>
@@ -341,7 +355,6 @@
     </div>
     <div id="online-players-widget" class="fixed-widget">
         <button id="online-players-toggle" class="widget-toggle-btn">
-            <span class="online-indicator"></span>
             Online Players
         </button>
             <div id="online-players-popup" class="widget-popup hidden">
@@ -650,6 +663,17 @@
             </div>
         </div>
     </div>
+    <div id="waiting-invitation-modal" class="notification-modal hidden">
+        <div class="notification-overlay"></div>
+        <div class="notification-card">
+            <div class="notification-content">
+                <div id="waiting-invitation-message"></div>
+            </div>
+            <div class="notification-actions">
+                <button id="cancel-invitation-btn" class="notification-btn" style="background: linear-gradient(135deg, #ef4444, #dc2626);">Cancel Invitation</button>
+            </div>
+        </div>
+    </div>
     <div id="game-end-modal" class="game-end-modal hidden">
         <div class="game-end-overlay"></div>
         <div class="game-end-card">
@@ -697,6 +721,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/init-fallback.js"></script>
     <script src="/js/ui/ModalManager.js"></script>
+    <script src="/js/managers/NotificationManager.js"></script>
     <script src="/js/ui/ChatRenderer.js"></script>
     <script src="/js/ui/LobbyRenderer.js"></script>
     <script src="/js/ui/ScoreboardManager.js"></script>

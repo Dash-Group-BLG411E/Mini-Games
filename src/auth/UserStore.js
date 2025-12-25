@@ -182,6 +182,12 @@ class UserStore {
   async deleteUser(username) {
     try {
       const result = await User.deleteOne({ username: username.toLowerCase() })
+      if (result.deletedCount > 0) {
+        // Also delete user's game stats
+        const GameStats = require('../models/GameStats')
+        await GameStats.deleteOne({ username: username.toLowerCase() })
+        console.log(`✅ Deleted user ${username} and their game stats`)
+      }
       return result.deletedCount > 0
     } catch (error) {
       console.error('Failed to delete user:', error)

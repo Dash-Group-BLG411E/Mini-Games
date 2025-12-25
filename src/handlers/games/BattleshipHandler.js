@@ -125,7 +125,7 @@ class BattleshipHandler {
             if (result.gameOver) {
                 const winnerPlayer = room.players.find(p => p.role === result.winner);
                 if (winnerPlayer) {
-                    this.handlers.scoreboard.recordGameResult(winnerPlayer.role, room.players, room.gameType).catch(err => {
+                    this.handlers.scoreboard.recordGameResult(winnerPlayer.role, room.players, room.gameType, this.handlers.userRoles).catch(err => {
                         console.error('Error recording game result:', err);
                     });
                 }

@@ -42,6 +42,9 @@ class AppInitializer {
             this.app.navigationManager = new NavigationManager(this.app);
             this.app.navigationManager.registerEventListeners();
         }
+        if (typeof NotificationManager !== 'undefined') {
+            this.app.notificationManager = new NotificationManager(this.app);
+        }
         if (typeof GameStateManager !== 'undefined') {
             this.app.gameStateManager = new GameStateManager(this.app);
         }

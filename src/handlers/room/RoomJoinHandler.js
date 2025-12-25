@@ -122,12 +122,14 @@ class RoomJoinHandler {
             const hadTwoPlayers = room.players.length === 2;
             const leavingPlayer = room.players.find(p => p.socketId === socket.id);
 
+            // Remove from socketToRoom FIRST, before any broadcasts
+            this.handlers.socketToRoom.delete(socket.id);
+            
             if (isFinished && hadTwoPlayers && leavingPlayer) {
                 const remainingPlayer = room.players.find(p => p.socketId !== socket.id);
                 const rematchWasRequested = remainingPlayer && room.restartVotes.has(remainingPlayer.socketId);
                 
                 room.removePlayer(socket.id);
-                this.handlers.socketToRoom.delete(socket.id);
                 socket.leave(roomId);
                 
                 this.handlers.broadcastGameState(roomId).catch(err => console.error('Error broadcasting game state:', err));
@@ -145,12 +147,14 @@ class RoomJoinHandler {
                 if (room.isEmpty()) {
                     this.handlers.rooms.delete(roomId);
                 }
+                // Broadcast AFTER socketToRoom.delete
                 this.handlers.broadcastRoomsList();
                 return;
             }
 
             if (wasInProgress && hadTwoPlayers && leavingPlayer) {
                 this.handlers.handlePlayerDisconnection(socket, roomId, room, username, 'opponent_left');
+                // socketToRoom.delete already called above, broadcastRoomsList will be called by handlePlayerDisconnection or we need to ensure it's called
                 return;
             }
 
@@ -162,6 +166,7 @@ class RoomJoinHandler {
             if (result.removed) {
                 if (room.isEmpty()) {
                     this.handlers.rooms.delete(roomId);
+                    // Broadcast AFTER socketToRoom.delete (already done above)
                     this.handlers.broadcastRoomsList();
                 } else if (wasCreator) {
                     room.spectators.forEach(spectator => {
@@ -179,6 +184,7 @@ class RoomJoinHandler {
                         }
                     });
                     this.handlers.rooms.delete(roomId);
+                    // Broadcast AFTER socketToRoom.delete (already done above)
                     this.handlers.broadcastRoomsList();
                 } else {
                     if (room.players.length === 1 && wasInProgress) {
@@ -186,11 +192,15 @@ class RoomJoinHandler {
                         room.resetGameState();
                     }
                     this.handlers.broadcastGameState(roomId);
+                    // Broadcast AFTER socketToRoom.delete (already done above)
                     this.handlers.broadcastRoomsList();
                 }
+            } else {
+                // Even if player wasn't removed from room, we still need to broadcast
+                // because socketToRoom.delete was called above
+                this.handlers.broadcastRoomsList();
             }
 
-            this.handlers.socketToRoom.delete(socket.id);
             socket.leave(roomId);
         });
     }

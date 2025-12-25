@@ -1,8 +1,9 @@
 const GameStats = require('../models/GameStats');
+const User = require('../models/User');
 const { normalizeGameType } = require('../utils/gameTypeUtils');
 
 class Scoreboard {
-    async recordGameResult(winner, players, gameType = 'three-mens-morris') {
+    async recordGameResult(winner, players, gameType = 'three-mens-morris', userRoles = null) {
         if (!winner || !players || players.length < 2) {
             console.warn('Invalid game result data:', { winner, players });
             return;
@@ -19,10 +20,44 @@ class Scoreboard {
                 return;
             }
 
-            await Promise.all([
-                this.updateStats(winnerPlayer.username, { wins: 1 }, normalizedGameType),
-                this.updateStats(loserPlayer.username, { losses: 1 }, normalizedGameType)
-            ]);
+            // Check if either player is a guest - if so, don't record stats
+            const isGuest = (username) => {
+                if (username && (username.startsWith('guest-') || username.toLowerCase().startsWith('guest'))) {
+                    return true;
+                }
+                if (userRoles && userRoles instanceof Map) {
+                    const role = userRoles.get(username);
+                    return role === 'guest';
+                }
+                return false;
+            };
+
+            const winnerIsGuest = isGuest(winnerPlayer.username);
+            const loserIsGuest = isGuest(loserPlayer.username);
+
+            // Only skip recording if BOTH players are guests
+            // If one is registered and one is guest, update stats for the registered user only
+            if (winnerIsGuest && loserIsGuest) {
+                console.log(`⏭️  Skipping game result recording (both players are guests): ${winnerPlayer.username} vs ${loserPlayer.username}`);
+                return;
+            }
+
+            // Update stats only for non-guest players
+            const updatePromises = [];
+            if (!winnerIsGuest) {
+                updatePromises.push(this.updateStats(winnerPlayer.username, { wins: 1 }, normalizedGameType));
+            }
+            if (!loserIsGuest) {
+                updatePromises.push(this.updateStats(loserPlayer.username, { losses: 1 }, normalizedGameType));
+            }
+
+            if (updatePromises.length > 0) {
+                await Promise.all(updatePromises);
+                const updatedPlayers = [];
+                if (!winnerIsGuest) updatedPlayers.push(`${winnerPlayer.username} (won)`);
+                if (!loserIsGuest) updatedPlayers.push(`${loserPlayer.username} (lost)`);
+                console.log(`✅ Game result recorded: ${updatedPlayers.join(', ')} (${normalizedGameType})${(winnerIsGuest || loserIsGuest) ? ` [Guest player(s) excluded]` : ''}`);
+            }
 
             console.log(`✅ Game result recorded: ${winnerPlayer.username} won, ${loserPlayer.username} lost (${normalizedGameType})`);
         } catch (error) {
@@ -217,7 +252,16 @@ class Scoreboard {
             const allStats = await GameStats.find({}).lean();
             const stats = [];
             
+            // Get all existing usernames from User collection
+            const existingUsers = await User.find({}, 'username').lean();
+            const existingUsernames = new Set(existingUsers.map(u => u.username.toLowerCase()));
+            
             for (const stat of allStats) {
+                // Only include stats for users that still exist
+                if (!existingUsernames.has(stat.username.toLowerCase())) {
+                    continue;
+                }
+                
                 const totalGames = stat.wins + stat.losses + stat.draws;
                 const winRate = totalGames > 0 ? (stat.wins / totalGames * 100).toFixed(1) : 0;
                 
@@ -264,9 +308,19 @@ class Scoreboard {
     async getTopPlayersByGame(limit = 10, gameType = 'threeMensMorris') {
         try {
             const allStats = await GameStats.find({}).lean();
+            
+            // Get all existing usernames from User collection
+            const existingUsers = await User.find({}, 'username').lean();
+            const existingUsernames = new Set(existingUsers.map(u => u.username.toLowerCase()));
+            
             const stats = [];
             
             for (const stat of allStats) {
+                // Only include stats for users that still exist
+                if (!existingUsernames.has(stat.username.toLowerCase())) {
+                    continue;
+                }
+                
                 const gameStats = stat[gameType] || { wins: 0, losses: 0, draws: 0 };
                 const totalGames = gameStats.wins + gameStats.losses + gameStats.draws;
                 const winRate = totalGames > 0 ? (gameStats.wins / totalGames * 100).toFixed(1) : 0;

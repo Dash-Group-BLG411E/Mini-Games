@@ -9,8 +9,12 @@ class InvitationManager {
         this.inviteConfirmBtn = app.inviteConfirmBtn;
         this.inviteCancelBtn = app.inviteCancelBtn;
         this.rematchBtn = app.rematchBtn;
+        this.waitingInvitationModal = document.getElementById('waiting-invitation-modal');
+        this.waitingInvitationMessage = document.getElementById('waiting-invitation-message');
+        this.cancelInvitationBtn = document.getElementById('cancel-invitation-btn');
         
         this.pendingInviteUsername = null;
+        this.sentInvitation = null; // Track invitation we sent (only one at a time): { to, gameType }
     }
 
     
@@ -18,9 +22,19 @@ class InvitationManager {
     sendGameInvitation(username) {
         if (!username) return;
         
-        if (this.app.userRole === 'guest') {
+        // Check if user is already waiting for an invitation response
+        if (this.sentInvitation) {
             if (this.app.modalManager) {
-                this.app.modalManager.showNotification('Guests cannot send invitations. Please register or log in.');
+                this.app.modalManager.showNotification('You already have a pending invitation. Please wait for a response or cancel it first.');
+            }
+            return;
+        }
+        
+        // Check if target user is in a game
+        const isInGame = this.app.userInGameMap.get(username) || false;
+        if (isInGame) {
+            if (this.app.modalManager) {
+                this.app.modalManager.showNotification('User is already playing a game.');
             }
             return;
         }
@@ -67,9 +81,19 @@ class InvitationManager {
         }
         
         const selectedGameType = document.querySelector('input[name="invite-game-type"]:checked')?.value || 'three-mens-morris';
+        
+        // Store the sent invitation
+        this.sentInvitation = {
+            to: this.pendingInviteUsername,
+            gameType: selectedGameType
+        };
+        
         this.app.socket.emit('sendInvitation', { to: this.pendingInviteUsername, gameType: selectedGameType });
         this.hideInviteGameModal();
         this.pendingInviteUsername = null;
+        
+        // Show waiting modal
+        this.showWaitingInvitationModal();
     }
 
     
@@ -178,6 +202,50 @@ class InvitationManager {
 
     
 
+    showWaitingInvitationModal() {
+        if (!this.waitingInvitationModal || !this.waitingInvitationMessage || !this.sentInvitation) return;
+        
+        const playerName = this.sentInvitation.to;
+        const gameType = this.sentInvitation.gameType;
+        let gameTypeDisplay = 'the game';
+        if (this.app.viewManager && this.app.viewManager.formatGameType) {
+            gameTypeDisplay = this.app.viewManager.formatGameType(gameType);
+        } else {
+            // Fallback
+            if (gameType === 'three-mens-morris') {
+                gameTypeDisplay = 'Three Men\'s Morris';
+            } else if (gameType === 'memory-match') {
+                gameTypeDisplay = 'Memory Match';
+            } else if (gameType === 'battleship') {
+                gameTypeDisplay = 'Battleship';
+            }
+        }
+        
+        this.waitingInvitationMessage.textContent = `Waiting for ${playerName} to accept the invitation to play ${gameTypeDisplay}. Please do not close this screen.`;
+        
+        if (this.waitingInvitationModal) {
+            this.waitingInvitationModal.classList.remove('hidden');
+        }
+    }
+
+    hideWaitingInvitationModal() {
+        if (this.waitingInvitationModal) {
+            this.waitingInvitationModal.classList.add('hidden');
+        }
+        this.sentInvitation = null;
+    }
+
+    cancelSentInvitation() {
+        if (!this.sentInvitation || !this.app.socket || !this.app.socket.connected) {
+            this.hideWaitingInvitationModal();
+            return;
+        }
+        
+        // Emit cancel invitation event to server
+        this.app.socket.emit('cancelInvitation', { to: this.sentInvitation.to });
+        this.hideWaitingInvitationModal();
+    }
+
     registerEventListeners() {
         if (this.inviteConfirmBtn) {
             this.inviteConfirmBtn.addEventListener('click', () => this.confirmInviteGameType());
@@ -190,6 +258,18 @@ class InvitationManager {
             this.inviteGameModal.addEventListener('click', (e) => {
                 if (e.target === this.inviteGameModal) {
                     this.hideInviteGameModal();
+                }
+            });
+        }
+
+        if (this.cancelInvitationBtn) {
+            this.cancelInvitationBtn.addEventListener('click', () => this.cancelSentInvitation());
+        }
+
+        if (this.waitingInvitationModal) {
+            this.waitingInvitationModal.addEventListener('click', (e) => {
+                if (e.target === this.waitingInvitationModal || e.target.classList.contains('notification-overlay')) {
+                    // Don't allow closing by clicking outside - user must cancel explicitly
                 }
             });
         }

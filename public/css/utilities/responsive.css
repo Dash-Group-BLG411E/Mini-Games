@@ -51,6 +51,61 @@
         left: 1rem;
     }
 
+    .notifications-btn {
+        width: 40px;
+        height: 40px;
+        margin-right: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    .notifications-icon {
+        font-size: 1.25rem;
+    }
+
+    .notifications-container {
+        position: relative;
+        margin-right: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    .notifications-dropdown {
+        position: fixed;
+        top: 70px;
+        left: 1rem;
+        right: 1rem;
+        width: calc(100% - 2rem);
+        max-width: none;
+        min-width: auto;
+        max-height: 60vh;
+        transform: none;
+    }
+
+    .notifications-header {
+        padding: 0.75rem;
+    }
+
+    .notifications-header h3 {
+        font-size: 1rem;
+    }
+
+    .notifications-list {
+        max-height: calc(60vh - 60px);
+    }
+
+    .notification-item {
+        padding: 0.75rem;
+    }
+
+    .notification-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .notification-accept-btn,
+    .notification-decline-btn {
+        width: 100%;
+    }
+
     .badges-grid {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 0.75rem;
@@ -506,6 +561,60 @@
         width: calc(100% - 1.5rem);
         padding: 0.6rem 1rem;
         font-size: 0.9rem;
+    }
+
+    .notifications-btn {
+        width: 35px;
+        height: 35px;
+        margin-right: 0.25rem;
+        flex-shrink: 0;
+    }
+
+    .notifications-icon {
+        font-size: 1.1rem;
+    }
+
+    .notifications-container {
+        margin-right: 0.25rem;
+        flex-shrink: 0;
+    }
+
+    .notifications-dropdown {
+        position: fixed;
+        top: 65px;
+        left: 0.5rem;
+        right: 0.5rem;
+        width: calc(100% - 1rem);
+        max-width: none;
+        min-width: auto;
+        max-height: 55vh;
+        transform: none;
+    }
+
+    .notifications-header {
+        padding: 0.6rem;
+    }
+
+    .notifications-header h3 {
+        font-size: 0.95rem;
+    }
+
+    .notifications-list {
+        max-height: calc(55vh - 55px);
+    }
+
+    .notification-item {
+        padding: 0.6rem;
+    }
+
+    .notification-item .notification-text {
+        font-size: 0.75rem;
+    }
+
+    .notification-accept-btn,
+    .notification-decline-btn {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.8rem;
     }
 
     .rematch-btn,

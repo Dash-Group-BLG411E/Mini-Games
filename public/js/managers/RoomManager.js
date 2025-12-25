@@ -81,12 +81,13 @@ class RoomManager {
     
 
     showRoomNameModal(gameType) {
-        if (this.app.userRole === 'guest') {
-            if (this.app.modalManager) {
-                this.app.modalManager.showNotification('Guests can spectate and chat. Please register or log in to create rooms.');
-            }
-            return;
-        }
+        // Guests can create rooms now
+        // if (this.app.userRole === 'guest') {
+        //     if (this.app.modalManager) {
+        //         this.app.modalManager.showNotification('Guests can spectate and chat. Please register or log in to create rooms.');
+        //     }
+        //     return;
+        // }
         this.pendingGameType = gameType;
         if (this.modalRoomNameInput) {
             this.modalRoomNameInput.value = '';
@@ -111,12 +112,13 @@ class RoomManager {
     
 
     createRoom(gameType) {
-        if (this.app.userRole === 'guest') {
-            if (this.app.modalManager) {
-                this.app.modalManager.showNotification('Guests can spectate and chat. Please register or log in to create rooms.');
-            }
-            return;
-        }
+        // Guests can create rooms now
+        // if (this.app.userRole === 'guest') {
+        //     if (this.app.modalManager) {
+        //         this.app.modalManager.showNotification('Guests can spectate and chat. Please register or log in to create rooms.');
+        //     }
+        //     return;
+        // }
         
         if (!this.app.socket || !this.app.socket.connected) {
             if (this.app.modalManager) {
@@ -153,12 +155,13 @@ class RoomManager {
     
 
     joinRoom(roomId, asSpectator = false) {
-        if (this.app.userRole === 'guest' && !asSpectator) {
-            if (this.app.modalManager) {
-                this.app.modalManager.showNotification('Guests can only join as spectators. Please register or log in to play.');
-            }
-            return;
-        }
+        // Guests can join as players now
+        // if (this.app.userRole === 'guest' && !asSpectator) {
+        //     if (this.app.modalManager) {
+        //         this.app.modalManager.showNotification('Guests can only join as spectators. Please register or log in to play.');
+        //     }
+        //     return;
+        // }
         if (!roomId) return;
         
         if (!this.app.socket || !this.app.socket.connected) {
@@ -181,6 +184,10 @@ class RoomManager {
         }
         
         this.app.currentRoom = roomId;
+        // Update notification button visibility when joining room
+        if (this.app.viewManager && this.app.viewManager.updateNotificationButtonVisibility) {
+            this.app.viewManager.updateNotificationButtonVisibility();
+        }
         this.app.socket.emit('joinRoom', { roomId, asSpectator }, (error) => {
             if (error) {
                 if (this.app.modalManager) {
@@ -231,6 +238,11 @@ class RoomManager {
         this.updateLeaveButtonVisibility();
         this.updateRoomInfoBox();
         
+        // Update notification button visibility when leaving room
+        if (this.app.viewManager && this.app.viewManager.updateNotificationButtonVisibility) {
+            this.app.viewManager.updateNotificationButtonVisibility();
+        }
+        
         if (this.app.viewManager) {
             this.app.viewManager.showLobby();
         }
@@ -245,6 +257,10 @@ class RoomManager {
         this.app.socket.emit('leaveRoom', { roomId: this.app.currentRoom });
         this.app.currentRoom = null;
         this.app.currentRoomName = null;
+        // Update notification button visibility when leaving room as spectator
+        if (this.app.viewManager && this.app.viewManager.updateNotificationButtonVisibility) {
+            this.app.viewManager.updateNotificationButtonVisibility();
+        }
         this.app.gameState = null;
         this.app.myRole = null;
         this.app.isSpectator = false;

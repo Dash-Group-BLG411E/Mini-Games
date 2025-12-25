@@ -43,6 +43,7 @@ class LobbySocketHandler {
                 this.app.lobbyUsers = data.users.map(u => u.username);
                 this.app.userRolesMap.clear();
                 this.app.userAvatarsMap.clear();
+                this.app.userInGameMap.clear();
                 data.users.forEach(u => {
                     if (u.username && u.role) {
                         this.app.userRolesMap.set(u.username, u.role);
@@ -53,6 +54,9 @@ class LobbySocketHandler {
                         if (this.app.avatarManager) {
                             this.app.avatarManager.playerAvatarsCache.set(u.username.toLowerCase(), u.avatar);
                         }
+                    }
+                    if (u.username && typeof u.isInGame !== 'undefined') {
+                        this.app.userInGameMap.set(u.username, u.isInGame);
                     }
                 });
             } else {

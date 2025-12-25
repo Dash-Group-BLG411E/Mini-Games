@@ -40,6 +40,16 @@ class RoomSocketHandler {
         this.app.isSpectator = false;
         this.app.roomMessages = [];
         
+        // Hide waiting invitation modal if we sent an invitation that was accepted
+        if (this.app.invitationManager) {
+            this.app.invitationManager.hideWaitingInvitationModal();
+        }
+        
+        // Hide notification dropdown if open
+        if (this.app.notificationManager) {
+            this.app.notificationManager.hideDropdown();
+        }
+        
         this.app.selectedPiece = null;
         this.app.canRemovePiece = false;
         
@@ -65,6 +75,7 @@ class RoomSocketHandler {
         if (this.app.viewManager) {
             this.app.viewManager.setCurrentGameType(gameType);
             this.app.viewManager.showGame();
+            this.app.viewManager.updateNotificationButtonVisibility();
         }
         
         if (gameType === 'battleship') {
@@ -160,6 +171,7 @@ class RoomSocketHandler {
         }
         if (this.app.viewManager) {
             this.app.viewManager.showGame();
+            this.app.viewManager.updateNotificationButtonVisibility();
         }
         if (this.app.updateGameInfo) {
             this.app.updateGameInfo();
@@ -187,6 +199,7 @@ class RoomSocketHandler {
         this.app.disableBeforeUnloadWarning();
         if (this.app.viewManager) {
             this.app.viewManager.showGame();
+            this.app.viewManager.updateNotificationButtonVisibility();
         }
     }
 }

@@ -50,12 +50,22 @@ class NavigationManager {
         const isGuest = this.app.userRole === 'guest';
         
         if (isGuest) {
-            // Hide profile button
+            // Hide profile button in menu (guests can logout)
             if (this.profileNavBtn) {
                 this.profileNavBtn.classList.add('hidden');
             }
+            // Show logout button for guests
+            if (this.logoutBtn) {
+                this.logoutBtn.classList.remove('hidden');
+            }
             
-            // Hide chat drawer
+            // Allow avatar button click for guests (they need to access logout button)
+            // But prevent profile access (handled in click handler)
+            if (this.userAvatarBtn) {
+                this.userAvatarBtn.classList.remove('guest-disabled');
+            }
+            
+            // Hide chat drawers completely (guests cannot use chat)
             if (this.lobbyChatDrawer) {
                 this.lobbyChatDrawer.style.display = 'none';
                 this.lobbyChatDrawer.classList.add('hidden');
@@ -65,16 +75,30 @@ class NavigationManager {
                 this.roomChatDrawer.classList.add('hidden');
             }
             
-            // Hide online players widget
-            if (this.onlinePlayersWidget) {
-                this.onlinePlayersWidget.style.display = 'none';
-                this.onlinePlayersWidget.classList.add('hidden');
+            // Hide chat tabs
+            if (this.lobbyChatTab) {
+                this.lobbyChatTab.style.display = 'none';
+                this.lobbyChatTab.classList.add('hidden');
             }
+            if (this.roomChatTab) {
+                this.roomChatTab.style.display = 'none';
+                this.roomChatTab.classList.add('hidden');
+            }
+            
+            // Online players widget should be visible for guests
+            // (this is handled in updateChatWidgets, so we don't hide it here)
             
             // Close any open drawers
             this.closeLobbyChatDrawer();
-            this.closeOnlinePlayers();
             this.closeRoomChatDrawer();
+        } else {
+            // Restore avatar button functionality for non-guests
+            if (this.userAvatarBtn) {
+                this.userAvatarBtn.classList.remove('guest-disabled');
+            }
+            if (this.logoutBtn) {
+                this.logoutBtn.classList.remove('hidden');
+            }
         }
     }
 
@@ -158,9 +182,23 @@ class NavigationManager {
             return;
         }
 
-        // If guest, don't show any chat or online players widget
+        // For guests, only show online players widget (no chat)
         const isGuest = this.app.userRole === 'guest';
         if (isGuest) {
+            // Hide all chat drawers
+            if (this.lobbyChatDrawer) {
+                this.lobbyChatDrawer.classList.add('hidden');
+            }
+            if (this.roomChatDrawer) {
+                this.roomChatDrawer.classList.add('hidden');
+            }
+            // Show online players widget on allowed views
+            const allowedViews = ['lobby', 'rooms', 'leaderboard'];
+            if (this.onlinePlayersWidget && this.app.viewManager && allowedViews.includes(this.app.viewManager.currentView)) {
+                this.onlinePlayersWidget.classList.remove('hidden');
+            } else if (this.onlinePlayersWidget) {
+                this.onlinePlayersWidget.classList.add('hidden');
+            }
             return;
         }
 
@@ -310,6 +348,13 @@ class NavigationManager {
 
         if (this.tournamentsNavBtn) {
             this.tournamentsNavBtn.addEventListener('click', () => {
+                // Guests cannot access tournaments
+                if (this.app.userRole === 'guest') {
+                    if (this.app.modalManager) {
+                        this.app.modalManager.showNotification('Tournaments are only available for registered users. Please register to access tournaments.');
+                    }
+                    return;
+                }
                 if (this.app.viewManager) {
                     this.app.viewManager.showView('tournaments');
                 }
@@ -376,6 +421,8 @@ class NavigationManager {
         if (this.userAvatarBtn) {
             this.userAvatarBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
+                // Allow guests to open menu to access logout button
+                // Profile button is already hidden for guests, so they can only access logout
                 this.toggleUserMenu();
             });
         }

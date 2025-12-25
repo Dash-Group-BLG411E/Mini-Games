@@ -10,6 +10,7 @@ class MiniGamesApp {
         this.lobbyUsers = [];
         this.userRolesMap = new Map();
         this.userAvatarsMap = new Map();
+        this.userInGameMap = new Map();
         this.lobbyMessages = [];
         this.roomMessages = [];
         this.gameState = null;
@@ -193,6 +194,9 @@ class MiniGamesApp {
         if (typeof InvitationManager !== 'undefined') {
             this.invitationManager = new InvitationManager(this);
             this.invitationManager.registerEventListeners();
+        }
+        if (typeof NotificationManager !== 'undefined') {
+            this.notificationManager = new NotificationManager(this);
         }
         if (typeof ReportManager !== 'undefined') {
             this.reportManager = new ReportManager(this);

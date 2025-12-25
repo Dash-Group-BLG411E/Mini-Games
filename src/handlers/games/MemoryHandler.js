@@ -18,7 +18,7 @@ class MemoryHandler {
                 result
             });
             if (result && result.winnerRole) {
-                this.handlers.scoreboard.recordGameResult(result.winnerRole, room.players, room.gameType).catch(err => {
+                this.handlers.scoreboard.recordGameResult(result.winnerRole, room.players, room.gameType, this.handlers.userRoles).catch(err => {
                     console.error('Error recording game result:', err);
                 });
                 if (room.gameState.gameStatus === 'finished') {

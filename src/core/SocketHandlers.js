@@ -19,7 +19,8 @@ class SocketHandlers {
         this.userRoles = new Map();
         this.lobbyMessages = [];
         this.maxLobbyMessages = 120;
-        this.pendingInvitations = new Map();
+        this.pendingInvitations = new Map(); // Map<recipient, Array<{from, gameType}>>
+        this.sentInvitations = new Map(); // Map<sender, {to, gameType}> - track one invitation per sender
         
         this.battleshipHandler = new BattleshipHandler(this);
         this.memoryHandler = new MemoryHandler(this);
@@ -156,8 +157,9 @@ class SocketHandlers {
         
         const UserStore = require('../auth/UserStore');
         const users = await Promise.all(
-            Array.from(this.onlineUsers.values()).map(async (username) => {
+            Array.from(this.onlineUsers.entries()).map(async ([socketId, username]) => {
                 const role = this.userRoles.get(username) || 'player';
+                const isInGame = this.socketToRoom.has(socketId);
                 let avatar = null;
                 try {
                     const user = await UserStore.getUser(username);
@@ -170,7 +172,8 @@ class SocketHandlers {
                 return {
                     username,
                     role,
-                    avatar
+                    avatar,
+                    isInGame
                 };
             })
         );
@@ -202,14 +205,21 @@ class SocketHandlers {
             room.removePlayer(socket.id);
             this.socketToRoom.delete(socket.id);
             socket.leave(roomId);
+            // Broadcast after deleting from socketToRoom
+            this.broadcastRoomsList();
             return;
         }
 
-        this.scoreboard.recordGameResult(remainingPlayer.role, room.players, room.gameType).catch(err => {
+        this.scoreboard.recordGameResult(remainingPlayer.role, room.players, room.gameType, this.userRoles).catch(err => {
             console.error(`Error recording game result on ${reason}:`, err);
         });
         
-        room.removePlayer(remainingPlayer.socketId);
+        // Delete leaving player's socket from socketToRoom FIRST, before any operations
+        this.socketToRoom.delete(socket.id);
+        
+        room.removePlayer(socket.id);
+        
+        // Delete remaining player's socket from socketToRoom since they're being forced to leave
         this.socketToRoom.delete(remainingPlayer.socketId);
         
         const remainingSocket = this.io.sockets.sockets.get(remainingPlayer.socketId);
@@ -238,9 +248,9 @@ class SocketHandlers {
         });
         
         this.rooms.delete(roomId);
-        this.broadcastRoomsList();
         
-        this.socketToRoom.delete(socket.id);
+        // Broadcast AFTER deleting from socketToRoom
+        this.broadcastRoomsList();
         socket.leave(roomId);
     }
 
@@ -333,7 +343,7 @@ class SocketHandlers {
                 const remainingPlayer = room.players.find(p => p.socketId !== socketId);
                 if (remainingPlayer) {
                     const gameType = room.gameType || 'three-mens-morris';
-                    this.scoreboard.recordGameResult(remainingPlayer.role, room.players, gameType).catch(err => {
+                    this.scoreboard.recordGameResult(remainingPlayer.role, room.players, gameType, this.userRoles).catch(err => {
                         console.error('Error recording game result on cleanup:', err);
                     });
                 }

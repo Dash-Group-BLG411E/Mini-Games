@@ -259,12 +259,3 @@
     box-shadow: 0 12px 28px rgba(124, 58, 237, 0.5);
 }
 
-.online-indicator {
-    width: 10px;
-    height: 10px;
-    background-color: #10b981;
-    border-radius: 50%;
-    display: inline-block;
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
-    flex-shrink: 0;
-}

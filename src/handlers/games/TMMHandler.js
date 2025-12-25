@@ -51,7 +51,7 @@ class TMMHandler {
                     // Record game result for leaderboard and badges
                     const winnerRole = result.gameWinner || result.winner || room.gameState.winner;
                     if (winnerRole && winnerRole !== 'draw') {
-                        this.handlers.scoreboard.recordGameResult(winnerRole, room.players, room.gameType).catch(err => {
+                        this.handlers.scoreboard.recordGameResult(winnerRole, room.players, room.gameType, this.handlers.userRoles).catch(err => {
                             console.error('Error recording game result:', err);
                         });
                     }

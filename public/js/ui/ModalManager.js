@@ -94,9 +94,10 @@ class ModalManager {
     
 
     showInvitationModal(message) {
-        if (!this.invitationModal || !this.invitationMessage) return;
-        this.invitationMessage.textContent = message;
-        this.invitationModal.classList.remove('hidden');
+        // Deprecated: Invitations now use NotificationManager instead of modal
+        // This method is kept for backwards compatibility but should not be called
+        console.warn('showInvitationModal is deprecated - use NotificationManager instead');
+        // Do not show modal - invitations should go through NotificationManager
     }
 
     

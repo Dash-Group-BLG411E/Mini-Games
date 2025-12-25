@@ -52,7 +52,21 @@ class ViewManager {
 
     
 
+    updateNotificationButtonVisibility() {
+        const notificationsBtn = document.getElementById('notifications-btn');
+        if (notificationsBtn) {
+            // Hide notification button when user is in a room
+            if (this.app.currentRoom) {
+                notificationsBtn.classList.add('hidden');
+            } else {
+                notificationsBtn.classList.remove('hidden');
+            }
+        }
+    }
+
     showView(viewName) {
+        // Hide/show notification button based on whether user is in a room
+        this.updateNotificationButtonVisibility();
         const loadingScreen = document.getElementById('loading-screen');
         if (loadingScreen) {
             loadingScreen.style.display = 'none';
@@ -136,12 +150,18 @@ class ViewManager {
             // Hide chat drawer and online players widget for guest users
             const isGuest = this.app.userRole === 'guest';
             
-            // Show online players widget only on lobby, rooms, leaderboard, tournaments
-            // Hide for guest users
+            // Show online players widget on lobby, rooms, leaderboard (guests can see it too)
+            // Tournaments view blocked for guests (see tournaments button handler)
             const allowedViews = ['lobby', 'rooms', 'leaderboard', 'tournaments'];
-            if (onlinePlayersWidget && viewName !== 'auth' && allowedViews.includes(viewName) && !isGuest) {
-                onlinePlayersWidget.style.display = '';
-                onlinePlayersWidget.classList.remove('hidden');
+            if (onlinePlayersWidget && viewName !== 'auth' && allowedViews.includes(viewName)) {
+                // Guests can see online players widget but not on tournaments view
+                if (!isGuest || viewName !== 'tournaments') {
+                    onlinePlayersWidget.style.display = '';
+                    onlinePlayersWidget.classList.remove('hidden');
+                } else {
+                    onlinePlayersWidget.style.display = 'none';
+                    onlinePlayersWidget.classList.add('hidden');
+                }
             } else if (onlinePlayersWidget) {
                 onlinePlayersWidget.style.display = 'none';
                 onlinePlayersWidget.classList.add('hidden');
@@ -183,7 +203,7 @@ class ViewManager {
                 }
             }
             if (userProfileReportBtn) {
-                if (viewName === 'user-profile') {
+                if (viewName === 'user-profile' && !isGuest) {
                     userProfileReportBtn.style.display = 'block';
                     userProfileReportBtn.classList.remove('hidden');
                 } else {

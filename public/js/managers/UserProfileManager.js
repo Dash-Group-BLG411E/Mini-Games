@@ -102,23 +102,14 @@ class UserProfileManager {
     
 
     canViewProfiles() {
-        return this.app.userRole !== 'guest';
+        // Everyone can view profiles (guests can view registered user profiles)
+        return true;
     }
 
     
 
     showUserProfile(username) {
         console.log('[UserProfileManager.showUserProfile] Called with username:', username);
-        
-        if (!this.canViewProfiles()) {
-            console.log('[UserProfileManager.showUserProfile] Blocked: user is guest');
-            if (this.app.modalManager) {
-                this.app.modalManager.showNotification('Guests cannot view user profiles.');
-            } else {
-                alert('Guests cannot view user profiles.');
-            }
-            return;
-        }
         
         if (!username) {
             console.log('[UserProfileManager.showUserProfile] Blocked: no username provided');
