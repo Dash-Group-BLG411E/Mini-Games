@@ -1319,6 +1319,20 @@ class MiniGamesApp {
                     }
                 }
             });
+            
+            // Add close button handler
+            const closeBtn = document.getElementById('game-info-close-btn');
+            if (closeBtn && !closeBtn.hasAttribute('data-listener-attached')) {
+                closeBtn.setAttribute('data-listener-attached', 'true');
+                closeBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (window.app && window.app.hideGameInfo) {
+                        window.app.hideGameInfo();
+                    } else if (window.app && window.app.viewManager && window.app.viewManager.hideGameInfo) {
+                        window.app.viewManager.hideGameInfo();
+                    }
+                });
+            }
         }
         
         const battleshipStatus = document.getElementById('battleship-status');

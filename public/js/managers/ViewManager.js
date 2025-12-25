@@ -535,6 +535,15 @@ class ViewManager {
                     this.hideGameInfo();
                 }
             });
+            
+            // Add close button handler
+            const closeBtn = document.getElementById('game-info-close-btn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.hideGameInfo();
+                });
+            }
         }
     }
 }

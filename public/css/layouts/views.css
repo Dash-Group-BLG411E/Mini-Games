@@ -1,12 +1,14 @@
 .view {
     display: none;
     min-height: 100vh;
+    min-height: -webkit-fill-available;
     width: 100%;
     overflow-x: hidden;
     overflow-y: auto;
     padding-top: 100px;
     padding-bottom: 2rem;
     margin: 0;
+    background: transparent;
 }
 
 #lobby-container {
@@ -52,6 +54,7 @@ body:has(#game-container.view-active) #lobby-container {
     overflow-y: auto;
     overflow-x: hidden;
     min-height: 100vh;
+    min-height: -webkit-fill-available;
     width: 100%;
     padding: 1.5rem;
     display: none;
@@ -59,6 +62,7 @@ body:has(#game-container.view-active) #lobby-container {
     justify-content: center;
     margin: 0;
     box-sizing: border-box;
+    background: transparent;
 }
 
 @media (min-width: 769px) {
