@@ -13,6 +13,7 @@ class SocketManager {
         this.tmmHandler = new TMMSocketHandler(this.app);
         this.invitationHandler = new InvitationSocketHandler(this.app);
         this.scoreboardHandler = new ScoreboardSocketHandler(this.app);
+        this.tournamentHandler = new TournamentSocketHandler(this.app);
     }
 
     registerHandlers(socket) {
@@ -33,5 +34,6 @@ class SocketManager {
         this.tmmHandler.registerHandlers(socket);
         this.invitationHandler.registerHandlers(socket);
         this.scoreboardHandler.registerHandlers(socket);
+        this.tournamentHandler.registerHandlers(socket);
     }
 }

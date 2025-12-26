@@ -54,6 +54,9 @@ class AppInitializer {
         if (typeof UserProfileManager !== 'undefined') {
             this.app.userProfileManager = new UserProfileManager(this.app);
         }
+        if (typeof TournamentManager !== 'undefined') {
+            this.app.tournamentManager = new TournamentManager(this.app);
+        }
     }
 
     initializeGameManagers() {

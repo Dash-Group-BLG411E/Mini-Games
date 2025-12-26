@@ -148,10 +148,16 @@ class GameLifecycleHandler {
             }
             
             const wasSpectator = this.app.isSpectator;
+            const wasTournamentRoom = this.app.isTournamentRoom;
+            const tournamentId = this.app.tournamentId;
+            
             this.app.currentRoom = null;
             this.app.gameState = null;
             this.app.myRole = null;
             this.app.isSpectator = false;
+            this.app.isTournamentRoom = false;
+            this.app.tournamentId = null;
+            this.app.matchId = null;
             this.app.disableBeforeUnloadWarning();
             if (this.app.navigationManager) {
                 this.app.navigationManager.updateChatWidgets();
@@ -159,6 +165,19 @@ class GameLifecycleHandler {
                 this.app.updateChatWidgets();
             }
             
+            // For tournament rooms, redirect immediately without modal
+            if (wasTournamentRoom && tournamentId && this.app.viewManager) {
+                // Update tournament info if available
+                if (this.app.tournamentSocketHandler) {
+                    const winnerName = data.winner || 'Unknown';
+                    this.app.tournamentSocketHandler.updateTournamentInfo(`Game finished! Winner: ${winnerName} 🎉`);
+                }
+                // Redirect to tournament detail page
+                setTimeout(() => {
+                    this.app.viewManager.showTournamentDetail(tournamentId);
+                }, 1000);
+            } else {
+                // For regular rooms, show notification modal
             const winnerName = data.winner || 'Unknown';
             let message;
             if (data.reason === 'creator_left') {
@@ -179,6 +198,7 @@ class GameLifecycleHandler {
                         this.app.viewManager.showLobby();
                     }
                 }, 3000);
+                }
             }
         } else {
             if (this.app.gameState) {
@@ -188,6 +208,29 @@ class GameLifecycleHandler {
             }
             if (this.app.updateGameInfo) {
                 this.app.updateGameInfo();
+            }
+            
+            // For tournament rooms, redirect immediately when game finishes (not waiting for forceLeave)
+            if (this.app.isTournamentRoom && this.app.tournamentId && this.app.viewManager) {
+                const winnerName = data.winner || 'Unknown';
+                // Update tournament info
+                if (this.app.tournamentSocketHandler) {
+                    this.app.tournamentSocketHandler.updateTournamentInfo(`Game finished! Winner: ${winnerName} 🎉`);
+                }
+                // Redirect to tournament detail page after a short delay
+                setTimeout(() => {
+                    // Clear room state before redirecting
+                    this.app.currentRoom = null;
+                    this.app.currentRoomName = null;
+                    this.app.gameState = null;
+                    this.app.myRole = null;
+                    this.app.isSpectator = false;
+                    const tournamentId = this.app.tournamentId;
+                    this.app.isTournamentRoom = false;
+                    this.app.tournamentId = null;
+                    this.app.matchId = null;
+                    this.app.viewManager.showTournamentDetail(tournamentId);
+                }, 2000);
             }
         }
     }

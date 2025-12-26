@@ -65,8 +65,8 @@
     z-index: 1502;
     transition: box-shadow 0.3s ease;
     height: 50px;
-    width: 160px;
-    min-width: 160px;
+    width: 190px;
+    min-width: 190px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -265,6 +265,7 @@
 
 /* Hide chat on mobile */
 @media (max-width: 768px) {
+
     .chat-drawer,
     .chat-drawer-content,
     .chat-drawer-tab,

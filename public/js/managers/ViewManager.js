@@ -3,7 +3,7 @@
 class ViewManager {
     constructor(app) {
         this.app = app;
-        
+
         this.authContainer = document.getElementById('auth-container');
         this.roomGameTypeDisplay = document.getElementById('room-game-type-display');
         this.gameModeMessage = document.getElementById('game-mode-message');
@@ -12,18 +12,18 @@ class ViewManager {
         this.gameInfoModal = document.getElementById('game-info-modal');
         this.gameInfoTitle = document.getElementById('game-info-title');
         this.gameInfoContent = document.getElementById('game-info-content');
-        
+
         this.currentView = null;
         this.currentGameType = 'three-mens-morris';
         this.selectedLobbyGameType = 'three-mens-morris';
         this.gameCards = document.querySelectorAll('.game-card');
         this.cardActionButtons = app.cardActionButtons;
-        
+
         this.setupGameCardListeners();
         this.initGameInfoModal();
     }
 
-    
+
 
     setupGameCardListeners() {
         this.gameCards.forEach(card => {
@@ -50,13 +50,16 @@ class ViewManager {
         });
     }
 
-    
+
 
     updateNotificationButtonVisibility() {
         const notificationsBtn = document.getElementById('notifications-btn');
         if (notificationsBtn) {
-            // Hide notification button when user is in a room
-            if (this.app.currentRoom) {
+            // Hide notification button when user is in a room or tournament
+            const isInRoom = this.app.currentRoom !== null;
+            const isInTournament = this.app.tournamentManager && this.app.tournamentManager.isInTournament();
+
+            if (isInRoom || isInTournament) {
                 notificationsBtn.classList.add('hidden');
             } else {
                 notificationsBtn.classList.remove('hidden');
@@ -65,6 +68,53 @@ class ViewManager {
     }
 
     showView(viewName) {
+        // Check if user is in a tournament as a PLAYER (not spectator) - prevent navigation
+        const isInTournament = this.app.tournamentManager && this.app.tournamentManager.isInTournament();
+        const isTournamentSpectator = this.app.tournamentManager && this.app.tournamentManager.currentTournament &&
+            !this.app.tournamentManager.currentTournament.players?.some(p => {
+                const username = typeof p === 'string' ? p : (p.username || p);
+                return username === this.app.currentUser;
+            });
+
+        // Only block navigation if user is a PLAYER in tournament, not a spectator
+        if (isInTournament && !isTournamentSpectator) {
+            // Allow navigation to game view if in a tournament room, or staying on tournament-detail view
+            if (viewName !== 'tournament-detail' && viewName !== 'game') {
+                const modal = document.getElementById('tournament-navigation-warning-modal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                }
+                // DO NOT change any views - return immediately
+                return; // Prevent view change
+            }
+            // If trying to go to game view but not in a tournament room, still block it
+            if (viewName === 'game' && !this.app.isTournamentRoom) {
+                const modal = document.getElementById('tournament-navigation-warning-modal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                }
+                return; // Prevent view change
+            }
+        }
+
+        // Check if user is in a game - prevent navigation to non-game views
+        // But skip this check for tournament rooms (they are handled separately above)
+        if (this.app.currentRoom && !this.app.isSpectator && !this.app.isTournamentRoom) {
+            // Allow navigation if game is finished
+            if (this.app.gameState && this.app.gameState.gameStatus === 'finished') {
+                // Game finished, allow navigation
+            } else if (viewName !== 'game') {
+                // User is in an active game, prevent navigation
+                if (this.app.warningManager) {
+                    this.app.warningManager.showNavigationWarning();
+                } else {
+                    this.app.showNavigationWarning();
+                }
+                // DO NOT change any views - return immediately
+                return; // Prevent view change
+            }
+        }
+
         // Hide/show notification button based on whether user is in a room
         this.updateNotificationButtonVisibility();
         const loadingScreen = document.getElementById('loading-screen');
@@ -72,12 +122,27 @@ class ViewManager {
             loadingScreen.style.display = 'none';
             loadingScreen.classList.add('hidden');
         }
-        
+
+        // Only hide/show views if we passed all checks
+        // Double-check tournament state before manipulating DOM (only for players, not spectators)
+        const doubleCheckTournament = this.app.tournamentManager && this.app.tournamentManager.isInTournament();
+        const doubleCheckSpectator = this.app.tournamentManager && this.app.tournamentManager.currentTournament &&
+            !this.app.tournamentManager.currentTournament.players?.some(p => {
+                const username = typeof p === 'string' ? p : (p.username || p);
+                return username === this.app.currentUser;
+            });
+        if (doubleCheckTournament && !doubleCheckSpectator && viewName !== 'tournament-detail' && viewName !== 'game') {
+            return; // Prevent view change (allow game view for tournament rooms)
+        }
+        if (doubleCheckTournament && !doubleCheckSpectator && viewName === 'game' && !this.app.isTournamentRoom) {
+            return; // Prevent game view if not in tournament room
+        }
+
         document.querySelectorAll('.view').forEach(view => {
             view.style.display = 'none';
             view.classList.remove('view-active');
         });
-        
+
         if (viewName === 'auth') {
             if (this.authContainer) {
                 this.authContainer.style.display = 'flex';
@@ -86,13 +151,13 @@ class ViewManager {
             } else {
                 console.error('authContainer not found');
             }
-            
+
             const navContainer = document.getElementById('nav-container');
             const onlinePlayersWidget = document.getElementById('online-players-widget');
             const lobbyChatDrawer = document.getElementById('lobby-chat-drawer');
             const gameInfoBtn = document.getElementById('game-info-btn');
             const userProfileReportBtn = document.getElementById('user-profile-report-btn');
-            
+
             if (navContainer) {
                 navContainer.style.display = 'none';
                 navContainer.classList.add('hidden');
@@ -118,7 +183,15 @@ class ViewManager {
                 this.authContainer.style.display = 'none';
                 this.authContainer.classList.remove('view-active');
             }
-            const targetView = document.getElementById(`${viewName}-container`);
+
+            // Special handling for tournament-detail-container (different naming)
+            let targetView = null;
+            if (viewName === 'tournament-detail') {
+                targetView = document.getElementById('tournament-detail-container');
+            } else {
+                targetView = document.getElementById(`${viewName}-container`);
+            }
+
             if (viewName === 'user-profile') {
                 console.log('[ViewManager.showView] Switching to user-profile view');
                 console.log('[ViewManager.showView] Looking for element: user-profile-container');
@@ -135,21 +208,21 @@ class ViewManager {
                     console.error('[ViewManager.showView] user-profile-container NOT FOUND!');
                 }
             }
-            
+
             const navContainer = document.getElementById('nav-container');
             const onlinePlayersWidget = document.getElementById('online-players-widget');
             const lobbyChatDrawer = document.getElementById('lobby-chat-drawer');
             const gameInfoBtn = document.getElementById('game-info-btn');
             const userProfileReportBtn = document.getElementById('user-profile-report-btn');
-            
+
             if (navContainer) {
                 navContainer.style.display = '';
                 navContainer.classList.remove('hidden');
             }
-            
+
             // Hide chat drawer and online players widget for guest users
             const isGuest = this.app.userRole === 'guest';
-            
+
             // Show online players widget on lobby, rooms, leaderboard (guests can see it too)
             // Tournaments view blocked for guests (see tournaments button handler)
             const allowedViews = ['lobby', 'rooms', 'leaderboard', 'tournaments'];
@@ -166,7 +239,7 @@ class ViewManager {
                 onlinePlayersWidget.style.display = 'none';
                 onlinePlayersWidget.classList.add('hidden');
             }
-            
+
             // Load badges when profile view is shown
             if (viewName === 'profile') {
                 if (this.app.scoreboardManager) {
@@ -184,7 +257,7 @@ class ViewManager {
                     }
                 }
             }
-            
+
             // Hide chat drawer for guest users, profile, and user-profile views
             if (lobbyChatDrawer && viewName !== 'auth' && viewName !== 'user-profile' && viewName !== 'profile' && !isGuest) {
                 lobbyChatDrawer.style.display = '';
@@ -212,9 +285,9 @@ class ViewManager {
                 }
             }
         }
-        
+
         this.currentView = viewName;
-        
+
         if (typeof this.app.updateNavigation === 'function') {
             this.app.updateNavigation();
         }
@@ -233,9 +306,35 @@ class ViewManager {
         }
     }
 
-    
+
 
     showLobby() {
+        // Check if user is in a tournament - prevent navigation
+        const isInTournament = this.app.tournamentManager && this.app.tournamentManager.isInTournament();
+        if (isInTournament) {
+            const modal = document.getElementById('tournament-navigation-warning-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
+            // DO NOT change any state or views - return immediately
+            return; // Prevent navigation
+        }
+
+        // Check if user is in a game - prevent navigation
+        if (this.app.currentRoom && !this.app.isSpectator) {
+            if (this.app.gameState && this.app.gameState.gameStatus === 'finished') {
+                // Game finished, allow navigation
+            } else {
+                if (this.app.warningManager) {
+                    this.app.warningManager.showNavigationWarning();
+                } else {
+                    this.app.showNavigationWarning();
+                }
+                // DO NOT change any state or views - return immediately
+                return; // Prevent navigation
+            }
+        }
+
         this.app.currentRoom = null;
         this.app.currentRoomName = null;
         const lobbyContainer = document.getElementById('lobby-container');
@@ -258,10 +357,90 @@ class ViewManager {
         if (this.app.roomManager && this.app.roomManager.updateRoomInfoBox) {
             this.app.roomManager.updateRoomInfoBox();
         }
+        // Reset lobby chat title
+        this.updateLobbyChatTitle(false);
         this.showView('lobby');
     }
 
-    
+    showTournaments() {
+        // Check if user is in a tournament - prevent navigation
+        if (this.app.tournamentManager && this.app.tournamentManager.isInTournament()) {
+            const modal = document.getElementById('tournament-navigation-warning-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
+            return; // Prevent navigation
+        }
+
+        // Check if user is in a game - prevent navigation
+        if (this.app.currentRoom && !this.app.isSpectator) {
+            if (this.app.gameState && this.app.gameState.gameStatus === 'finished') {
+                // Game finished, allow navigation
+            } else {
+                if (this.app.warningManager) {
+                    this.app.warningManager.showNavigationWarning();
+                } else {
+                    this.app.showNavigationWarning();
+                }
+                return; // Prevent navigation
+            }
+        }
+
+        // Reset lobby chat title
+        this.updateLobbyChatTitle(false);
+        this.showView('tournaments');
+        // Update notification button visibility
+        this.updateNotificationButtonVisibility();
+        // Fetch tournaments when viewing tournaments page
+        if (this.app.socket && this.app.socket.connected && this.app.tournamentSocketHandler) {
+            this.app.socket.emit('getTournaments', (response) => {
+                if (response && response.success && response.tournaments) {
+                    if (this.app.tournamentManager) {
+                        this.app.tournamentManager.setTournaments(response.tournaments);
+                        this.app.tournamentSocketHandler.updateTournamentsList();
+                    }
+                }
+            });
+        }
+    }
+
+    showTournamentDetail(tournamentId) {
+        // Check if user is in a game - prevent navigation
+        if (this.app.currentRoom && !this.app.isSpectator) {
+            if (this.app.gameState && this.app.gameState.gameStatus === 'finished') {
+                // Game finished, allow navigation
+            } else {
+                if (this.app.warningManager) {
+                    this.app.warningManager.showNavigationWarning();
+                } else {
+                    this.app.showNavigationWarning();
+                }
+                return; // Prevent navigation
+            }
+        }
+
+        this.showView('tournament-detail');
+        // Update notification button visibility
+        this.updateNotificationButtonVisibility();
+
+        // Update lobby chat title to Tournament Chat
+        this.updateLobbyChatTitle(true);
+
+        // Show tournament detail via socket handler
+        if (this.app.tournamentSocketHandler && tournamentId) {
+            this.app.tournamentSocketHandler.showTournamentDetail(tournamentId);
+        }
+    }
+
+    updateLobbyChatTitle(isTournament) {
+        const tabTitle = document.getElementById('lobby-chat-tab-title');
+        const headerTitle = document.getElementById('lobby-chat-header-title');
+        const title = isTournament ? 'Tournament Chat' : 'Lobby Chat';
+        if (tabTitle) tabTitle.textContent = title;
+        if (headerTitle) headerTitle.textContent = title;
+    }
+
+
 
     showGame() {
         this.app.roomMessages = [];
@@ -280,13 +459,13 @@ class ViewManager {
         }
     }
 
-    
+
 
     showAuth() {
         this.showView('auth');
     }
 
-    
+
 
     setCurrentGameType(type) {
         const rawGameType = typeof type === 'string' ? type : 'three-mens-morris';
@@ -303,7 +482,7 @@ class ViewManager {
         this.app.updateGameInfo();
     }
 
-    
+
 
     selectLobbyGame(type) {
         if (!type) return;
@@ -317,7 +496,7 @@ class ViewManager {
         });
     }
 
-    
+
 
     renderGameModeMessage() {
         if (!this.gameModeMessage || !this.gameBoard) return;
@@ -331,7 +510,7 @@ class ViewManager {
         this.gameBoard.style.filter = isThreeMensMorris ? 'none' : 'grayscale(0.7)';
     }
 
-    
+
 
     renderActiveGameLayout() {
         const type = this.currentGameType;
@@ -401,7 +580,7 @@ class ViewManager {
         }
     }
 
-    
+
 
     formatGameType(type) {
         const gameTypeNames = {
@@ -410,12 +589,12 @@ class ViewManager {
             'battleship': 'Battleship',
             'memory-match': 'Memory Match'
         };
-        return gameTypeNames[type] || type.split('-').map(word => 
+        return gameTypeNames[type] || type.split('-').map(word =>
             word.charAt(0).toUpperCase() + word.slice(1)
         ).join(' ');
     }
 
-    
+
 
     getGameRules(gameType) {
         const rules = {
@@ -486,7 +665,7 @@ class ViewManager {
         return rules[gameType] || rules['three-mens-morris'];
     }
 
-    
+
 
     setElementVisibility(element, visible) {
         if (!element) return;
@@ -499,7 +678,7 @@ class ViewManager {
         }
     }
 
-    
+
 
     updateGameInfoContent() {
         if (!this.gameInfoTitle || !this.gameInfoContent) return;
@@ -508,7 +687,7 @@ class ViewManager {
         this.gameInfoContent.innerHTML = gameRules.rules;
     }
 
-    
+
 
     showGameInfo() {
         if (this.gameInfoModal) {
@@ -527,7 +706,7 @@ class ViewManager {
             this.gameInfoModal.classList.add('hidden');
         }
     }
-    
+
     initGameInfoModal() {
         if (this.gameInfoModal) {
             this.gameInfoModal.addEventListener('click', (e) => {
@@ -535,7 +714,7 @@ class ViewManager {
                     this.hideGameInfo();
                 }
             });
-            
+
             // Add close button handler
             const closeBtn = document.getElementById('game-info-close-btn');
             if (closeBtn) {

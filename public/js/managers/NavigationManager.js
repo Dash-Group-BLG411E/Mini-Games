@@ -260,12 +260,26 @@ class NavigationManager {
         this.logoutBtn = document.getElementById('logout-btn');
 
         if (this.lobbyNavBtn) {
-            this.lobbyNavBtn.addEventListener('click', () => {
+            this.lobbyNavBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
+                // Check if user is in a tournament - both players and spectators should see warning for lobby
+                const isInTournament = this.app.tournamentManager && this.app.tournamentManager.isInTournament();
+                if (isInTournament) {
+                    const modal = document.getElementById('tournament-navigation-warning-modal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                    }
+                    return false;
+                }
+
                 if (this.app.gameState && this.app.gameState.gameStatus === 'finished') {
                     if (this.app.viewManager) {
                         this.app.viewManager.showLobby();
                     }
-                    return;
+                    return false;
                 }
                 if (this.app.currentRoom && !this.app.isSpectator) {
                     if (this.app.warningManager) {
@@ -273,7 +287,7 @@ class NavigationManager {
                     } else {
                         this.app.showNavigationWarning();
                     }
-                    return;
+                    return false;
                 }
                 if (this.app.currentRoom && this.app.isSpectator) {
                     if (this.app.roomManager) {
@@ -283,11 +297,32 @@ class NavigationManager {
                 if (this.app.viewManager) {
                     this.app.viewManager.showLobby();
                 }
+                return false;
             });
         }
 
         if (this.roomsNavBtn) {
-            this.roomsNavBtn.addEventListener('click', () => {
+            this.roomsNavBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
+                // Spectators can navigate to rooms without warning - only block players
+                const isInTournament = this.app.tournamentManager && this.app.tournamentManager.isInTournament();
+                const isTournamentSpectator = this.app.tournamentManager && this.app.tournamentManager.currentTournament && 
+                                             !this.app.tournamentManager.currentTournament.players?.some(p => {
+                                                 const username = typeof p === 'string' ? p : (p.username || p);
+                                                 return username === this.app.currentUser;
+                                             });
+                // Only block if user is a PLAYER in tournament, not a spectator - spectators can go to rooms
+                if (isInTournament && !isTournamentSpectator) {
+                    const modal = document.getElementById('tournament-navigation-warning-modal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                    }
+                    return false;
+                }
+
                 if (this.app.currentRoom && !this.app.isSpectator) {
                     if (this.app.gameState && this.app.gameState.gameStatus === 'finished') {
                         if (this.app.roomManager) {
@@ -296,14 +331,14 @@ class NavigationManager {
                         if (this.app.viewManager) {
                             this.app.viewManager.showView('rooms');
                         }
-                        return;
+                        return false;
                     }
                     if (this.app.warningManager) {
                         this.app.warningManager.showNavigationWarning();
                     } else {
                         this.app.showNavigationWarning();
                     }
-                    return;
+                    return false;
                 }
                 if (this.app.currentRoom && this.app.isSpectator) {
                     if (this.app.roomManager) {
@@ -313,11 +348,32 @@ class NavigationManager {
                 if (this.app.viewManager) {
                     this.app.viewManager.showView('rooms');
                 }
+                return false;
             });
         }
 
         if (this.leaderboardNavBtn) {
-            this.leaderboardNavBtn.addEventListener('click', () => {
+            this.leaderboardNavBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
+                // Spectators can navigate to leaderboard without warning - only block players
+                const isInTournament = this.app.tournamentManager && this.app.tournamentManager.isInTournament();
+                const isTournamentSpectator = this.app.tournamentManager && this.app.tournamentManager.currentTournament && 
+                                             !this.app.tournamentManager.currentTournament.players?.some(p => {
+                                                 const username = typeof p === 'string' ? p : (p.username || p);
+                                                 return username === this.app.currentUser;
+                                             });
+                // Only block if user is a PLAYER in tournament, not a spectator - spectators can go to leaderboard
+                if (isInTournament && !isTournamentSpectator) {
+                    const modal = document.getElementById('tournament-navigation-warning-modal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                    }
+                    return false;
+                }
+
                 if (this.app.currentRoom && !this.app.isSpectator) {
                     if (this.app.gameState && this.app.gameState.gameStatus === 'finished') {
                         if (this.app.roomManager) {
@@ -326,14 +382,14 @@ class NavigationManager {
                         if (this.app.viewManager) {
                             this.app.viewManager.showView('leaderboard');
                         }
-                        return;
+                        return false;
                     }
                     if (this.app.warningManager) {
                         this.app.warningManager.showNavigationWarning();
                     } else {
                         this.app.showNavigationWarning();
                     }
-                    return;
+                    return false;
                 }
                 if (this.app.currentRoom && this.app.isSpectator) {
                     if (this.app.roomManager) {
@@ -343,20 +399,108 @@ class NavigationManager {
                 if (this.app.viewManager) {
                     this.app.viewManager.showView('leaderboard');
                 }
+                return false;
             });
         }
 
         if (this.tournamentsNavBtn) {
-            this.tournamentsNavBtn.addEventListener('click', () => {
+            this.tournamentsNavBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Check if user is in a tournament (both players and spectators should see warning)
+                if (this.app.tournamentManager && this.app.tournamentManager.isInTournament()) {
+                    const modal = document.getElementById('tournament-navigation-warning-modal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                    }
+                    return false;
+                }
+                // Check if user is in a game
+                if (this.app.currentRoom && !this.app.isSpectator) {
+                    if (this.app.gameState && this.app.gameState.gameStatus === 'finished') {
+                        // Game finished, allow navigation
+                    } else {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (this.app.warningManager) {
+                            this.app.warningManager.showNavigationWarning();
+                        } else {
+                            this.app.showNavigationWarning();
+                        }
+                        return false;
+                    }
+                }
                 // Guests cannot access tournaments
                 if (this.app.userRole === 'guest') {
-                    if (this.app.modalManager) {
-                        this.app.modalManager.showNotification('Tournaments are only available for registered users. Please register to access tournaments.');
+                    const guestTournamentModal = document.getElementById('guest-tournament-modal');
+                    if (guestTournamentModal) {
+                        guestTournamentModal.classList.remove('hidden');
                     }
                     return;
                 }
                 if (this.app.viewManager) {
-                    this.app.viewManager.showView('tournaments');
+                    this.app.viewManager.showTournaments();
+                }
+            });
+        }
+
+        // Guest tournament modal buttons
+        const guestTournamentRegisterBtn = document.getElementById('guest-tournament-register-btn');
+        if (guestTournamentRegisterBtn) {
+            guestTournamentRegisterBtn.addEventListener('click', () => {
+                const guestTournamentModal = document.getElementById('guest-tournament-modal');
+                if (guestTournamentModal) {
+                    guestTournamentModal.classList.add('hidden');
+                }
+                // Switch to register tab
+                if (this.app.authManager && this.app.authManager.switchAuthTab) {
+                    this.app.authManager.switchAuthTab('register');
+                }
+                if (this.app.viewManager) {
+                    this.app.viewManager.showView('auth');
+                }
+            });
+        }
+
+        const guestTournamentStayGuestBtn = document.getElementById('guest-tournament-stay-guest-btn');
+        if (guestTournamentStayGuestBtn) {
+            guestTournamentStayGuestBtn.addEventListener('click', () => {
+                const guestTournamentModal = document.getElementById('guest-tournament-modal');
+                if (guestTournamentModal) {
+                    guestTournamentModal.classList.add('hidden');
+                }
+            });
+        }
+
+        // Close modal when clicking overlay
+        const guestTournamentModal = document.getElementById('guest-tournament-modal');
+        if (guestTournamentModal) {
+            guestTournamentModal.addEventListener('click', (e) => {
+                if (e.target === guestTournamentModal || e.target.classList.contains('modal-overlay')) {
+                    guestTournamentModal.classList.add('hidden');
+                }
+            });
+        }
+
+        // Tournament navigation warning modal
+        const closeTournamentNavWarningBtn = document.getElementById('close-tournament-nav-warning-btn');
+        if (closeTournamentNavWarningBtn) {
+            closeTournamentNavWarningBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const modal = document.getElementById('tournament-navigation-warning-modal');
+                if (modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        }
+
+        const tournamentNavWarningModal = document.getElementById('tournament-navigation-warning-modal');
+        if (tournamentNavWarningModal) {
+            tournamentNavWarningModal.addEventListener('click', (e) => {
+                if (e.target === tournamentNavWarningModal || e.target.classList.contains('modal-overlay')) {
+                    tournamentNavWarningModal.classList.add('hidden');
                 }
             });
         }
@@ -428,12 +572,30 @@ class NavigationManager {
         }
         
         if (this.profileNavBtn) {
-            this.profileNavBtn.addEventListener('click', () => {
+            this.profileNavBtn.addEventListener('click', (e) => {
                 // Block profile access for guests
                 if (this.app.userRole === 'guest') {
                     return;
                 }
                 this.closeUserMenu();
+                // Check if user is in a tournament as a PLAYER (not spectator)
+                const isInTournament = this.app.tournamentManager && this.app.tournamentManager.isInTournament();
+                const isTournamentSpectator = this.app.tournamentManager && this.app.tournamentManager.currentTournament && 
+                                             !this.app.tournamentManager.currentTournament.players?.some(p => {
+                                                 const username = typeof p === 'string' ? p : (p.username || p);
+                                                 return username === this.app.currentUser;
+                                             });
+                // Only block if user is a PLAYER in tournament, not a spectator
+                if (isInTournament && !isTournamentSpectator) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const modal = document.getElementById('tournament-navigation-warning-modal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                    }
+                    return false;
+                }
+                // Check if user is in a game
                 if (this.app.currentRoom && !this.app.isSpectator) {
                     if (this.app.gameState && this.app.gameState.gameStatus === 'finished') {
                         if (this.app.roomManager) {
@@ -442,12 +604,14 @@ class NavigationManager {
                         this.app.showProfile();
                         return;
                     }
+                    e.preventDefault();
+                    e.stopPropagation();
                     if (this.app.warningManager) {
                         this.app.warningManager.showNavigationWarning();
                     } else {
                         this.app.showNavigationWarning();
                     }
-                    return;
+                    return false;
                 }
                 this.app.showProfile();
             });
@@ -461,15 +625,39 @@ class NavigationManager {
         }
         
         if (this.logoutBtn) {
-            this.logoutBtn.addEventListener('click', () => {
+            this.logoutBtn.addEventListener('click', (e) => {
                 this.closeUserMenu();
-                if (this.app.currentRoom && !this.app.isSpectator) {
-                    if (this.app.warningManager) {
-                        this.app.warningManager.showNavigationWarning();
-                    } else {
-                        this.app.showNavigationWarning();
+                // Spectators can logout without warning - only block players
+                const isInTournament = this.app.tournamentManager && this.app.tournamentManager.isInTournament();
+                const isTournamentSpectator = this.app.tournamentManager && this.app.tournamentManager.currentTournament && 
+                                             !this.app.tournamentManager.currentTournament.players?.some(p => {
+                                                 const username = typeof p === 'string' ? p : (p.username || p);
+                                                 return username === this.app.currentUser;
+                                             });
+                // Only block if user is a PLAYER in tournament, not a spectator - spectators can logout
+                if (isInTournament && !isTournamentSpectator) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const modal = document.getElementById('tournament-navigation-warning-modal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
                     }
-                    return;
+                    return false;
+                }
+                // Check if user is in a game
+                if (this.app.currentRoom && !this.app.isSpectator) {
+                    if (this.app.gameState && this.app.gameState.gameStatus === 'finished') {
+                        // Game finished, allow logout
+                    } else {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (this.app.warningManager) {
+                            this.app.warningManager.showNavigationWarning();
+                        } else {
+                            this.app.showNavigationWarning();
+                        }
+                        return false;
+                    }
                 }
                 this.app.logout();
             });

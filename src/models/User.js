@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: function() {
+    required: function () {
       return this.role !== 'guest';
     },
     lowercase: true,
@@ -45,6 +45,18 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  isMuted: {
+    type: Boolean,
+    default: false
+  },
+  muteExpiresAt: {
+    type: Date,
+    default: null
+  },
+  muteReason: {
+    type: String,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -53,8 +65,8 @@ const userSchema = new mongoose.Schema({
 
 userSchema.index(
   { email: 1 },
-  { 
-    unique: true, 
+  {
+    unique: true,
     partialFilterExpression: { email: { $exists: true, $ne: null } },
     sparse: true
   }

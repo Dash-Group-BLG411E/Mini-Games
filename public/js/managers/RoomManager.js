@@ -216,6 +216,9 @@ class RoomManager {
             return;
         }
 
+        const wasTournamentRoom = this.app.isTournamentRoom;
+        const tournamentId = this.app.tournamentId;
+
         this.app.socket.emit('leaveRoom', { roomId: this.app.currentRoom });
         
         this.hideLeaveRoomModal();
@@ -233,6 +236,9 @@ class RoomManager {
         this.app.gameState = null;
         this.app.myRole = null;
         this.app.isSpectator = false;
+        this.app.isTournamentRoom = false;
+        this.app.tournamentId = null;
+        this.app.matchId = null;
         this.app.disableBeforeUnloadWarning();
         this.app.updateChatWidgets();
         this.updateLeaveButtonVisibility();
@@ -243,7 +249,10 @@ class RoomManager {
             this.app.viewManager.updateNotificationButtonVisibility();
         }
         
-        if (this.app.viewManager) {
+        // Redirect to tournament detail page if it was a tournament room
+        if (wasTournamentRoom && tournamentId && this.app.viewManager) {
+            this.app.viewManager.showTournamentDetail(tournamentId);
+        } else if (this.app.viewManager) {
             this.app.viewManager.showLobby();
         }
     }
@@ -310,6 +319,9 @@ class RoomManager {
     updateLeaveButtonVisibility() {
         if (this.leaveRoomBtn) {
             if (this.app.isSpectator) {
+                this.leaveRoomBtn.style.display = 'none';
+            } else if (this.app.isTournamentRoom) {
+                // Hide Leave Game button for tournament games
                 this.leaveRoomBtn.style.display = 'none';
             } else {
                 this.leaveRoomBtn.style.display = 'block';

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,111 +11,458 @@
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #1a1a2e;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: #fff;
+            min-height: 100vh;
             padding: 20px;
         }
+
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
+
         h1 {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             color: #fff;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: rgba(124, 58, 237, 0.2);
+            color: #a78bfa;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .back-link:hover {
+            background: rgba(124, 58, 237, 0.4);
+        }
+
         .error {
-            background: #dc3545;
+            background: linear-gradient(135deg, #dc3545, #c82333);
             color: #fff;
-            padding: 15px;
-            border-radius: 5px;
+            padding: 15px 20px;
+            border-radius: 8px;
             margin-bottom: 20px;
         }
+
         .loading {
             text-align: center;
-            padding: 40px;
-            color: #aaa;
+            padding: 60px;
+            color: #a78bfa;
+            font-size: 1.1rem;
         }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Reports Table */
+        .reports-table-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            overflow: hidden;
         }
+
         thead {
-            background: rgba(124, 58, 237, 0.3);
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.4), rgba(99, 102, 241, 0.3));
         }
-        th, td {
-            padding: 12px;
+
+        th,
+        td {
+            padding: 16px;
             text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
+
         th {
             font-weight: 600;
             color: #fff;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
         }
+
         td {
-            color: #ddd;
+            color: #e0e0e0;
+            font-size: 0.9rem;
         }
+
         tr:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.03);
         }
+
+        /* Status Badge */
         .status {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.85em;
-            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
         }
+
         .status.open {
-            background: #ffc107;
+            background: linear-gradient(135deg, #ffc107, #e0a800);
             color: #000;
         }
+
         .status.in_review {
-            background: #17a2b8;
+            background: linear-gradient(135deg, #17a2b8, #138496);
             color: #fff;
         }
+
         .status.resolved {
-            background: #28a745;
+            background: linear-gradient(135deg, #28a745, #218838);
             color: #fff;
         }
+
         .status.rejected {
-            background: #dc3545;
+            background: linear-gradient(135deg, #6c757d, #5a6268);
             color: #fff;
         }
+
+        /* Reason Badge */
+        .reason-badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .reason-badge.inappropriate_name {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .reason-badge.bad_words {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-view {
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+        }
+
+        .btn-view:hover {
+            background: rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-mute {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .btn-mute:hover {
+            background: rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-rename {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+        }
+
+        .btn-rename:hover {
+            background: rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-resolve {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+
+        .btn-resolve:hover {
+            background: rgba(34, 197, 94, 0.4);
+        }
+
         .empty {
             text-align: center;
-            padding: 40px;
-            color: #aaa;
+            padding: 60px;
+            color: #888;
+            font-size: 1.1rem;
         }
-        .back-link {
-            display: inline-block;
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1e1e2e, #2a2a4a);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content h2 {
             margin-bottom: 20px;
-            color: #7c3aed;
-            text-decoration: none;
+            color: #fff;
+            font-size: 1.5rem;
         }
-        .back-link:hover {
-            text-decoration: underline;
+
+        .modal-content h3 {
+            margin: 16px 0 8px;
+            color: #a78bfa;
+            font-size: 1rem;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Chat History */
+        .chat-history {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .chat-message {
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+        }
+
+        .chat-message .username {
+            font-weight: 600;
+            color: #a78bfa;
+            margin-right: 8px;
+        }
+
+        .chat-message .message {
+            color: #e0e0e0;
+        }
+
+        .chat-message .timestamp {
+            font-size: 0.75rem;
+            color: #666;
+            margin-left: 8px;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #a78bfa;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #7c3aed;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-btn-primary {
+            background: linear-gradient(135deg, #7c3aed, #6366f1);
+            color: #fff;
+        }
+
+        .modal-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+        }
+
+        .modal-btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+        }
+
+        .modal-btn-danger:hover {
+            transform: translateY(-2px);
+        }
+
+        .modal-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .modal-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .info-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .info-label {
+            color: #888;
+            min-width: 120px;
+        }
+
+        .info-value {
+            color: #fff;
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            body {
+                padding: 12px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 16px;
+            }
+
+            .reports-table-container {
+                overflow-x: auto;
+            }
+
+            table {
+                min-width: 600px;
+            }
+
+            th,
+            td {
+                padding: 10px 8px;
+                font-size: 0.8rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .btn {
+                padding: 6px 10px;
+                font-size: 0.75rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 16px;
+                max-height: 90vh;
+            }
+
+            .modal-content h2 {
+                font-size: 1.25rem;
+            }
+
+            .chat-history {
+                max-height: 200px;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <a href="/" class="back-link">← Back to Home</a>
-        <h1>Admin Reports</h1>
+        <div class="header-actions">
+            <a href="/" class="back-link">← Back to Game</a>
+        </div>
+        <h1>📊 Admin Reports</h1>
         <div id="error" class="error hidden"></div>
         <div id="loading" class="loading">Loading reports...</div>
-        <div id="reports-container" class="hidden">
+        <div id="reports-container" class="reports-table-container hidden">
             <table>
                 <thead>
                     <tr>
                         <th>Reporter</th>
                         <th>Reported User</th>
                         <th>Reason</th>
-                        <th>Message</th>
                         <th>Status</th>
-                        <th>Created At</th>
+                        <th>Created</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="reports-table-body">
@@ -124,8 +472,64 @@
         <div id="empty" class="empty hidden">No reports found.</div>
     </div>
 
+    <!-- View Report Modal -->
+    <div id="view-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>📋 Report Details</h2>
+            <div id="report-details"></div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-secondary" onclick="closeModal('view-modal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mute User Modal -->
+    <div id="mute-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>🔇 Mute User</h2>
+            <p style="color: #888; margin-bottom: 16px;">User: <span id="mute-username" style="color: #fff;"></span></p>
+            <div class="form-group">
+                <label>Duration</label>
+                <select id="mute-duration">
+                    <option value="30">30 minutes</option>
+                    <option value="60">1 hour</option>
+                    <option value="1440">24 hours</option>
+                    <option value="10080">7 days</option>
+                    <option value="0">Permanent</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Reason (optional)</label>
+                <input type="text" id="mute-reason" placeholder="Reason for muting...">
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-secondary" onclick="closeModal('mute-modal')">Cancel</button>
+                <button class="modal-btn modal-btn-danger" onclick="confirmMute()">Mute User</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Username Modal -->
+    <div id="rename-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>✏️ Change Username</h2>
+            <p style="color: #888; margin-bottom: 16px;">Current username: <span id="current-username"
+                    style="color: #fff;"></span></p>
+            <div class="form-group">
+                <label>New Username</label>
+                <input type="text" id="new-username" placeholder="Enter new username...">
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-secondary" onclick="closeModal('rename-modal')">Cancel</button>
+                <button class="modal-btn modal-btn-primary" onclick="confirmRename()">Change Username</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Helper functions
+        let currentReportId = null;
+        let reports = [];
+
         function showError(message) {
             const errorEl = document.getElementById('error');
             const loadingEl = document.getElementById('loading');
@@ -147,6 +551,19 @@
             return date.toLocaleString();
         }
 
+        function formatReason(reason) {
+            const labels = {
+                'inappropriate_name': '🚫 Inappropriate Name',
+                'bad_words': '💬 Bad Words'
+            };
+            return labels[reason] || reason;
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            currentReportId = null;
+        }
+
         async function loadReports() {
             const loadingEl = document.getElementById('loading');
             const errorEl = document.getElementById('error');
@@ -154,23 +571,19 @@
             const emptyEl = document.getElementById('empty');
             const tableBody = document.getElementById('reports-table-body');
 
-            // Get token from localStorage
             const token = localStorage.getItem('minigames_token');
-            
+
             if (!token) {
                 showError('You must be logged in to view reports.');
                 return;
             }
 
             try {
-                // Show loading, hide other elements
                 loadingEl.classList.remove('hidden');
                 errorEl.classList.add('hidden');
                 containerEl.classList.add('hidden');
                 emptyEl.classList.add('hidden');
 
-                console.log('Fetching reports from /api/reports...');
-                
                 const response = await fetch('/api/reports', {
                     method: 'GET',
                     headers: {
@@ -178,8 +591,6 @@
                         'Content-Type': 'application/json'
                     }
                 });
-
-                console.log('Response status:', response.status);
 
                 if (response.status === 403) {
                     showError('Access denied. Admin privileges required.');
@@ -192,14 +603,11 @@
                 }
 
                 if (!response.ok) {
-                    const data = await response.json().catch(() => ({ error: 'Failed to load reports' }));
-                    showError(data.error || 'Failed to load reports.');
+                    showError('Failed to load reports.');
                     return;
                 }
 
-                const reports = await response.json();
-                console.log('Reports received:', reports);
-
+                reports = await response.json();
                 loadingEl.classList.add('hidden');
 
                 if (!reports || reports.length === 0) {
@@ -207,17 +615,27 @@
                     return;
                 }
 
-                // Render reports table
                 tableBody.innerHTML = '';
                 reports.forEach(report => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${escapeHtml(report.reporterId)}</td>
                         <td>${escapeHtml(report.reportedUserId)}</td>
-                        <td>${escapeHtml(report.reason)}</td>
-                        <td>${escapeHtml(report.message || '-')}</td>
+                        <td><span class="reason-badge ${report.reason}">${formatReason(report.reason)}</span></td>
                         <td><span class="status ${report.status}">${escapeHtml(report.status)}</span></td>
                         <td>${formatDate(report.createdAt)}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-view" onclick="viewReport('${report._id}')">View</button>
+                                ${report.status !== 'resolved' ? `
+                                    <button class="btn btn-mute" onclick="openMuteModal('${report._id}', '${escapeHtml(report.reportedUserId)}')">Mute</button>
+                                    ${report.reason === 'inappropriate_name' ? `
+                                        <button class="btn btn-rename" onclick="openRenameModal('${report._id}', '${escapeHtml(report.reportedUserId)}')">Rename</button>
+                                    ` : ''}
+                                    <button class="btn btn-resolve" onclick="resolveReport('${report._id}')">Resolve</button>
+                                ` : ''}
+                            </div>
+                        </td>
                     `;
                     tableBody.appendChild(row);
                 });
@@ -229,11 +647,163 @@
             }
         }
 
+        async function viewReport(reportId) {
+            const token = localStorage.getItem('minigames_token');
+            const report = reports.find(r => r._id === reportId);
+            if (!report) return;
+
+            const detailsEl = document.getElementById('report-details');
+            let html = `
+                <div class="info-row"><span class="info-label">Reporter:</span><span class="info-value">${escapeHtml(report.reporterId)}</span></div>
+                <div class="info-row"><span class="info-label">Reported User:</span><span class="info-value">${escapeHtml(report.reportedUserId)}</span></div>
+                <div class="info-row"><span class="info-label">Reason:</span><span class="info-value">${formatReason(report.reason)}</span></div>
+                <div class="info-row"><span class="info-label">Status:</span><span class="info-value"><span class="status ${report.status}">${report.status}</span></span></div>
+                <div class="info-row"><span class="info-label">Created:</span><span class="info-value">${formatDate(report.createdAt)}</span></div>
+            `;
+
+            if (report.actionTaken) {
+                html += `<div class="info-row"><span class="info-label">Action Taken:</span><span class="info-value">${escapeHtml(report.actionTaken)}</span></div>`;
+            }
+            if (report.resolvedBy) {
+                html += `<div class="info-row"><span class="info-label">Resolved By:</span><span class="info-value">${escapeHtml(report.resolvedBy)}</span></div>`;
+            }
+
+            if (report.chatHistory && report.chatHistory.length > 0) {
+                html += `<h3>💬 Chat History</h3><div class="chat-history">`;
+                report.chatHistory.forEach(msg => {
+                    html += `
+                        <div class="chat-message">
+                            <span class="username">${escapeHtml(msg.username)}:</span>
+                            <span class="message">${escapeHtml(msg.message)}</span>
+                            <span class="timestamp">${formatDate(msg.timestamp)}</span>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            detailsEl.innerHTML = html;
+            document.getElementById('view-modal').classList.remove('hidden');
+        }
+
+        function openMuteModal(reportId, username) {
+            currentReportId = reportId;
+            document.getElementById('mute-username').textContent = username;
+            document.getElementById('mute-duration').value = '60';
+            document.getElementById('mute-reason').value = '';
+            document.getElementById('mute-modal').classList.remove('hidden');
+        }
+
+        function openRenameModal(reportId, username) {
+            currentReportId = reportId;
+            document.getElementById('current-username').textContent = username;
+            document.getElementById('new-username').value = '';
+            document.getElementById('rename-modal').classList.remove('hidden');
+        }
+
+        async function confirmMute() {
+            if (!currentReportId) return;
+            const token = localStorage.getItem('minigames_token');
+            const duration = parseInt(document.getElementById('mute-duration').value);
+            const reason = document.getElementById('mute-reason').value;
+
+            try {
+                const response = await fetch(`/api/reports/${currentReportId}/mute`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ duration, reason })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    alert(data.message);
+                    closeModal('mute-modal');
+                    loadReports();
+                } else {
+                    alert(data.error || 'Failed to mute user');
+                }
+            } catch (error) {
+                console.error('Error muting user:', error);
+                alert('Failed to mute user');
+            }
+        }
+
+        async function confirmRename() {
+            if (!currentReportId) return;
+            const token = localStorage.getItem('minigames_token');
+            const newUsername = document.getElementById('new-username').value.trim();
+
+            if (!newUsername || newUsername.length < 3) {
+                alert('Username must be at least 3 characters');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/reports/${currentReportId}/change-username`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ newUsername })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    alert(data.message);
+                    closeModal('rename-modal');
+                    loadReports();
+                } else {
+                    alert(data.error || 'Failed to change username');
+                }
+            } catch (error) {
+                console.error('Error changing username:', error);
+                alert('Failed to change username');
+            }
+        }
+
+        async function resolveReport(reportId) {
+            const token = localStorage.getItem('minigames_token');
+
+            try {
+                const response = await fetch(`/api/reports/${reportId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'resolved' })
+                });
+
+                if (response.ok) {
+                    loadReports();
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Failed to resolve report');
+                }
+            } catch (error) {
+                console.error('Error resolving report:', error);
+                alert('Failed to resolve report');
+            }
+        }
+
+        // Close modal on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                    currentReportId = null;
+                }
+            });
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('Admin reports page loaded');
             loadReports();
         });
     </script>
 </body>
-</html>
 
+</html>

@@ -92,13 +92,13 @@ class InvitationHandler {
                 socket.emit('invitationError', 'Invitation not found or expired');
                 return;
             }
-            
+
             const invitationIndex = invitations.findIndex(inv => inv.from === from);
             if (invitationIndex === -1) {
                 socket.emit('invitationError', 'Invitation not found or expired');
                 return;
             }
-            
+
             const invitation = invitations[invitationIndex];
             
             // Cancel all other pending invitations for this user and notify their senders
@@ -107,7 +107,7 @@ class InvitationHandler {
             // Remove the accepted invitation first
             invitations.splice(invitationIndex, 1);
             if (invitations.length === 0) {
-                this.handlers.pendingInvitations.delete(to);
+            this.handlers.pendingInvitations.delete(to);
             }
             
             // Notify other senders that their invitation was cancelled because user joined a game
@@ -273,7 +273,7 @@ class InvitationHandler {
                 if (invitationIndex !== -1) {
                     invitations.splice(invitationIndex, 1);
                     if (invitations.length === 0) {
-                        this.handlers.pendingInvitations.delete(to);
+            this.handlers.pendingInvitations.delete(to);
                     }
                 }
             }

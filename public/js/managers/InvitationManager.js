@@ -170,6 +170,13 @@ class InvitationManager {
     updateRematchButtonStatus() {
         if (!this.rematchBtn) return;
 
+        // Hide rematch button for tournament rooms
+        if (this.app.isTournamentRoom) {
+            this.rematchBtn.classList.add('hidden');
+            this.rematchBtn.style.display = 'none';
+            return;
+        }
+
         if (!this.app.gameState || this.app.gameState.gameStatus !== 'finished') {
             return;
         }

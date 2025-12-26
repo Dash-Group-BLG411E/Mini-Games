@@ -1,17 +1,81 @@
 /* Mobile First - Base styles for mobile devices */
+
+/* Landscape Orientation Warning */
+.landscape-warning {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--bg-main-dark, #0f0b1f) 0%, #1a0f2e 100%);
+    z-index: 99999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px;
+}
+
+.landscape-warning-icon {
+    font-size: 4rem;
+    margin-bottom: 24px;
+    animation: rotate-phone 2s ease-in-out infinite;
+}
+
+@keyframes rotate-phone {
+
+    0%,
+    100% {
+        transform: rotate(-90deg);
+    }
+
+    50% {
+        transform: rotate(0deg);
+    }
+}
+
+.landscape-warning h2 {
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+    color: #fff;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.landscape-warning p {
+    color: var(--accent-purple, #a78bfa);
+    font-size: 1rem;
+    max-width: 280px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* Show landscape warning only on mobile in landscape orientation */
+@media (max-width: 896px) and (max-height: 500px) and (orientation: landscape) {
+    .landscape-warning {
+        display: flex;
+    }
+
+    body>*:not(.landscape-warning) {
+        display: none !important;
+    }
+}
+
 /* Prevent white background on overscroll */
 @media (max-width: 768px) {
-    html, body {
+
+    html,
+    body {
         background-color: var(--bg-main-dark) !important;
         overscroll-behavior-y: none;
         -webkit-overflow-scrolling: touch;
     }
-    
+
     body {
         position: relative;
         min-height: 100vh;
         min-height: -webkit-fill-available;
     }
+
     /* Navigation */
     .nav-container {
         padding: 0.75rem 1rem;
@@ -36,12 +100,12 @@
     .user-username-display {
         display: block;
     }
-    
+
     .user-avatar-btn {
         min-width: auto;
         padding: 0.5rem 0.75rem;
     }
-    
+
     .user-username-display {
         max-width: 100px;
         font-size: 0.85rem;
@@ -146,7 +210,7 @@
         margin: 1rem;
         width: calc(100% - 2rem);
     }
-    
+
     h1 {
         font-size: 1.75rem;
         text-align: center;
@@ -208,14 +272,16 @@
     }
 
     /* Rooms List */
-    .room-item {
+    .room-item,
+    .tournament-item {
         flex-direction: column;
         gap: 1rem;
         text-align: center;
         padding: 1rem;
     }
-    
-    .room-actions {
+
+    .room-actions,
+    .tournament-item .tournament-actions {
         flex-direction: row;
         justify-content: center;
         margin-left: 0;
@@ -223,7 +289,8 @@
         gap: 0.5rem;
     }
 
-    .room-actions button {
+    .room-actions button,
+    .tournament-item .tournament-actions button {
         flex: 1;
         min-width: 0;
         padding: 0.6rem 0.75rem;
@@ -353,7 +420,7 @@
         max-width: 400px;
         max-height: 80vh;
     }
-    
+
     .chat-drawer-list {
         max-height: calc(80vh - 150px);
     }
@@ -363,19 +430,19 @@
         width: calc(100vw - 40px);
         max-width: 350px;
     }
-    
+
     .fixed-widget {
         bottom: 15px;
     }
-    
+
     #online-players-widget {
         left: 15px;
     }
-    
+
     #lobby-chat-widget {
         right: 15px;
     }
-    
+
     .widget-toggle-btn {
         padding: 0.65rem 1.25rem;
         font-size: 0.85rem;
@@ -520,15 +587,18 @@
         font-size: 1.1rem;
     }
 
-    .room-item {
+    .room-item,
+    .tournament-item {
         padding: 0.75rem;
     }
 
-    .room-actions {
+    .room-actions,
+    .tournament-item .tournament-actions {
         flex-direction: column;
     }
 
-    .room-actions button {
+    .room-actions button,
+    .tournament-item .tournament-actions button {
         width: 100%;
     }
 

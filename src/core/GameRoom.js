@@ -3,7 +3,7 @@ const MemoryGame = require('../games/MemoryGame');
 const BattleshipGame = require('../games/BattleshipGame');
 
 class GameRoom {
-    constructor(roomId, roomName = null, gameType = 'three-mens-morris') {
+    constructor(roomId, roomName = null, gameType = 'three-mens-morris', isTournamentRoom = false) {
         this.roomId = roomId;
         this.roomName = roomName || `Room ${roomId}`;
         this.players = [];
@@ -15,6 +15,9 @@ class GameRoom {
         this.battleshipState = null;
         this.gameState = {};
         this.moveHistory = [];
+        this.isTournamentRoom = isTournamentRoom; // Flag for tournament rooms
+        this.tournamentId = null; // Will be set for tournament rooms
+        this.matchId = null; // Will be set for tournament rooms
         
         this.tmmGame = new TMMGame(this);
         this.memoryGame = new MemoryGame(this);

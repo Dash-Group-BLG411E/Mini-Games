@@ -1,35 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>🎮 MiniGamesHub</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="/css/base/variables.css">
-        <link rel="stylesheet" href="/css/base/reset.css">
-        <link rel="stylesheet" href="/css/base/typography.css">
-        <link rel="stylesheet" href="/css/components/loading.css">
-        <link rel="stylesheet" href="/css/components/navigation.css">
-        <link rel="stylesheet" href="/css/components/buttons.css">
-        <link rel="stylesheet" href="/css/components/forms.css">
-        <link rel="stylesheet" href="/css/components/modals.css">
-        <link rel="stylesheet" href="/css/components/chat.css">
-        <link rel="stylesheet" href="/css/layouts/views.css">
-        <link rel="stylesheet" href="/css/layouts/auth.css">
-        <link rel="stylesheet" href="/css/layouts/lobby.css">
-        <link rel="stylesheet" href="/css/layouts/game.css">
-        <link rel="stylesheet" href="/css/layouts/scoreboard.css">
-        <link rel="stylesheet" href="/css/layouts/profile.css">
-        <link rel="stylesheet" href="/css/utilities/animations.css">
-        <link rel="stylesheet" href="/css/utilities/responsive.css">
-        <link rel="stylesheet" href="/css/games/battleship.css">
-        <link rel="stylesheet" href="/css/games/tmm.css">
-        <link rel="stylesheet" href="/css/games/memory.css">
-    </head>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 MiniGamesHub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/base/variables.css">
+    <link rel="stylesheet" href="/css/base/reset.css">
+    <link rel="stylesheet" href="/css/base/typography.css">
+    <link rel="stylesheet" href="/css/components/loading.css">
+    <link rel="stylesheet" href="/css/components/navigation.css">
+    <link rel="stylesheet" href="/css/components/buttons.css">
+    <link rel="stylesheet" href="/css/components/forms.css">
+    <link rel="stylesheet" href="/css/components/modals.css">
+    <link rel="stylesheet" href="/css/components/chat.css">
+    <link rel="stylesheet" href="/css/layouts/views.css">
+    <link rel="stylesheet" href="/css/layouts/auth.css">
+    <link rel="stylesheet" href="/css/layouts/lobby.css">
+    <link rel="stylesheet" href="/css/layouts/game.css">
+    <link rel="stylesheet" href="/css/layouts/scoreboard.css">
+    <link rel="stylesheet" href="/css/layouts/profile.css">
+    <link rel="stylesheet" href="/css/layouts/tournament.css">
+    <link rel="stylesheet" href="/css/utilities/animations.css">
+    <link rel="stylesheet" href="/css/utilities/responsive.css">
+    <link rel="stylesheet" href="/css/games/battleship.css">
+    <link rel="stylesheet" href="/css/games/tmm.css">
+    <link rel="stylesheet" href="/css/games/memory.css">
+</head>
+
 <body>
     <div id="loading-screen" class="loading-screen">
+    </div>
+    <!-- Landscape Warning Overlay -->
+    <div id="landscape-warning" class="landscape-warning">
+        <div class="landscape-warning-icon">📱</div>
+        <h2>Please Rotate Your Phone</h2>
+        <p>Hold your phone vertically for the best experience.</p>
     </div>
     <div id="nav-container" class="nav-container">
         <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Toggle menu">
@@ -48,7 +57,7 @@
                     <button id="mobile-lobby-nav-btn" class="mobile-nav-btn">Lobby</button>
                     <button id="mobile-rooms-nav-btn" class="mobile-nav-btn">Active Rooms</button>
                     <button id="mobile-leaderboard-nav-btn" class="mobile-nav-btn">Leaderboard</button>
-                    <button id="mobile-tournaments-nav-btn" class="mobile-nav-btn" disabled>Tournaments</button>
+                    <button id="mobile-tournaments-nav-btn" class="mobile-nav-btn">Tournaments</button>
                 </div>
             </div>
         </div>
@@ -56,7 +65,7 @@
             <button id="lobby-nav-btn" class="nav-btn">Lobby</button>
             <button id="rooms-nav-btn" class="nav-btn">Active Rooms</button>
             <button id="leaderboard-nav-btn" class="nav-btn">Leaderboard</button>
-            <button id="tournaments-nav-btn" class="nav-btn" disabled>Tournaments</button>
+            <button id="tournaments-nav-btn" class="nav-btn">Tournaments</button>
         </div>
         <div class="nav-right">
             <div class="notifications-container">
@@ -88,7 +97,8 @@
                     </button>
                     <button id="logout-btn" class="user-menu-item">
                         <span class="logout-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                                 <polyline points="16 17 21 12 16 7"></polyline>
                                 <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -100,7 +110,8 @@
         </div>
     </div>
     <button id="room-info-btn" class="room-info-btn hidden" aria-label="Room information">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <line x1="12" y1="16" x2="12" y2="12"></line>
             <line x1="12" y1="8" x2="12.01" y2="8"></line>
@@ -131,96 +142,108 @@
     </div>
     <div id="auth-container" class="view">
         <div class="auth-card">
-                <h1>Welcome</h1>
-                <div class="auth-tabs">
-                    <button type="button" class="auth-tab active" data-auth-target="login">Login</button>
-                    <button type="button" class="auth-tab" data-auth-target="register">Register</button>
-                </div>
-                <form id="login-form" class="auth-form">
-                    <label for="login-username">Username</label>
-                    <input type="text" id="login-username" name="username" placeholder="Your username" required autocomplete="off">
-                    <label for="login-password">Password</label>
-                    <div class="password-input-wrapper">
-                        <input type="password" id="login-password" name="password" placeholder="Your password" required autocomplete="off">
-                        <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
-                            <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
-                        </button>
-                    </div>
-                    <button type="submit">Login</button>
-                </form>
-                <form id="register-form" class="auth-form hidden">
-                    <label for="register-username">Username</label>
-                    <input type="text" id="register-username" name="username" placeholder="Choose a username" required autocomplete="off">
-                    <label for="register-email">Email</label>
-                    <input type="email" id="register-email" name="email" placeholder="Enter your email" required autocomplete="email">
-                    <label for="register-password" class="label-with-info">
-                        Password
-                        <span class="info-icon" id="password-info-icon" tabindex="0" aria-label="Password requirements">
-                            <span class="info-icon-text">?</span>
-                            <div class="info-tooltip" id="password-requirements-tooltip">
-                                <div class="tooltip-content">
-                                    <strong>Password Requirements:</strong>
-                                    <ul>
-                                        <li>At least 8 characters long</li>
-                                        <li>Contains at least one letter (a-z, A-Z)</li>
-                                        <li>Contains at least one number (0-9)</li>
-                                        <li>No special characters (! @ # $ % ^ & * ( ) , . ' " ? /)</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </span>
-                    </label>
-                    <div class="password-input-wrapper">
-                        <input type="password" id="register-password" name="password" placeholder="Create a password" required autocomplete="off">
-                        <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
-                            <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
-                        </button>
-                    </div>
-                    <div id="register-password-error" class="password-error"></div>
-                    <label for="register-confirm-password">Confirm Password</label>
-                    <div class="password-input-wrapper">
-                        <input type="password" id="register-confirm-password" name="confirmPassword" placeholder="Re-enter password" required autocomplete="off">
-                        <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
-                            <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
-                        </button>
-                    </div>
-                    <div id="register-confirm-password-error" class="password-error"></div>
-                    <button type="submit">Register</button>
-                </form>
-                <div class="guest-login-block">
-                    <div class="guest-divider">
-                        <span>or</span>
-                    </div>
-                    <button type="button" id="guest-login-btn" class="guest-btn">Play as Guest</button>
-                    <p class="guest-hint">Play as a guest. Register to unlock more.</p>
-                </div>
-                <div id="auth-message" class="auth-message"></div>
+            <h1>Welcome</h1>
+            <div class="auth-tabs">
+                <button type="button" class="auth-tab active" data-auth-target="login">Login</button>
+                <button type="button" class="auth-tab" data-auth-target="register">Register</button>
             </div>
+            <form id="login-form" class="auth-form">
+                <label for="login-username">Username</label>
+                <input type="text" id="login-username" name="username" placeholder="Your username" required
+                    autocomplete="off">
+                <label for="login-password">Password</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="login-password" name="password" placeholder="Your password" required
+                        autocomplete="off">
+                    <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
+                        <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+            <form id="register-form" class="auth-form hidden">
+                <label for="register-username">Username</label>
+                <input type="text" id="register-username" name="username" placeholder="Choose a username" required
+                    autocomplete="off">
+                <label for="register-email">Email</label>
+                <input type="email" id="register-email" name="email" placeholder="Enter your email" required
+                    autocomplete="email">
+                <label for="register-password" class="label-with-info">
+                    Password
+                    <span class="info-icon" id="password-info-icon" tabindex="0" aria-label="Password requirements">
+                        <span class="info-icon-text">?</span>
+                        <div class="info-tooltip" id="password-requirements-tooltip">
+                            <div class="tooltip-content">
+                                <strong>Password Requirements:</strong>
+                                <ul>
+                                    <li>At least 8 characters long</li>
+                                    <li>Contains at least one letter (a-z, A-Z)</li>
+                                    <li>Contains at least one number (0-9)</li>
+                                    <li>No special characters (! @ # $ % ^ & * ( ) , . ' " ? /)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </span>
+                </label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="register-password" name="password" placeholder="Create a password"
+                        required autocomplete="off">
+                    <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
+                        <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+                <div id="register-password-error" class="password-error"></div>
+                <label for="register-confirm-password">Confirm Password</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="register-confirm-password" name="confirmPassword"
+                        placeholder="Re-enter password" required autocomplete="off">
+                    <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
+                        <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+                <div id="register-confirm-password-error" class="password-error"></div>
+                <button type="submit">Register</button>
+            </form>
+            <div class="guest-login-block">
+                <div class="guest-divider">
+                    <span>or</span>
+                </div>
+                <button type="button" id="guest-login-btn" class="guest-btn">Play as Guest</button>
+                <p class="guest-hint">Play as a guest. Register to unlock more.</p>
+            </div>
+            <div id="auth-message" class="auth-message"></div>
         </div>
+    </div>
     </div>
     <div id="lobby-container" class="view">
         <div class="container">
             <h1>Game Lobby</h1>
             <div class="lobby-actions">
                 <div class="lobby-card-grid" id="lobby-game-grid">
-                    <div class="game-card game-card--tic is-active" data-game="three-mens-morris" aria-pressed="true" role="button" tabindex="0">
+                    <div class="game-card game-card--tic is-active" data-game="three-mens-morris" aria-pressed="true"
+                        role="button" tabindex="0">
                         <span class="game-card__icon" aria-hidden="true">⚫</span>
                         <div class="game-card__content">
                             <h3 class="game-card__title">Three Men's Morris</h3>
                             <p class="game-card__subtitle">3-piece strategy game.</p>
-                            <button type="button" class="game-card__action" data-game="three-mens-morris">Create Room</button>
+                            <button type="button" class="game-card__action" data-game="three-mens-morris">Create
+                                Room</button>
                         </div>
                     </div>
-                    <div class="game-card game-card--battleship" data-game="battleship" aria-pressed="false" role="button" tabindex="0">
+                    <div class="game-card game-card--battleship" data-game="battleship" aria-pressed="false"
+                        role="button" tabindex="0">
                         <span class="game-card__icon" aria-hidden="true">🚢</span>
                         <div class="game-card__content">
                             <h3 class="game-card__title">Battleship</h3>
@@ -228,12 +251,14 @@
                             <button type="button" class="game-card__action" data-game="battleship">Create Room</button>
                         </div>
                     </div>
-                    <div class="game-card game-card--memory" data-game="memory-match" aria-pressed="false" role="button" tabindex="0">
+                    <div class="game-card game-card--memory" data-game="memory-match" aria-pressed="false" role="button"
+                        tabindex="0">
                         <span class="game-card__icon" aria-hidden="true">🧩</span>
                         <div class="game-card__content">
                             <h3 class="game-card__title">Memory Match</h3>
                             <p class="game-card__subtitle">Flip cards, find pairs.</p>
-                            <button type="button" class="game-card__action" data-game="memory-match">Create Room</button>
+                            <button type="button" class="game-card__action" data-game="memory-match">Create
+                                Room</button>
                         </div>
                     </div>
                 </div>
@@ -274,14 +299,15 @@
                                 <div class="battleship-player-name" id="battleship-player-1-name">You</div>
                             </div>
                             <div class="battleship-boards-container">
-                            <div class="battleship-board-section">
-                                <h3 class="battleship-board-title" id="battleship-own-board-title">Your Fleet</h3>
-                                <div class="battleship-board" id="battleship-own-board"></div>
-                            </div>
-                            <div class="battleship-board-section">
-                                <h3 class="battleship-board-title" id="battleship-opponent-board-title">Opponent's Fleet</h3>
-                                <div class="battleship-board" id="battleship-opponent-board"></div>
-                            </div>
+                                <div class="battleship-board-section">
+                                    <h3 class="battleship-board-title" id="battleship-own-board-title">Your Fleet</h3>
+                                    <div class="battleship-board" id="battleship-own-board"></div>
+                                </div>
+                                <div class="battleship-board-section">
+                                    <h3 class="battleship-board-title" id="battleship-opponent-board-title">Opponent's
+                                        Fleet</h3>
+                                    <div class="battleship-board" id="battleship-opponent-board"></div>
+                                </div>
                             </div>
                             <div class="battleship-player-info" id="battleship-player-2">
                                 <div class="battleship-player-role" id="battleship-player-2-role"></div>
@@ -313,7 +339,8 @@
                         <div class="memory-player-score" id="memory-player-2-score">0</div>
                     </div>
                 </div>
-                <div id="memory-status" class="memory-status" style="display: none;">Flip two cards to find a match.</div>
+                <div id="memory-status" class="memory-status" style="display: none;">Flip two cards to find a match.
+                </div>
             </div>
             <div class="game-action-buttons">
                 <button id="rematch-btn" class="rematch-btn hidden">Rematch</button>
@@ -358,21 +385,21 @@
         <button id="online-players-toggle" class="widget-toggle-btn">
             Online Players
         </button>
-            <div id="online-players-popup" class="widget-popup hidden">
-                <div class="widget-popup-header">
-                    <h3>Online Players</h3>
-                </div>
-                <div id="online-players-list" class="users-list widget-content"></div>
+        <div id="online-players-popup" class="widget-popup hidden">
+            <div class="widget-popup-header">
+                <h3>Online Players</h3>
             </div>
+            <div id="online-players-list" class="users-list widget-content"></div>
+        </div>
     </div>
     <div id="lobby-chat-drawer" class="chat-drawer">
         <div id="lobby-chat-drawer-content" class="chat-drawer-content">
             <div id="lobby-chat-tab" class="chat-drawer-tab">
                 <span class="chat-icon">💬</span>
-                <span>Lobby Chat</span>
+                <span id="lobby-chat-tab-title">Lobby Chat</span>
             </div>
             <div class="chat-drawer-header">
-                <h3>Lobby Chat</h3>
+                <h3 id="lobby-chat-header-title">Lobby Chat</h3>
             </div>
             <div id="lobby-chat-list" class="chat-list chat-drawer-list"></div>
             <form id="lobby-chat-form" class="chat-form chat-drawer-form">
@@ -422,7 +449,9 @@
                 </div>
                 <div id="profile-message" class="profile-message"></div>
                 <div class="profile-badges-section">
-                    <h2 style="color: var(--text-dark); font-size: 1.5rem; font-weight: 600; margin-top: 1rem; margin-bottom: 1rem;">Badges</h2>
+                    <h2
+                        style="color: var(--text-dark); font-size: 1.5rem; font-weight: 600; margin-top: 1rem; margin-bottom: 1rem;">
+                        Badges</h2>
                     <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
                         <button id="view-earned-badges-btn" class="view-badges-btn">Your Badges</button>
                         <button id="view-available-badges-btn" class="view-badges-btn">Available Badges</button>
@@ -435,9 +464,11 @@
                 <form id="profile-password-form" class="profile-form hidden" style="display: none;">
                     <label for="profile-current-password">Current Password</label>
                     <div class="password-input-wrapper">
-                        <input type="password" id="profile-current-password" name="currentPassword" placeholder="Enter current password" required>
+                        <input type="password" id="profile-current-password" name="currentPassword"
+                            placeholder="Enter current password" required>
                         <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
-                            <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                 <circle cx="12" cy="12" r="3"></circle>
                             </svg>
@@ -445,7 +476,8 @@
                     </div>
                     <label for="profile-new-password" class="label-with-info">
                         New Password
-                        <span class="info-icon" id="profile-password-info-icon" tabindex="0" aria-label="Password requirements">
+                        <span class="info-icon" id="profile-password-info-icon" tabindex="0"
+                            aria-label="Password requirements">
                             <span class="info-icon-text">?</span>
                             <div class="info-tooltip" id="profile-password-requirements-tooltip">
                                 <div class="tooltip-content">
@@ -461,9 +493,11 @@
                         </span>
                     </label>
                     <div class="password-input-wrapper">
-                        <input type="password" id="profile-new-password" name="newPassword" placeholder="Enter new password" required>
+                        <input type="password" id="profile-new-password" name="newPassword"
+                            placeholder="Enter new password" required>
                         <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
-                            <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                 <circle cx="12" cy="12" r="3"></circle>
                             </svg>
@@ -472,9 +506,11 @@
                     <div id="profile-new-password-error" class="password-error"></div>
                     <label for="profile-confirm-password">Confirm New Password</label>
                     <div class="password-input-wrapper">
-                        <input type="password" id="profile-confirm-password" name="confirmPassword" placeholder="Re-enter new password" required>
+                        <input type="password" id="profile-confirm-password" name="confirmPassword"
+                            placeholder="Re-enter new password" required>
                         <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
-                            <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                 <circle cx="12" cy="12" r="3"></circle>
                             </svg>
@@ -504,8 +540,8 @@
             <p>Are you sure you want to leave this game?</p>
             <p id="leave-room-message"></p>
             <div class="modal-actions">
-                <button id="confirm-leave-btn" class="confirm-delete-btn">Yes, Leave Game</button>
                 <button id="cancel-leave-btn" class="cancel-delete-btn">Cancel</button>
+                <button id="confirm-leave-btn" class="confirm-delete-btn">Leave Game</button>
             </div>
         </div>
     </div>
@@ -522,17 +558,19 @@
         <div class="modal-content">
             <h2>Report User</h2>
             <p id="report-target-label">Reporting: <span id="report-target-name"></span></p>
-            <label for="report-reason-select">Reason</label>
-            <select id="report-reason-select">
-                <option value="cheating">Cheating</option>
-                <option value="abuse">Abuse</option>
-                <option value="spam">Spam</option>
-                <option value="bug">Bug</option>
-            </select>
-            <label for="report-message-input">Details (optional)</label>
-            <textarea id="report-message-input" rows="3" placeholder="Describe what happened..."></textarea>
+            <div class="report-reason-options">
+                <label class="report-reason-option">
+                    <input type="radio" name="report-reason" value="inappropriate_name" checked>
+                    <span class="report-reason-text">🚫 Inappropriate Username</span>
+                </label>
+                <label class="report-reason-option">
+                    <input type="radio" name="report-reason" value="bad_words">
+                    <span class="report-reason-text">💬 Bad Words in Chat</span>
+                </label>
+            </div>
+            <p class="report-hint" id="report-hint">Select a reason and submit your report.</p>
             <div class="modal-actions">
-                <button id="report-submit-btn" class="modal-btn">Submit</button>
+                <button id="report-submit-btn" class="modal-btn">Submit Report</button>
                 <button id="report-cancel-btn" class="modal-btn cancel-btn">Cancel</button>
             </div>
         </div>
@@ -560,9 +598,11 @@
             <form id="modal-password-form" class="profile-form">
                 <label for="modal-current-password">Current Password</label>
                 <div class="password-input-wrapper">
-                    <input type="password" id="modal-current-password" name="currentPassword" placeholder="Enter current password" required>
+                    <input type="password" id="modal-current-password" name="currentPassword"
+                        placeholder="Enter current password" required>
                     <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
-                        <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                             <circle cx="12" cy="12" r="3"></circle>
                         </svg>
@@ -571,7 +611,8 @@
                 <div id="modal-current-password-error" class="password-error"></div>
                 <label for="modal-new-password" class="label-with-info">
                     New Password
-                    <span class="info-icon" id="modal-password-info-icon" tabindex="0" aria-label="Password requirements">
+                    <span class="info-icon" id="modal-password-info-icon" tabindex="0"
+                        aria-label="Password requirements">
                         <span class="info-icon-text">?</span>
                         <div class="info-tooltip" id="modal-password-requirements-tooltip">
                             <div class="tooltip-content">
@@ -587,9 +628,11 @@
                     </span>
                 </label>
                 <div class="password-input-wrapper">
-                    <input type="password" id="modal-new-password" name="newPassword" placeholder="Enter new password" required>
+                    <input type="password" id="modal-new-password" name="newPassword" placeholder="Enter new password"
+                        required>
                     <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
-                        <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                             <circle cx="12" cy="12" r="3"></circle>
                         </svg>
@@ -598,9 +641,11 @@
                 <div id="modal-new-password-error" class="password-error"></div>
                 <label for="modal-confirm-password">Confirm New Password</label>
                 <div class="password-input-wrapper">
-                    <input type="password" id="modal-confirm-password" name="confirmPassword" placeholder="Re-enter new password" required>
+                    <input type="password" id="modal-confirm-password" name="confirmPassword"
+                        placeholder="Re-enter new password" required>
                     <button type="button" class="show-password-btn" aria-label="Show password" tabindex="-1">
-                        <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg class="show-password-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                             <circle cx="12" cy="12" r="3"></circle>
                         </svg>
@@ -617,7 +662,8 @@
     <div id="earned-badges-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <h2>Your Badges</h2>
-            <div id="modal-earned-badges" class="badges-grid" style="max-height: 60vh; overflow-y: auto; padding: 1rem 0;"></div>
+            <div id="modal-earned-badges" class="badges-grid"
+                style="max-height: 60vh; overflow-y: auto; padding: 1rem 0;"></div>
             <div class="modal-actions">
                 <button id="close-earned-badges-btn" class="cancel-delete-btn">Close</button>
             </div>
@@ -626,7 +672,8 @@
     <div id="available-badges-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <h2>Available Badges</h2>
-            <div id="modal-available-badges" class="badges-grid" style="max-height: 60vh; overflow-y: auto; padding: 1rem 0;"></div>
+            <div id="modal-available-badges" class="badges-grid"
+                style="max-height: 60vh; overflow-y: auto; padding: 1rem 0;"></div>
             <div class="modal-actions">
                 <button id="close-available-badges-btn" class="cancel-delete-btn">Close</button>
             </div>
@@ -635,7 +682,8 @@
     <div id="user-profile-badges-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <h2 id="user-profile-badges-modal-title">Badges</h2>
-            <div id="user-profile-badges-modal-content" class="badges-grid" style="max-height: 60vh; overflow-y: auto; padding: 1rem 0;"></div>
+            <div id="user-profile-badges-modal-content" class="badges-grid"
+                style="max-height: 60vh; overflow-y: auto; padding: 1rem 0;"></div>
             <div class="modal-actions">
                 <button id="close-user-profile-badges-btn" class="cancel-delete-btn">Close</button>
             </div>
@@ -659,8 +707,10 @@
                 <div id="invitation-message"></div>
             </div>
             <div class="notification-actions">
-                <button id="invitation-accept-btn" class="notification-btn" style="background: linear-gradient(135deg, #10b981, #059669);">Accept</button>
-                <button id="invitation-decline-btn" class="notification-btn" style="background: linear-gradient(135deg, #ef4444, #dc2626);">Decline</button>
+                <button id="invitation-accept-btn" class="notification-btn"
+                    style="background: linear-gradient(135deg, #10b981, #059669);">Accept</button>
+                <button id="invitation-decline-btn" class="notification-btn"
+                    style="background: linear-gradient(135deg, #ef4444, #dc2626);">Decline</button>
             </div>
         </div>
     </div>
@@ -671,7 +721,8 @@
                 <div id="waiting-invitation-message"></div>
             </div>
             <div class="notification-actions">
-                <button id="cancel-invitation-btn" class="notification-btn" style="background: linear-gradient(135deg, #ef4444, #dc2626);">Cancel Invitation</button>
+                <button id="cancel-invitation-btn" class="notification-btn"
+                    style="background: linear-gradient(135deg, #ef4444, #dc2626);">Cancel Invitation</button>
             </div>
         </div>
     </div>
@@ -715,8 +766,100 @@
     <div id="tournaments-container" class="view">
         <div class="container">
             <h1>Tournaments</h1>
-            <p>Tournaments feature coming soon!</p>
-            <button id="tournaments-back-btn" class="back-btn">Back to Lobby</button>
+            <div class="tournament-list-container">
+                <div id="tournaments-list" class="tournaments-list"></div>
+            </div>
+            <button id="tournament-create-btn" class="tournament-create-btn-fixed">Create Tournament</button>
+        </div>
+    </div>
+    <div id="tournament-detail-container" class="view">
+        <div class="info" id="tournament-info">
+            <p class="class-text" id="tournament-info-text">Loading tournament...</p>
+        </div>
+        <div class="container" style="padding-bottom: 0;">
+            <div id="tournament-detail-view" class="tournament-view"></div>
+            <button id="tournament-leave-btn" class="tournament-leave-btn-fixed">Leave Tournament</button>
+        </div>
+    </div>
+    <div id="guest-tournament-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>Registration required!</h2>
+            <p style="margin-top: 1rem;">Tournaments are available only to registered users. Please register or log in
+                to continue.</p>
+            <div class="modal-actions">
+                <button id="guest-tournament-register-btn"
+                    class="modal-btn-primary guest-tournament-register-btn-no-hover">Register</button>
+                <button id="guest-tournament-stay-guest-btn" class="modal-btn-secondary">Stay as Guest</button>
+            </div>
+        </div>
+    </div>
+    <div id="create-tournament-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>Create Tournament</h2>
+            <div class="tournament-create-form">
+                <div class="form-group">
+                    <label for="modal-tournament-game-type">Game Type:</label>
+                    <select id="modal-tournament-game-type">
+                        <option value="three-mens-morris">Three Men's Morris</option>
+                        <option value="battleship">Battleship</option>
+                        <option value="memory-match">Memory Match</option>
+                        <option value="mixed">Mixed (All Games)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="modal-tournament-player-count">Player Count:</label>
+                    <select id="modal-tournament-player-count">
+                        <option value="4">4 Players</option>
+                        <option value="8">8 Players</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="create-tournament-cancel-btn" class="modal-btn-secondary">Cancel</button>
+                <button id="create-tournament-confirm-btn" class="modal-btn-primary">Create</button>
+            </div>
+        </div>
+    </div>
+    <div id="leave-tournament-owner-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>Leave Tournament</h2>
+            <p class="modal-warning">⚠️ Warning: The tournament will be deleted!</p>
+            <p>Are you sure you want to leave the tournament?</p>
+            <p>If you leave the tournament, the tournament will be deleted.</p>
+            <div class="modal-actions">
+                <button id="cancel-leave-tournament-owner-btn" class="cancel-delete-btn">Cancel</button>
+                <button id="confirm-leave-tournament-owner-btn" class="confirm-delete-btn">Yes, Leave
+                    Tournament</button>
+            </div>
+        </div>
+    </div>
+    <div id="tournament-navigation-warning-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>You are in a tournament</h2>
+            <p>If you want to quit, press the "Leave Tournament" button.</p>
+            <div class="modal-actions">
+                <button id="close-tournament-nav-warning-btn" class="cancel-delete-btn">Okay</button>
+            </div>
+        </div>
+    </div>
+    <div id="leave-tournament-confirm-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>Leave Tournament</h2>
+            <p class="modal-warning">⚠️ Warning: You will lose the tournament!</p>
+            <p>Are you sure you want to leave this tournament?</p>
+            <div class="modal-actions">
+                <button id="cancel-leave-tournament-btn" class="modal-btn-secondary">Cancel</button>
+                <button id="confirm-leave-tournament-btn" class="modal-btn-primary">Leave Tournament</button>
+            </div>
+        </div>
+    </div>
+    <div id="tournament-winner-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>🏆 Tournament Winner!</h2>
+            <p id="tournament-winner-message"></p>
+            <div class="modal-actions">
+                <button id="tournament-winner-ok-btn" class="modal-btn-primary">Okay</button>
+            </div>
         </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
@@ -739,6 +882,9 @@
     <script src="/js/managers/socket/TMMSocketHandler.js"></script>
     <script src="/js/managers/socket/InvitationSocketHandler.js"></script>
     <script src="/js/managers/socket/ScoreboardSocketHandler.js"></script>
+    <script src="/js/ui/TournamentBracketRenderer.js"></script>
+    <script src="/js/managers/socket/TournamentSocketHandler.js"></script>
+    <script src="/js/managers/TournamentManager.js"></script>
     <script src="/js/managers/auth/PasswordValidator.js"></script>
     <script src="/js/managers/auth/LoginHandler.js"></script>
     <script src="/js/managers/auth/RegisterHandler.js"></script>
@@ -763,4 +909,5 @@
     <script src="/js/games/memory/MemoryGame.js"></script>
     <script src="/js/app.js"></script>
 </body>
+
 </html>

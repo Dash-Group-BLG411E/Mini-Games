@@ -5,6 +5,8 @@ class RoomSocketHandler {
 
     registerHandlers(socket) {
         socket.on('roomCreated', (data) => {
+            // Tournament room flags are set in handleRoomCreated BEFORE showGame() is called
+            // This prevents navigation warnings from triggering
             this.handleRoomCreated(data);
         });
 
@@ -39,6 +41,17 @@ class RoomSocketHandler {
         this.app.myRole = data.player?.role || null;
         this.app.isSpectator = false;
         this.app.roomMessages = [];
+        
+        // Set tournament room flags BEFORE showing game view to prevent navigation warnings
+        if (data.tournamentId) {
+            this.app.isTournamentRoom = true;
+            this.app.tournamentId = data.tournamentId;
+            this.app.matchId = data.matchId;
+        } else {
+            this.app.isTournamentRoom = false;
+            this.app.tournamentId = null;
+            this.app.matchId = null;
+        }
         
         // Hide waiting invitation modal if we sent an invitation that was accepted
         if (this.app.invitationManager) {

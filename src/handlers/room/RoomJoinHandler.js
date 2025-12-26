@@ -117,6 +117,24 @@ class RoomJoinHandler {
             }
 
             const room = this.handlers.rooms.get(roomId);
+            
+            // Check if this is a tournament room
+            if (room.isTournamentRoom && room.tournamentId) {
+                // For tournament rooms, redirect to tournament detail page
+                this.handlers.io.to(roomId).emit('tournamentRoomLeft', {
+                    tournamentId: room.tournamentId,
+                    matchId: room.matchId,
+                    leavingPlayer: username
+                });
+                
+                // Close tournament room
+                room.players.forEach(player => {
+                    this.handlers.socketToRoom.delete(player.socketId);
+                });
+                this.handlers.rooms.delete(roomId);
+                return;
+            }
+            
             const wasInProgress = room.gameState.gameStatus === 'in-progress';
             const isFinished = room.gameState.gameStatus === 'finished';
             const hadTwoPlayers = room.players.length === 2;
@@ -124,7 +142,7 @@ class RoomJoinHandler {
 
             // Remove from socketToRoom FIRST, before any broadcasts
             this.handlers.socketToRoom.delete(socket.id);
-            
+
             if (isFinished && hadTwoPlayers && leavingPlayer) {
                 const remainingPlayer = room.players.find(p => p.socketId !== socket.id);
                 const rematchWasRequested = remainingPlayer && room.restartVotes.has(remainingPlayer.socketId);

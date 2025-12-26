@@ -304,7 +304,7 @@ class BattleshipRenderer {
                 this.battleshipGame.player1Role.style.display = 'none';
             }
         }
-
+        
         if (opponentPlayer) {
             const opponentAvatar = this.app.avatarManager ? await this.app.avatarManager.getPlayerAvatar(opponentPlayer.username, opponentPlayer.avatar) : '👤';
             if (this.battleshipGame.player2Avatar) {

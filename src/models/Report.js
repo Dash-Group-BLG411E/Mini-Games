@@ -13,19 +13,35 @@ const reportSchema = new mongoose.Schema({
   },
   reason: {
     type: String,
+    enum: ['inappropriate_name', 'bad_words'],
     required: true,
-    trim: true,
-    maxlength: 200,
   },
-  message: {
-    type: String,
-    trim: true,
-    maxlength: 2000,
-  },
+  chatHistory: [{
+    username: { type: String, required: true },
+    message: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now }
+  }],
   status: {
     type: String,
     enum: ['open', 'in_review', 'resolved', 'rejected'],
     default: 'open',
+  },
+  actionTaken: {
+    type: String,
+    enum: ['none', 'warning', 'muted', 'username_changed'],
+    default: null,
+  },
+  adminNotes: {
+    type: String,
+    default: null,
+  },
+  resolvedBy: {
+    type: String,
+    default: null,
+  },
+  resolvedAt: {
+    type: Date,
+    default: null,
   },
   createdAt: {
     type: Date,
@@ -34,5 +50,6 @@ const reportSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Report', reportSchema);
+
 
 

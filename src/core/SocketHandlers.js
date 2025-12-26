@@ -8,6 +8,7 @@ const ChatHandler = require('../handlers/ChatHandler');
 const RoomHandler = require('../handlers/RoomHandler');
 const ScoreboardHandler = require('../handlers/ScoreboardHandler');
 const InvitationHandler = require('../handlers/InvitationHandler');
+const TournamentHandler = require('../handlers/tournament/TournamentHandler');
 
 class SocketHandlers {
     constructor(io) {
@@ -30,6 +31,7 @@ class SocketHandlers {
         this.roomHandler = new RoomHandler(this);
         this.scoreboardHandler = new ScoreboardHandler(this);
         this.invitationHandler = new InvitationHandler(this);
+        this.tournamentHandler = new TournamentHandler(this);
     }
 
     handleConnection(socket) {
@@ -40,6 +42,7 @@ class SocketHandlers {
         this.roomHandler.registerHandlers(socket);
         this.scoreboardHandler.registerHandlers(socket);
         this.invitationHandler.registerHandlers(socket);
+        this.tournamentHandler.registerHandlers(socket);
         this.memoryHandler.registerHandlers(socket);
         this.tmmHandler.registerHandlers(socket);
         this.battleshipHandler.registerHandlers(socket);
@@ -271,6 +274,11 @@ class SocketHandlers {
             winnerDisplay = winnerUsername || winnerRole;
         } else if (winnerRole === 'draw') {
             winnerDisplay = 'Draw';
+        }
+        
+        // Check if this is a tournament match
+        if (winnerUsername) {
+            this.tournamentHandler.handleGameFinished(roomId, winnerUsername);
         }
         
         const spectatorsToRemove = [...currentRoom.spectators];

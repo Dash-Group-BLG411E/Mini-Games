@@ -17,6 +17,9 @@ class ModalManager {
         this.gameEndRematchBtn = document.getElementById('game-end-rematch-btn');
         this.gameEndRematchStatus = document.getElementById('game-end-rematch-status');
         this.deleteAccountModal = document.getElementById('delete-account-modal');
+        this.tournamentWinnerModal = document.getElementById('tournament-winner-modal');
+        this.tournamentWinnerMessage = document.getElementById('tournament-winner-message');
+        this.tournamentWinnerOkBtn = document.getElementById('tournament-winner-ok-btn');
         
         this.notificationCallback = null;
         this.notificationTimeout = null;
@@ -29,6 +32,13 @@ class ModalManager {
         this.notificationModal?.addEventListener('click', (e) => {
             if (e.target === this.notificationModal || e.target.classList.contains('notification-overlay')) {
                 this.hideNotification();
+            }
+        });
+
+        this.tournamentWinnerOkBtn?.addEventListener('click', () => this.hideTournamentWinnerModal());
+        this.tournamentWinnerModal?.addEventListener('click', (e) => {
+            if (e.target === this.tournamentWinnerModal || e.target.classList.contains('modal-overlay')) {
+                this.hideTournamentWinnerModal();
             }
         });
 
@@ -169,6 +179,19 @@ class ModalManager {
             this.gameEndRematchBtn.textContent = 'Rematch';
             this.gameEndRematchBtn.style.background = 'linear-gradient(135deg, var(--accent-purple), var(--accent-purple-deep))';
             this.gameEndRematchBtn.disabled = false;
+        }
+    }
+
+    showTournamentWinnerModal(winnerName) {
+        if (!this.tournamentWinnerModal || !this.tournamentWinnerMessage) return;
+        
+        this.tournamentWinnerMessage.textContent = `Congratulations ${winnerName}! You won the tournament! 🎉🏆`;
+        this.tournamentWinnerModal.classList.remove('hidden');
+    }
+
+    hideTournamentWinnerModal() {
+        if (this.tournamentWinnerModal) {
+            this.tournamentWinnerModal.classList.add('hidden');
         }
     }
 }

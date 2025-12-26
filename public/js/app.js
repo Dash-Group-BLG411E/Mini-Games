@@ -40,7 +40,7 @@ class MiniGamesApp {
         } else {
             this.bindDomElements();
         }
-        
+
         if (typeof AppInitializer !== 'undefined') {
             this.appInitializer = new AppInitializer(this);
             this.appInitializer.initializeManagers();
@@ -48,15 +48,15 @@ class MiniGamesApp {
         } else {
             this.initializeManagersFallback();
         }
-        
+
         if (typeof WarningManager !== 'undefined') {
             this.warningManager = new WarningManager(this);
         } else {
             this.setupBeforeUnloadWarning();
         }
-        
+
         this.setupEventListeners();
-        
+
         // Enforce guest restrictions on initialization if user is guest
         if (this.userRole === 'guest') {
             setTimeout(() => {
@@ -121,8 +121,6 @@ class MiniGamesApp {
         this.roomChatDrawerContent = document.getElementById('room-chat-drawer-content');
         this.reportModal = document.getElementById('report-modal');
         this.reportTargetName = document.getElementById('report-target-name');
-        this.reportReasonSelect = document.getElementById('report-reason-select');
-        this.reportMessageInput = document.getElementById('report-message-input');
         this.reportSubmitBtn = document.getElementById('report-submit-btn');
         this.reportCancelBtn = document.getElementById('report-cancel-btn');
         this.onlinePlayersWidget = document.getElementById('online-players-widget');
@@ -341,15 +339,15 @@ class MiniGamesApp {
             this.socket.disconnect();
         }
         this.socket = io({ auth: { token: this.token } });
-        
+
         this.socket.on('connect', () => {
         });
-        
+
         this.socket.on('connect_error', (error) => {
             console.error('Socket connection error:', error);
             this.handleSocketError(error);
         });
-        
+
         if (this.socketManager) {
             this.socketManager.registerHandlers(this.socket);
         } else {
@@ -463,6 +461,29 @@ class MiniGamesApp {
     }
 
     showProfile() {
+        // Check if user is in a tournament - prevent navigation
+        if (this.tournamentManager && this.tournamentManager.isInTournament()) {
+            const modal = document.getElementById('tournament-navigation-warning-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
+            return; // Prevent navigation
+        }
+
+        // Check if user is in a game - prevent navigation
+        if (this.currentRoom && !this.isSpectator) {
+            if (this.gameState && this.gameState.gameStatus === 'finished') {
+                // Game finished, allow navigation
+            } else {
+                if (this.warningManager) {
+                    this.warningManager.showNavigationWarning();
+                } else {
+                    this.showNavigationWarning();
+                }
+                return; // Prevent navigation
+            }
+        }
+
         if (this.authManager) {
             this.authManager.loadProfileData();
         }
@@ -740,7 +761,7 @@ class MiniGamesApp {
             return this.battleshipGame.updatePlayerInfo();
         }
     }
-    
+
 
 
 
@@ -788,25 +809,25 @@ class MiniGamesApp {
             this.navigationManager.updateChatWidgets();
         }
     }
-    
+
     renderLobbyMessages() {
         if (this.chatRenderer && this.chatRenderer.renderLobbyMessages) {
             this.chatRenderer.renderLobbyMessages();
         }
     }
-    
+
     updateLeaveButtonVisibility() {
         if (this.roomManager && this.roomManager.updateLeaveButtonVisibility) {
             this.roomManager.updateLeaveButtonVisibility();
         }
     }
-    
+
     updateRoomInfoBox() {
         if (this.roomManager && this.roomManager.updateRoomInfoBox) {
             this.roomManager.updateRoomInfoBox();
         }
     }
-    
+
     formatGameType(type) {
         if (this.viewManager && this.viewManager.formatGameType) {
             return this.viewManager.formatGameType(type);
@@ -821,7 +842,7 @@ class MiniGamesApp {
         };
         return mapping[normalized] || 'Three Men\'s Morris';
     }
-    
+
     joinRoom(roomId, asSpectator = false) {
         if (this.roomManager && this.roomManager.joinRoom) {
             this.roomManager.joinRoom(roomId, asSpectator);
@@ -829,18 +850,18 @@ class MiniGamesApp {
     }
 
 }
-(function() {
+(function () {
     function ensureBasicFunctionality() {
         const loadingScreen = document.getElementById('loading-screen');
         const authContainer = document.getElementById('auth-container');
-        
+
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
         const guestBtn = document.getElementById('guest-login-btn');
-        
+
         if (loginForm && !loginForm.hasAttribute('data-listener-attached')) {
             loginForm.setAttribute('data-listener-attached', 'true');
-            loginForm.addEventListener('submit', async function(e) {
+            loginForm.addEventListener('submit', async function (e) {
                 e.preventDefault();
                 const username = this.querySelector('input[name="username"]')?.value.trim();
                 const password = this.querySelector('input[name="password"]')?.value;
@@ -860,14 +881,14 @@ class MiniGamesApp {
                         localStorage.setItem('minigames_token', data.token);
                         localStorage.setItem('minigames_username', data.username);
                         localStorage.setItem('minigames_role', data.role || 'player');
-                        
+
                         const loadingScreenEl = document.getElementById('loading-screen');
                         const authContainerEl = document.getElementById('auth-container');
                         const lobbyContainerEl = document.getElementById('lobby-container');
                         const roomsContainerEl = document.getElementById('rooms-container');
                         const leaderboardContainerEl = document.getElementById('leaderboard-container');
                         const gameContainerEl = document.getElementById('game-container');
-                        
+
                         if (loadingScreenEl) {
                             loadingScreenEl.style.display = 'none';
                             loadingScreenEl.classList.add('hidden');
@@ -879,7 +900,7 @@ class MiniGamesApp {
                         if (lobbyContainerEl) {
                             lobbyContainerEl.style.display = 'block';
                         }
-                        
+
                         if (window.app) {
                             window.app.token = data.token;
                             window.app.currentUser = data.username;
@@ -912,7 +933,7 @@ class MiniGamesApp {
                 }
             });
         }
-        
+
         // Register form is handled by RegisterHandler - no duplicate listener needed
         // Removed duplicate event listener to prevent double submissions
         if (registerForm && !registerForm.hasAttribute('data-listener-attached')) {
@@ -1002,10 +1023,10 @@ class MiniGamesApp {
             });
             */
         }
-        
+
         if (guestBtn && !guestBtn.hasAttribute('data-listener-attached')) {
             guestBtn.setAttribute('data-listener-attached', 'true');
-            guestBtn.addEventListener('click', async function() {
+            guestBtn.addEventListener('click', async function () {
                 try {
                     const response = await fetch('/api/auth/guest', {
                         method: 'POST',
@@ -1016,14 +1037,14 @@ class MiniGamesApp {
                         localStorage.setItem('minigames_token', data.token);
                         localStorage.setItem('minigames_username', data.username);
                         localStorage.setItem('minigames_role', 'guest');
-                        
+
                         const loadingScreenEl = document.getElementById('loading-screen');
                         const authContainerEl = document.getElementById('auth-container');
                         const lobbyContainerEl = document.getElementById('lobby-container');
                         const roomsContainerEl = document.getElementById('rooms-container');
                         const leaderboardContainerEl = document.getElementById('leaderboard-container');
                         const gameContainerEl = document.getElementById('game-container');
-                        
+
                         if (loadingScreenEl) {
                             loadingScreenEl.style.display = 'none';
                             loadingScreenEl.classList.add('hidden');
@@ -1035,7 +1056,7 @@ class MiniGamesApp {
                         if (lobbyContainerEl) {
                             lobbyContainerEl.style.display = 'block';
                         }
-                        
+
                         if (window.app) {
                             window.app.token = data.token;
                             window.app.currentUser = data.username;
@@ -1056,19 +1077,30 @@ class MiniGamesApp {
                 }
             });
         }
-        
+
         const lobbyBtn = document.getElementById('lobby-nav-btn');
         if (lobbyBtn && !lobbyBtn.hasAttribute('data-listener-attached')) {
             lobbyBtn.setAttribute('data-listener-attached', 'true');
-            lobbyBtn.addEventListener('click', function() {
+            lobbyBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Check if user is in a tournament - prevent navigation
+                if (window.app && window.app.tournamentManager && window.app.tournamentManager.isInTournament()) {
+                    const modal = document.getElementById('tournament-navigation-warning-modal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                    }
+                    return false;
+                }
                 const authContainer = document.getElementById('auth-container');
                 const lobbyContainer = document.getElementById('lobby-container');
                 if (authContainer) authContainer.style.display = 'none';
                 if (lobbyContainer) lobbyContainer.style.display = 'block';
+                return false;
             });
         }
     }
-    
+
     function initApp() {
         try {
             if (document.readyState === 'loading') {
@@ -1109,9 +1141,9 @@ class MiniGamesApp {
             }
         }
     }
-    
+
     initApp();
-    
+
     setTimeout(() => {
         const token = localStorage.getItem('minigames_token');
         const username = localStorage.getItem('minigames_username');
@@ -1128,7 +1160,7 @@ class MiniGamesApp {
                         const roomsContainer = document.getElementById('rooms-container');
                         const leaderboardContainer = document.getElementById('leaderboard-container');
                         const gameContainer = document.getElementById('game-container');
-                        
+
                         if (loadingScreen) {
                             loadingScreen.style.display = 'none';
                             loadingScreen.classList.add('hidden');
@@ -1138,19 +1170,29 @@ class MiniGamesApp {
                         if (leaderboardContainer) leaderboardContainer.style.display = 'none';
                         if (gameContainer) gameContainer.style.display = 'none';
                         if (lobbyContainer) lobbyContainer.style.display = 'block';
-                        
+
                         if (window.app && window.app.initializeSocket) {
                             window.app.initializeSocket();
                         }
                     }
-                }).catch(() => {});
+                }).catch(() => { });
             }
         }
-        
+
         const lobbyBtn = document.getElementById('lobby-nav-btn');
         if (lobbyBtn && !lobbyBtn.hasAttribute('data-listener-attached')) {
             lobbyBtn.setAttribute('data-listener-attached', 'true');
-            lobbyBtn.addEventListener('click', function() {
+            lobbyBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Check if user is in a tournament - prevent navigation
+                if (window.app && window.app.tournamentManager && window.app.tournamentManager.isInTournament()) {
+                    const modal = document.getElementById('tournament-navigation-warning-modal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                    }
+                    return false;
+                }
                 const authContainer = document.getElementById('auth-container');
                 const lobbyContainer = document.getElementById('lobby-container');
                 const roomsContainer = document.getElementById('rooms-container');
@@ -1159,13 +1201,24 @@ class MiniGamesApp {
                 if (roomsContainer) roomsContainer.style.display = 'none';
                 if (leaderboardContainer) leaderboardContainer.style.display = 'none';
                 if (lobbyContainer) lobbyContainer.style.display = 'block';
+                return false;
             });
         }
-        
+
         const roomsBtn = document.getElementById('rooms-nav-btn');
         if (roomsBtn && !roomsBtn.hasAttribute('data-listener-attached')) {
             roomsBtn.setAttribute('data-listener-attached', 'true');
-            roomsBtn.addEventListener('click', function() {
+            roomsBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Check if user is in a tournament - prevent navigation
+                if (window.app && window.app.tournamentManager && window.app.tournamentManager.isInTournament()) {
+                    const modal = document.getElementById('tournament-navigation-warning-modal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                    }
+                    return false;
+                }
                 const authContainer = document.getElementById('auth-container');
                 const lobbyContainer = document.getElementById('lobby-container');
                 const roomsContainer = document.getElementById('rooms-container');
@@ -1174,13 +1227,24 @@ class MiniGamesApp {
                 if (lobbyContainer) lobbyContainer.style.display = 'none';
                 if (leaderboardContainer) leaderboardContainer.style.display = 'none';
                 if (roomsContainer) roomsContainer.style.display = 'block';
+                return false;
             });
         }
-        
+
         const leaderboardBtn = document.getElementById('leaderboard-nav-btn');
         if (leaderboardBtn && !leaderboardBtn.hasAttribute('data-listener-attached')) {
             leaderboardBtn.setAttribute('data-listener-attached', 'true');
-            leaderboardBtn.addEventListener('click', function() {
+            leaderboardBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Check if user is in a tournament - prevent navigation
+                if (window.app && window.app.tournamentManager && window.app.tournamentManager.isInTournament()) {
+                    const modal = document.getElementById('tournament-navigation-warning-modal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                    }
+                    return false;
+                }
                 const authContainer = document.getElementById('auth-container');
                 const lobbyContainer = document.getElementById('lobby-container');
                 const roomsContainer = document.getElementById('rooms-container');
@@ -1189,29 +1253,30 @@ class MiniGamesApp {
                 if (lobbyContainer) lobbyContainer.style.display = 'none';
                 if (roomsContainer) roomsContainer.style.display = 'none';
                 if (leaderboardContainer) leaderboardContainer.style.display = 'block';
+                return false;
             });
         }
-        
+
         const lobbyChatTab = document.getElementById('lobby-chat-tab');
         if (lobbyChatTab && !lobbyChatTab.hasAttribute('data-listener-attached')) {
             lobbyChatTab.setAttribute('data-listener-attached', 'true');
-            lobbyChatTab.addEventListener('click', function() {
+            lobbyChatTab.addEventListener('click', function () {
                 const drawer = document.getElementById('lobby-chat-drawer');
                 if (drawer) {
                     drawer.classList.toggle('drawer-open');
                 }
             });
         }
-        
+
         const lobbyChatForm = document.getElementById('lobby-chat-form');
         const lobbyChatInput = document.getElementById('lobby-chat-input');
         if (lobbyChatForm && lobbyChatInput && !lobbyChatForm.hasAttribute('data-listener-attached')) {
             lobbyChatForm.setAttribute('data-listener-attached', 'true');
-            lobbyChatForm.addEventListener('submit', function(e) {
+            lobbyChatForm.addEventListener('submit', function (e) {
                 e.preventDefault();
                 const message = lobbyChatInput.value.trim();
                 if (!message) return;
-                
+
                 if (window.app && window.app.socket && window.app.socket.connected) {
                     window.app.socket.emit('lobbyChatMessage', { message });
                     lobbyChatInput.value = '';
@@ -1230,16 +1295,16 @@ class MiniGamesApp {
                 }
             });
         }
-        
+
         const roomChatForm = document.getElementById('room-chat-form');
         const roomChatInput = document.getElementById('room-chat-input');
         if (roomChatForm && roomChatInput && !roomChatForm.hasAttribute('data-listener-attached')) {
             roomChatForm.setAttribute('data-listener-attached', 'true');
-            roomChatForm.addEventListener('submit', function(e) {
+            roomChatForm.addEventListener('submit', function (e) {
                 e.preventDefault();
                 const message = roomChatInput.value.trim();
                 if (!message) return;
-                
+
                 if (window.app && window.app.socket && window.app.socket.connected && window.app.currentRoom) {
                     window.app.socket.emit('roomChatMessage', { roomId: window.app.currentRoom, message });
                     roomChatInput.value = '';
@@ -1258,11 +1323,11 @@ class MiniGamesApp {
                 }
             });
         }
-        
+
         const closeNavWarningBtn = document.getElementById('close-nav-warning-btn');
         if (closeNavWarningBtn && !closeNavWarningBtn.hasAttribute('data-listener-attached')) {
             closeNavWarningBtn.setAttribute('data-listener-attached', 'true');
-            closeNavWarningBtn.addEventListener('click', function() {
+            closeNavWarningBtn.addEventListener('click', function () {
                 if (window.app && window.app.hideNavigationWarning) {
                     window.app.hideNavigationWarning();
                 } else {
@@ -1273,31 +1338,31 @@ class MiniGamesApp {
                 }
             });
         }
-        
+
         const rematchBtn = document.getElementById('rematch-btn');
         if (rematchBtn && !rematchBtn.hasAttribute('data-listener-attached')) {
             rematchBtn.setAttribute('data-listener-attached', 'true');
-            rematchBtn.addEventListener('click', function() {
+            rematchBtn.addEventListener('click', function () {
                 if (window.app && window.app.requestRematch) {
                     window.app.requestRematch();
                 }
             });
         }
-        
+
         const gameEndRematchBtn = document.getElementById('game-end-rematch-btn');
         if (gameEndRematchBtn && !gameEndRematchBtn.hasAttribute('data-listener-attached')) {
             gameEndRematchBtn.setAttribute('data-listener-attached', 'true');
-            gameEndRematchBtn.addEventListener('click', function() {
+            gameEndRematchBtn.addEventListener('click', function () {
                 if (window.app && window.app.requestRematch) {
                     window.app.requestRematch();
                 }
             });
         }
-        
+
         const gameInfoBtn = document.getElementById('game-info-btn');
         if (gameInfoBtn && !gameInfoBtn.hasAttribute('data-listener-attached')) {
             gameInfoBtn.setAttribute('data-listener-attached', 'true');
-            gameInfoBtn.addEventListener('click', function(e) {
+            gameInfoBtn.addEventListener('click', function (e) {
                 e.stopPropagation();
                 if (window.app && window.app.showGameInfo) {
                     window.app.showGameInfo();
@@ -1306,11 +1371,11 @@ class MiniGamesApp {
                 }
             });
         }
-        
+
         const gameInfoModal = document.getElementById('game-info-modal');
         if (gameInfoModal && !gameInfoModal.hasAttribute('data-listener-attached')) {
             gameInfoModal.setAttribute('data-listener-attached', 'true');
-            gameInfoModal.addEventListener('click', function(e) {
+            gameInfoModal.addEventListener('click', function (e) {
                 if (e.target === gameInfoModal) {
                     if (window.app && window.app.hideGameInfo) {
                         window.app.hideGameInfo();
@@ -1319,12 +1384,12 @@ class MiniGamesApp {
                     }
                 }
             });
-            
+
             // Add close button handler
             const closeBtn = document.getElementById('game-info-close-btn');
             if (closeBtn && !closeBtn.hasAttribute('data-listener-attached')) {
                 closeBtn.setAttribute('data-listener-attached', 'true');
-                closeBtn.addEventListener('click', function(e) {
+                closeBtn.addEventListener('click', function (e) {
                     e.stopPropagation();
                     if (window.app && window.app.hideGameInfo) {
                         window.app.hideGameInfo();
@@ -1334,7 +1399,7 @@ class MiniGamesApp {
                 });
             }
         }
-        
+
         const battleshipStatus = document.getElementById('battleship-status');
         if (battleshipStatus) {
             battleshipStatus.style.display = 'none';
@@ -1342,13 +1407,13 @@ class MiniGamesApp {
             battleshipStatus.textContent = '';
             battleshipStatus.innerHTML = '';
         }
-        
+
         const battleshipControls = document.querySelector('.battleship-controls');
         if (battleshipControls) {
             battleshipControls.style.display = 'none';
             battleshipControls.classList.add('hidden');
         }
-        
+
         setInterval(() => {
             const status = document.getElementById('battleship-status');
             if (status && status.style.display !== 'none') {

@@ -52,7 +52,7 @@ class DOMManager {
         this.app.onlinePlayersWidget = document.getElementById('online-players-widget');
         this.app.leaderboardContainer = document.getElementById('leaderboard-container');
         this.app.tournamentsContainer = document.getElementById('tournaments-container');
-        
+
         if (!this.app.lobbyChatForm || !this.app.lobbyChatInput || !this.app.lobbyChatList) {
             console.warn('Lobby chat drawer elements not found');
         }
@@ -91,8 +91,6 @@ class DOMManager {
     bindModalElements() {
         this.app.reportModal = document.getElementById('report-modal');
         this.app.reportTargetName = document.getElementById('report-target-name');
-        this.app.reportReasonSelect = document.getElementById('report-reason-select');
-        this.app.reportMessageInput = document.getElementById('report-message-input');
         this.app.reportSubmitBtn = document.getElementById('report-submit-btn');
         this.app.reportCancelBtn = document.getElementById('report-cancel-btn');
         this.app.inviteGameModal = document.getElementById('invite-game-modal');

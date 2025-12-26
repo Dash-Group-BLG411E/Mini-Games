@@ -1,0 +1,439 @@
+.tournament-create-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.tournament-create-form .form-group {
+    width: 100%;
+}
+
+.tournament-create-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-dark);
+    font-weight: 600;
+}
+
+.tournament-create-form select {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    background: white;
+    color: var(--text-dark);
+    font-size: 1rem;
+}
+
+.tournament-list-container {
+    margin: 0 auto;
+    width: 100%;
+}
+
+.tournament-create-btn-fixed {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-deep));
+    color: var(--text-light);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
+    z-index: 100;
+}
+
+.tournament-create-btn-fixed:hover {
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
+}
+
+@media (max-width: 768px) {
+    .tournament-create-btn-fixed {
+        bottom: 1rem;
+        padding: 0.875rem 1.5rem;
+        font-size: 0.9rem;
+    }
+}
+
+.tournaments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.no-tournaments {
+    text-align: center;
+    padding: 2rem;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    color: #666;
+    font-size: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.no-tournaments .tournament-create-btn {
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-deep));
+    color: var(--text-light);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.no-tournaments .tournament-create-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
+}
+
+.no-tournaments p {
+    margin: 0;
+    color: #888;
+}
+
+.tournament-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    width: 100%;
+    min-height: auto;
+    margin-bottom: 0;
+}
+
+.tournament-item .tournament-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+}
+
+.tournament-item .tournament-info-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.tournament-item .tournament-info-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.tournament-item .tournament-info h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-weight: 600;
+}
+
+.tournament-item .tournament-info p {
+    margin: 0;
+    color: #666;
+    font-size: 0.85rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.tournament-item .tournament-info .status-badge {
+    display: inline-block;
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.tournament-item .tournament-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+    margin-left: 1rem;
+    justify-content: center;
+}
+
+.tournament-item .tournament-actions button {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-deep));
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    white-space: nowrap;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    min-width: 140px;
+}
+
+.tournament-item .tournament-actions button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
+}
+
+.tournament-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.tournament-header h3 {
+    margin: 0;
+    color: var(--text-light);
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.status-waiting {
+    background: rgba(251, 146, 60, 0.2);
+    color: var(--accent-orange);
+    border: 1px solid rgba(251, 146, 60, 0.3);
+}
+
+.status-in-progress {
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--accent-blue);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.status-finished {
+    background: rgba(20, 184, 166, 0.2);
+    color: var(--accent-teal);
+    border: 1px solid rgba(20, 184, 166, 0.3);
+}
+
+.tournament-info {
+    margin-bottom: 1rem;
+}
+
+.tournament-info p {
+    margin: 0.5rem 0;
+    color: var(--text-light);
+}
+
+.tournament-info strong {
+    color: var(--accent-purple);
+}
+
+.tournament-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.tournament-actions button {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: none;
+    background: var(--accent-purple);
+    color: var(--text-light);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.tournament-actions button:hover {
+    background: var(--accent-purple-deep);
+}
+
+.tournament-actions .btn-leave-tournament {
+    background: rgba(239, 68, 68, 0.8);
+}
+
+.tournament-actions .btn-leave-tournament:hover {
+    background: rgba(239, 68, 68, 1);
+}
+
+.tournament-view {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tournament-waiting-info {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    color: #666;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+.tournament-leave-btn-fixed {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-weight: 600;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+    z-index: 100;
+}
+
+.tournament-leave-btn-fixed:hover {
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+    background: linear-gradient(135deg, #b91c1c, #991b1b);
+}
+
+/* Removed tournament-detail-actions - no longer used */
+
+.tournament-details {
+    width: 100%;
+}
+
+.tournament-players {
+    margin: 1.5rem 0;
+}
+
+.tournament-players h3 {
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+}
+
+.tournament-players ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tournament-players li {
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    color: var(--text-light);
+}
+
+.tournament-bracket-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.tournament-bracket-svg {
+    width: 100%;
+    height: auto;
+    min-height: 400px;
+    display: block;
+}
+
+.bracket-round {
+    min-width: 250px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.bracket-round h4 {
+    color: var(--accent-purple);
+    margin: 0 0 1rem 0;
+    text-align: center;
+}
+
+.bracket-matches {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.bracket-match {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bracket-match.match-waiting {
+    opacity: 0.6;
+}
+
+.bracket-match.match-in-progress {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+.bracket-match.match-finished {
+    border-color: var(--accent-teal);
+}
+
+.match-player {
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    color: var(--text-light);
+    text-align: center;
+}
+
+.match-player.match-winner {
+    background: rgba(20, 184, 166, 0.2);
+    color: var(--accent-teal);
+    font-weight: 600;
+}
+
+.match-vs {
+    text-align: center;
+    color: var(--text-light);
+    margin: 0.5rem 0;
+    font-weight: 600;
+}
+
+.match-winner-label {
+    text-align: center;
+    color: var(--accent-teal);
+    font-weight: 600;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.btn-leave-tournament-main {
+    margin-top: 1.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    border: none;
+    background: rgba(239, 68, 68, 0.8);
+    color: var(--text-light);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-leave-tournament-main:hover {
+    background: rgba(239, 68, 68, 1);
+}
